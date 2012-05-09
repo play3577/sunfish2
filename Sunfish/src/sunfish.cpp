@@ -6,9 +6,11 @@
  */
 
 #include <iostream>
+#include "sunfish.h"
 
 int main(int argc, char* argv[]) {
-	std::cout << "Hello Sunfish!!\n";
+	std::cout << SUNFISH_NAME << '\n';
+	std::cout << SUNFISH_VERSION << '\n';
+	std::cout << SUNFISH_COPYRIGHT << '\n';
 	return 0;
 }
-
