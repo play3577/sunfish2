@@ -22,7 +22,7 @@ public:
 	Move() {
 	}
 
-	Move(Move move) {
+	Move(const Move& move) {
 		m = move.m;
 	}
 

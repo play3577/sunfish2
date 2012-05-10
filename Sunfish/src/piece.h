@@ -20,6 +20,8 @@ public:
 
 		TURN = 0x10,    // 16 (mask)
 
+		WALL = 0x20,    // 32
+
 		BPAWN = 1,      // 1
 		BLANCE,         // 2
 		BKNIGHT,        // 3
@@ -61,7 +63,7 @@ public:
 		this->piece = piece;
 	}
 
-	Piece(Piece& p) {
+	Piece(const Piece& p) {
 		piece = p.piece;
 	}
 
@@ -99,7 +101,7 @@ public:
 		return p;
 	}
 
-	Piece& operator=(Piece& p) {
+	Piece& operator=(const Piece& p) {
 		piece = p.piece;
 		return *this;
 	}
