@@ -8,57 +8,96 @@
 #ifndef POSITION_H_
 #define POSITION_H_
 
-class Position {
-private:
-	static const unsigned nextTable[];
-	unsigned position;
+namespace Shogi {
+	class Position {
+	private:
+		static const unsigned UPPERMOST = 0x20;
+		static const unsigned LOWERMOST = 0xA0;
+		static const unsigned RIGHTMOST = 0x01;
+		static const unsigned LEFTMOST = 0x09;
+		static const unsigned MASK_FILE = 0x0F;
+		static const unsigned MASK_RANK = 0xF0;
+		static const unsigned WIDTH = 0x10;
+		static const unsigned nextTable[];
+		unsigned position;
 
-public:
-	static const unsigned WTOP = 0x00;
-	static const unsigned TOP = 0x21;
-	static const unsigned END = 0xA9;
-	static const unsigned WEND = 0xCF;
-	static const unsigned SIZE = 0xD0;
-	static const unsigned MASK_FILE = 0x0F;
-	static const unsigned MASK_RANK = 0xF0;
-	static const unsigned FILE_NUM = 9;
-	static const unsigned RANK_NUM = 9;
+	public:
+		static const unsigned SIZE = 0xD0;
+		static const unsigned TOP_W = 0x00;
+		static const unsigned TOP = 0x21;
+		static const unsigned END = 0xA9;
+		static const unsigned END_W = 0xCF;
+		static const unsigned FILE_NUM = 9;
+		static const unsigned RANK_NUM = 9;
 
-	Position() {
-		position = TOP;
-	}
+		Position() {
+			position = TOP;
+		}
 
-	Position(int position) {
-		this->position = position;
-	}
+		Position(int position) {
+			this->position = position;
+		}
 
-	Position(const Position& pos) {
-		position = pos.position;
-	}
+		Position(const Position& pos) {
+			position = pos.position;
+		}
 
-	void next() {
-		position = nextTable[position];
-	}
+		void next() {
+			position = nextTable[position];
+		}
 
-	void inc() {
-		position++;
-	}
+		void inc() {
+			position++;
+		}
 
-	bool inside() {
-		return position <= WEND;
-	}
+		void right() {
+			position--;
+		}
 
-	unsigned getIndex() {
-		return position;
-	}
+		void left() {
+			position++;
+		}
 
-	unsigned getFile() {
-		return position & MASK_FILE;
-	}
+		void up() {
+			position -= WIDTH;
+		}
 
-	unsigned getRank() {
-		return position & MASK_RANK;
-	}
-};
+		void down() {
+			position += WIDTH;
+		}
+
+		void rightmost() {
+			position = (position & MASK_RANK) | RIGHTMOST;
+		}
+
+		void leftmost() {
+			position = (position & MASK_RANK) | LEFTMOST;
+		}
+
+		void uppermost() {
+			position = (position & MASK_FILE) | UPPERMOST;
+		}
+
+		void lowermost() {
+			position = (position & MASK_FILE) | LOWERMOST;
+		}
+
+		bool inside() const {
+			return position <= END_W;
+		}
+
+		unsigned getIndex() const {
+			return position;
+		}
+
+		unsigned getFile() const {
+			return (position & MASK_FILE);
+		}
+
+		unsigned getRank() const {
+			return (position & MASK_RANK) - 0x10;
+		}
+	};
+}
 
 #endif /* POSITION_H_ */

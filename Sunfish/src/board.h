@@ -8,27 +8,40 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
+#include <string>
 #include "position.h"
 #include "piece.h"
 #include "handicap.h"
 
-class Board {
-private:
-	static const Piece even[Position::RANK_NUM][Position::FILE_NUM];
-	Piece board[Position::SIZE];
+namespace Shogi {
+	class Board {
+	private:
+		static const Piece even[Position::RANK_NUM][Position::FILE_NUM];
+		Piece board[Position::SIZE];
 
-public:
-	Board() {
-		init();
-	}
+	public:
+		Board(Handicap handicap = EVEN) {
+			init(handicap);
+		}
 
-	Board(const Board& b) {
-		init(b);
-	}
+		Board(const Board& b) {
+			init(b);
+		}
 
-	void init(Handicap handicap = Handicap::EVEN);
+		void init(Handicap handicap = EVEN);
 
-	void init(const Board& b);
-};
+		void init(const Board& b);
+
+		Piece& get(const Position& pos) {
+			return board[pos.getIndex()];
+		}
+
+		const Piece& get(const Position& pos) const {
+			return board[pos.getIndex()];
+		}
+
+		std::string toString() const;
+	};
+}
 
 #endif /* BOARD_H_ */
