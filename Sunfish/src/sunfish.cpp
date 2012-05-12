@@ -10,7 +10,7 @@
 #include "board.h"
 
 int main(int argc, char* argv[]) {
-	std::cout << SUNFISH_NAME << '\n';
+	std::cout << SUNFISH_NAME << ' ';
 	std::cout << SUNFISH_VERSION << '\n';
 	std::cout << SUNFISH_COPYRIGHT << '\n';
 

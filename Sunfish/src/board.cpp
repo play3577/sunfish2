@@ -6,7 +6,6 @@
  */
 
 #include <sstream>
-#include <iostream>
 #include "board.h"
 
 namespace Shogi {
@@ -33,10 +32,8 @@ namespace Shogi {
 			}
 		} else {
 			for (Position pos(Position::TOP); pos.inside(); pos.next()) {
-				set(pos, even[pos.getRank()][pos.getFile()]);
-				std::cout << pos.getRank() << ',' << pos.getFile() << '\n';
+				set(pos, even[pos.getRank()-1][pos.getFile()-1]);
 			}
-			std::cout << '\n';
 			switch (handicap) {
 			case HANDICAP_8PIECES:
 			case HANDICAP_6PIECES:
@@ -68,7 +65,6 @@ namespace Shogi {
 		for (pos.leftmost(); !get(pos).isWall(); pos.leftmost(), pos.down()) {
 			for (; !get(pos).isWall(); pos.right()) {
 				oss << get(pos).toString();
-				//oss << pos.getIndex() << ' ';
 			}
 			oss << '\n';
 		}
