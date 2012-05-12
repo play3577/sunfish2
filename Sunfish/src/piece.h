@@ -27,6 +27,22 @@ namespace Shogi {
 
 			WALL = 0x20,    // 32
 
+			PAWN = 1,       // 1
+			LANCE,          // 2
+			KNIGHT,         // 3
+			SILVER,         // 4
+			GOLD,           // 5
+			BISHOP,         // 6
+			ROOK,           // 7
+			KING,           // 8
+			TOKIN,          // 9
+			PLANCE,         // 10
+			PKNIGHT,        // 11
+			PSILVER,        // 12
+
+			HORSE = 14,     // 14
+			DRAGON,         // 15
+
 			BPAWN = 1,      // 1
 			BLANCE,         // 2
 			BKNIGHT,        // 3
