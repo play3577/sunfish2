@@ -35,6 +35,14 @@ namespace {
 		{
 			m.from = from;
 		}
+		unsigned getTo() const {
+			return m.to;
+		}
+
+		void setTo(unsigned to)
+		{
+			m.to = to;
+		}
 
 		unsigned getKoma() const {
 			return this->m.koma;
@@ -45,14 +53,6 @@ namespace {
 			m.koma = koma;
 		}
 
-		unsigned getTo() const {
-			return m.to;
-		}
-
-		void setTo(unsigned to)
-		{
-			m.to = to;
-		}
 	};
 }
 

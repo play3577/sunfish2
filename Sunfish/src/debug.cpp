@@ -8,12 +8,7 @@
 
 #ifndef NDEBUG
 
-#if WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
-
+#include <boost/thread.hpp>
 #include <ctime>
 #include <fstream>
 #include <cstdarg>
@@ -25,6 +20,8 @@ void Debug::Print( const char* str, ... ){
 	time_t t;
 	struct tm* tmDate;
 	char strDate[64];
+	boost::xtime xt;
+	boost::xtime_get(&xt, boost::TIME_UTC);
 
 	va_list argx;
 	va_start( argx, str );
@@ -47,11 +44,8 @@ void Debug::Print( const char* str, ... ){
 
 			break;
 		}
-#ifdef WIN32
-		Sleep( 10 );
-#else
-		usleep( 10 * 1000 );
-#endif
+		xt.nsec += 10 * 1000;
+		boost::thread::sleep(xt);
 	}
 
 	va_end( argx );
