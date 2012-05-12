@@ -17,6 +17,7 @@ namespace Shogi {
 		static const unsigned LEFTMOST = 0x09;
 		static const unsigned MASK_FILE = 0x0F;
 		static const unsigned MASK_RANK = 0xF0;
+		static const unsigned SHIFT_RANK = 1;
 		static const unsigned WIDTH = 0x10;
 		static const unsigned nextTable[];
 		unsigned position;
@@ -95,7 +96,7 @@ namespace Shogi {
 		}
 
 		unsigned getRank() const {
-			return (position & MASK_RANK) - 0x10;
+			return ((position & MASK_RANK) - 0x10) >> SHIFT_RANK;
 		}
 	};
 }

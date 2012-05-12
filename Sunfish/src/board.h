@@ -32,12 +32,12 @@ namespace Shogi {
 
 		void init(const Board& b);
 
-		Piece& get(const Position& pos) {
+		const Piece& get(const Position& pos) const {
 			return board[pos.getIndex()];
 		}
 
-		const Piece& get(const Position& pos) const {
-			return board[pos.getIndex()];
+		const Piece& set(const Position& pos, const Piece& piece) {
+			return board[pos.getIndex()] = piece;
 		}
 
 		std::string toString() const;

@@ -24,17 +24,19 @@ namespace Shogi {
 
 	void Board::init(Handicap handicap) {
 		for (Position pos(Position::TOP_W); pos.inside(); pos.inc()) {
-			get(pos) = Piece::WALL;
+			set(pos, Piece::WALL);
 		}
 
 		if (handicap == EMPTY) {
 			for (Position pos(Position::TOP); pos.inside(); pos.next()) {
-				get(pos) = Piece::EMPTY;
+				set(pos, Piece::EMPTY);
 			}
 		} else {
 			for (Position pos(Position::TOP); pos.inside(); pos.next()) {
-				get(pos) = even[pos.getRank()][pos.getFile()];
+				set(pos, even[pos.getRank()][pos.getFile()]);
+				std::cout << pos.getRank() << ',' << pos.getFile() << '\n';
 			}
+			std::cout << '\n';
 			switch (handicap) {
 			case HANDICAP_8PIECES:
 			case HANDICAP_6PIECES:
@@ -56,7 +58,7 @@ namespace Shogi {
 
 	void Board::init(const Board& b) {
 		for (Position pos(Position::TOP_W); pos.inside(); pos.inc()) {
-			get(pos) = b.get(pos);
+			set(pos, b.get(pos));
 		}
 	}
 
@@ -65,8 +67,8 @@ namespace Shogi {
 		Position pos(Position::TOP);
 		for (pos.leftmost(); !get(pos).isWall(); pos.leftmost(), pos.down()) {
 			for (; !get(pos).isWall(); pos.right()) {
-				//oss << get(pos).toString();
-				oss << pos.getIndex() << ' ';
+				oss << get(pos).toString();
+				//oss << pos.getIndex() << ' ';
 			}
 			oss << '\n';
 		}

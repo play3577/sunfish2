@@ -106,7 +106,7 @@ namespace Shogi {
 			return p;
 		}
 
-		Piece& operator=(const Piece& p) {
+		const Piece& operator=(const Piece& p) {
 			piece = p.piece;
 			return *this;
 		}
