@@ -8,7 +8,7 @@
 #ifndef MOVE_H_
 #define MOVE_H_
 
-namespace {
+namespace Shogi {
 	class Move {
 	private:
 		struct {
