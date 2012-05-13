@@ -136,22 +136,22 @@ namespace Shogi {
 		template <bool black>
 		bool isPromotableRank() {
 			if (black) {
-				return square <= Square(3, 9).getIndex();
+				return square <= Square(9, 3).getIndex();
 			} else {
-				return square >= Square(7, 1).getIndex();
+				return square >= Square(1, 7).getIndex();
 			}
 		}
 
 		bool isCompulsoryPromotion(const Piece& piece) {
 			switch (piece.getInteger()) {
 			case Piece::BPAWN: case Piece::BLANCE:
-				return square <= Square(1, 9).getIndex();
+				return square <= Square(9, 1).getIndex();
 			case Piece::BKNIGHT:
-				return square <= Square(2, 9).getIndex();
+				return square <= Square(9, 2).getIndex();
 			case Piece::WPAWN: case Piece::WLANCE:
-				return square >= Square(8, 1).getIndex();
+				return square >= Square(1, 8).getIndex();
 			case Piece::WKNIGHT:
-				return square >= Square(7, 1).getIndex();
+				return square >= Square(1, 7).getIndex();
 			default:
 				return false;
 			}
