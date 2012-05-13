@@ -9,7 +9,7 @@
 #include "board.h"
 
 namespace Shogi {
-	const Piece Board::even[Position::RANK_NUM][Position::FILE_NUM] = {
+	const Piece Board::even[Square::RANK_NUM][Square::FILE_NUM] = {
 			{ Piece::WLANCE, Piece::WKNIGHT, Piece::WSILVER, Piece::WGOLD, Piece::WKING, Piece::WGOLD, Piece::WSILVER, Piece::WKNIGHT, Piece::WLANCE, },
 			{ Piece::EMPTY , Piece::WBISHOP, Piece::EMPTY  , Piece::EMPTY, Piece::EMPTY, Piece::EMPTY, Piece::EMPTY  , Piece::WROOK  , Piece::EMPTY, },
 			{ Piece::WPAWN , Piece::WPAWN  , Piece::WPAWN  , Piece::WPAWN, Piece::WPAWN, Piece::WPAWN, Piece::WPAWN  , Piece::WPAWN  , Piece::WPAWN, },
@@ -22,16 +22,16 @@ namespace Shogi {
 	};
 
 	void Board::init(Handicap handicap) {
-		for (Position pos(Position::TOP_W); pos.inside(); pos.inc()) {
+		for (Square pos(Square::TOP_W); pos.inside(); pos.inc()) {
 			set(pos, Piece::WALL);
 		}
 
 		if (handicap == EMPTY) {
-			for (Position pos(Position::TOP); pos.inside(); pos.next()) {
+			for (Square pos(Square::TOP); pos.inside(); pos.next()) {
 				set(pos, Piece::EMPTY);
 			}
 		} else {
-			for (Position pos(Position::TOP); pos.inside(); pos.next()) {
+			for (Square pos(Square::TOP); pos.inside(); pos.next()) {
 				set(pos, even[pos.getRank()-1][pos.getFile()-1]);
 			}
 			switch (handicap) {
@@ -54,14 +54,14 @@ namespace Shogi {
 	}
 
 	void Board::init(const Board& b) {
-		for (Position pos(Position::TOP_W); pos.inside(); pos.inc()) {
+		for (Square pos(Square::TOP_W); pos.inside(); pos.inc()) {
 			set(pos, b.get(pos));
 		}
 	}
 
 	std::string Board::toString() const {
 		std::ostringstream oss;
-		Position pos(Position::TOP);
+		Square pos(Square::TOP);
 		for (pos.leftmost(); !get(pos).isWall(); pos.leftmost(), pos.down()) {
 			for (; !get(pos).isWall(); pos.right()) {
 				oss << get(pos).toString();

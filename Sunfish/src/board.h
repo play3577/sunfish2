@@ -9,15 +9,15 @@
 #define BOARD_H_
 
 #include <string>
-#include "position.h"
 #include "piece.h"
 #include "handicap.h"
+#include "square.h"
 
 namespace Shogi {
 	class Board {
 	private:
-		static const Piece even[Position::RANK_NUM][Position::FILE_NUM];
-		Piece board[Position::SIZE];
+		static const Piece even[Square::RANK_NUM][Square::FILE_NUM];
+		Piece board[Square::SIZE];
 
 	public:
 		Board(Handicap handicap = EVEN) {
@@ -32,11 +32,11 @@ namespace Shogi {
 
 		void init(const Board& b);
 
-		const Piece& get(const Position& pos) const {
+		const Piece& get(const Square& pos) const {
 			return board[pos.getIndex()];
 		}
 
-		const Piece& set(const Position& pos, const Piece& piece) {
+		const Piece& set(const Square& pos, const Piece& piece) {
 			return board[pos.getIndex()] = piece;
 		}
 

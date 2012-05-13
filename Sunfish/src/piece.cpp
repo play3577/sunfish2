@@ -9,12 +9,10 @@
 
 namespace Shogi {
 	const char Piece::pieceName[][4] = {
-			" * ",
-			" FU", " KY", " KE", " GI", " KI", " KA", " HI", " OU",
-			" TO", " NY", " NK", " NG", " ??", " UM", " RY", " ??",
-			"vFU", "vKY", "vKE", "vGI", "vKI", "vKA", "vHI", "vOU",
-			"vTO", "vNY", "vNK", "vNG", " ??", "vUM", " RY",
+			"* ",
+			"FU", "KY", "KE", "GI", "KI", "KA", "HI", "OU",
+			"TO", "NY", "NK", "NG", "??", "UM", "RY", "??",
 	};
 
-	const char Piece::UNKNOWN_NAME[] = " ??";
+	const char Piece::UNKNOWN_NAME[] = "??";
 }

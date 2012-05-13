@@ -27,26 +27,20 @@ namespace Tools{
 		va_list argx;
 		va_start( argx, str );
 
-		for( int i = 0 ; i < 10 ; i++ ){
-			// ファイルオープン
-			file.open( "debug.txt", std::ios::out | std::ios::app );
-			if( file.is_open() ){
-				// 時刻
-				t = time( NULL );
-				tmDate = localtime( &t );
-				strftime( strDate, sizeof(strDate), "%F %H:%M:%S ", tmDate );
+		// ファイルオープン
+		file.open( "debug.txt", std::ios::out | std::ios::app );
+		if( file.is_open() ){
+			// 時刻
+			t = time( NULL );
+			tmDate = localtime( &t );
+			strftime( strDate, sizeof(strDate), "%F %H:%M:%S ", tmDate );
 
-				// 出力文字列
-				vsprintf( buf, str, argx );
+			// 出力文字列
+			vsprintf( buf, str, argx );
 
-				// 出力
-				file << strDate << buf;
-				file.close();
-
-				break;
-			}
-			xt.nsec += 10 * 1000;
-			boost::thread::sleep(xt);
+			// 出力
+			file << strDate << buf;
+			file.close();
 		}
 
 		va_end( argx );

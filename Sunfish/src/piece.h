@@ -127,6 +127,30 @@ namespace Shogi {
 			return *this;
 		}
 
+		bool operator==(const Piece& p) {
+			return this->piece == p.piece;
+		}
+
+		bool operator==(unsigned piece) {
+			return this->piece == piece;
+		}
+
+		bool operator!=(const Piece& p) {
+			return this->piece != p.piece;
+		}
+
+		bool operator!=(unsigned piece) {
+			return this->piece != piece;
+		}
+
+		void toNext() {
+			piece++;
+		}
+
+		void toPrev() {
+			piece--;
+		}
+
 		unsigned getInteger() const {
 			return piece;
 		}
@@ -152,8 +176,12 @@ namespace Shogi {
 		}
 
 		std::string toString() const {
+			return ' ' + toStringNameOnly();
+		}
+
+		std::string toStringNameOnly() const {
 			if (piece <= WDRAGON) {
-				return pieceName[piece];
+				return pieceName[piece&(~TURN)];
 			} else {
 				return UNKNOWN_NAME;
 			}

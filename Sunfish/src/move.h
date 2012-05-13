@@ -14,9 +14,9 @@ namespace {
 		struct {
 			unsigned from : 8;
 			unsigned to : 8;
-			unsigned nari : 1;
-			unsigned dai : 1;
-			unsigned koma : 4;
+			unsigned promote : 1;
+			unsigned hand : 1;
+			unsigned piece : 4;
 		} m;
 
 	public:
@@ -25,6 +25,15 @@ namespace {
 
 		Move(const Move& move) {
 			m = move.m;
+		}
+
+		Move(unsigned from, unsigned to, bool promote,
+				bool hand, unsigned piece) {
+			m.from = from;
+			m.to = to;
+			m.promote = promote;
+			m.hand = hand;
+			m.piece = piece;
 		}
 
 		unsigned getFrom() const {
@@ -44,15 +53,27 @@ namespace {
 			m.to = to;
 		}
 
-		unsigned getKoma() const {
-			return this->m.koma;
+		bool isHand() {
+			return m.hand;
 		}
 
-		void setKoma(unsigned koma)
+		void setHand(bool hand) {
+			m.hand = hand;
+		}
+
+		unsigned getPiece() const {
+			return this->m.piece;
+		}
+
+		void setPiece(unsigned piece)
 		{
-			m.koma = koma;
+			m.piece = piece;
 		}
 
+		Move& operator=(const Move& move) {
+			m = move.m;
+			return *this;
+		}
 	};
 }
 

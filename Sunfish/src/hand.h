@@ -8,6 +8,7 @@
 #ifndef HAND_H_
 #define HAND_H_
 
+#include <cstring>
 #include "piece.h"
 
 namespace Shogi {
@@ -39,6 +40,8 @@ namespace Shogi {
 		int get(Piece& piece) const {
 			return hand[piece.getInteger()];
 		}
+
+		std::string toString() const;
 	};
 }
 
