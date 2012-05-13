@@ -17,12 +17,37 @@ namespace Shogi {
 		Board board;
 		Hand blackHand;
 		Hand whiteHand;
+		bool black;
 
 	public:
-		Position() {
+		Position(bool black = true) : black(black) {
 		}
 
-		Position(Handicap handicap) : board(handicap) {
+		Position(Handicap handicap, bool black = true) : board(handicap), black(black) {
+		}
+
+		const Piece& getBoard(const Square& square) const {
+			return board.get(square);
+		}
+
+		int getBlackHand(const Piece& piece) const {
+			return blackHand.get(piece);
+		}
+
+		int getWhiteHand(const Piece& piece) const {
+			return whiteHand.get(piece);
+		}
+
+		bool isBlackTurn() const {
+			return black;
+		}
+
+		bool isWhiteTurn() const {
+			return !black;
+		}
+
+		void turn() {
+			black = !black;
 		}
 
 		std::string toString() const;

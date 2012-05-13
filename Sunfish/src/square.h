@@ -8,6 +8,9 @@
 #ifndef SQUARE_H_
 #define SQUARE_H_
 
+#include "piece.h"
+#include "direction.h"
+
 namespace Shogi {
 	class Square {
 	private:
@@ -18,9 +21,10 @@ namespace Shogi {
 		static const unsigned MASK_FILE = 0x0F;
 		static const unsigned MASK_RANK = 0xF0;
 		static const unsigned SHIFT_RANK = 4;
+		static const unsigned OFFSET = 0x10;
 		static const unsigned WIDTH = 0x10;
 		static const unsigned nextTable[];
-		unsigned position;
+		unsigned square;
 
 	public:
 		static const unsigned SIZE = 0xD0;
@@ -32,72 +36,128 @@ namespace Shogi {
 		static const unsigned RANK_NUM = 9;
 
 		Square() {
-			position = TOP;
+			square = TOP;
 		}
 
-		Square(int position) {
-			this->position = position;
+		Square(int square) {
+			this->square = square;
 		}
 
-		Square(const Square& pos) {
-			position = pos.position;
+		Square(int file, int rank) {
+			square = file + (rank << SHIFT_RANK) + OFFSET;
+		}
+
+		Square(const Square& sq) {
+			square = sq.square;
 		}
 
 		void next() {
-			position = nextTable[position];
+			square = nextTable[square];
 		}
 
 		void inc() {
-			position++;
+			square++;
 		}
 
 		void right() {
-			position--;
+			square--;
 		}
 
 		void left() {
-			position++;
+			square++;
 		}
 
 		void up() {
-			position -= WIDTH;
+			square -= WIDTH;
 		}
 
 		void down() {
-			position += WIDTH;
+			square += WIDTH;
+		}
+
+		void to(const Direction& dir) {
+			square += (unsigned)dir;
+		}
+
+		void to(const Direction& dir, int num) {
+			square += (unsigned)dir * num;
+		}
+
+		void operator+=(const Direction& dir) {
+			square += (unsigned)dir;
+		}
+
+		Square add(const Direction& dir) const {
+			Square sq(*this);
+			sq += dir;
+			return sq;
+		}
+
+		Square operator+(const Direction& dir) const {
+			return add(dir);
+		}
+
+		operator unsigned() const {
+			return square;
 		}
 
 		void rightmost() {
-			position = (position & MASK_RANK) | RIGHTMOST;
+			square = (square & MASK_RANK) | RIGHTMOST;
 		}
 
 		void leftmost() {
-			position = (position & MASK_RANK) | LEFTMOST;
+			square = (square & MASK_RANK) | LEFTMOST;
 		}
 
 		void uppermost() {
-			position = (position & MASK_FILE) | UPPERMOST;
+			square = (square & MASK_FILE) | UPPERMOST;
 		}
 
 		void lowermost() {
-			position = (position & MASK_FILE) | LOWERMOST;
+			square = (square & MASK_FILE) | LOWERMOST;
 		}
 
 		bool inside() const {
-			return position <= END_W;
+			return square <= END_W;
 		}
 
 		unsigned getIndex() const {
-			return position;
+			return square;
 		}
 
 		unsigned getFile() const {
-			return (position & MASK_FILE);
+			return (square & MASK_FILE);
 		}
 
 		unsigned getRank() const {
-			return ((position & MASK_RANK) - 0x10) >> SHIFT_RANK;
+			return ((square & MASK_RANK) - OFFSET) >> SHIFT_RANK;
 		}
+
+		template <bool black>
+		bool isPromotableRank() {
+			if (black) {
+				return square <= Square(3, 9).getIndex();
+			} else {
+				return square >= Square(7, 1).getIndex();
+			}
+		}
+
+		bool isCompulsoryPromotion(const Piece& piece) {
+			switch (piece.getInteger()) {
+			case Piece::BPAWN: case Piece::BLANCE:
+				return square <= Square(1, 9).getIndex();
+			case Piece::BKNIGHT:
+				return square <= Square(2, 9).getIndex();
+			case Piece::WPAWN: case Piece::WLANCE:
+				return square >= Square(8, 1).getIndex();
+			case Piece::WKNIGHT:
+				return square >= Square(7, 1).getIndex();
+			default:
+				return false;
+			}
+		}
+
+		std::string toString() const;
 	};
 }
 

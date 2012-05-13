@@ -74,6 +74,8 @@ namespace Shogi {
 			m = move.m;
 			return *this;
 		}
+
+		std::string toString() const;
 	};
 }
 

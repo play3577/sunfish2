@@ -20,6 +20,17 @@ namespace Shogi {
 		unsigned curr;
 		Move moves[MAX_MOVES_NUM];
 
+		void generateOnBoard();
+
+		template <bool black>
+		void generateOnBoard();
+
+		template <bool black>
+		void generate1Step(const Piece piece, const Square from, const Direction dir);
+
+		template <bool black>
+		void generateStraight(const Piece piece, const Square from, const Direction dir);
+
 	public:
 		MoveGenerator(const Position& pos);
 

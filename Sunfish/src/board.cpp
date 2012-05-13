@@ -6,6 +6,7 @@
  */
 
 #include <sstream>
+#include <iostream>
 #include "board.h"
 
 namespace Shogi {

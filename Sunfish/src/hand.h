@@ -37,7 +37,7 @@ namespace Shogi {
 			hand[piece.getInteger()]--;
 		}
 
-		int get(Piece& piece) const {
+		int get(const Piece& piece) const {
 			return hand[piece.getInteger()];
 		}
 

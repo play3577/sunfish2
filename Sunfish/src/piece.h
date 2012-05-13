@@ -27,6 +27,8 @@ namespace Shogi {
 
 			WALL = 0x20,    // 32
 
+			PIECE = 0x0f,   // 15 (mask)
+
 			PAWN = 1,       // 1
 			LANCE,          // 2
 			KNIGHT,         // 3
@@ -143,6 +145,10 @@ namespace Shogi {
 			return this->piece != piece;
 		}
 
+		operator unsigned() const {
+			return piece;
+		}
+
 		void toNext() {
 			piece++;
 		}
@@ -168,11 +174,20 @@ namespace Shogi {
 		}
 
 		bool isBlack() const {
-			return !isWhite();
+			return !isWhite() && (piece & PIECE);
 		}
 
 		bool isWhite() const {
 			return piece & TURN;
+		}
+
+		template <bool black>
+		bool isKing() const {
+			if (black) {
+				return piece == BKING;
+			} else {
+				return piece == WKING;
+			}
 		}
 
 		std::string toString() const {
