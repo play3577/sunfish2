@@ -36,8 +36,10 @@ namespace Shogi {
 			return board[sq.getIndex()];
 		}
 
-		const Piece& set(const Square& sq, const Piece& piece) {
-			return board[sq.getIndex()] = piece;
+		Piece set(const Square& sq, const Piece& piece) {
+			Piece oldPiece = board[sq.getIndex()];
+			board[sq.getIndex()] = piece;
+			return oldPiece;
 		}
 
 		std::string toString() const;

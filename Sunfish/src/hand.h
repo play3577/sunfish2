@@ -25,15 +25,15 @@ namespace Shogi {
 			memset(hand, 0, sizeof(hand));
 		}
 
-		void set(Piece& piece, int num) {
+		void set(const Piece& piece, int num) {
 			hand[piece.getInteger()] = num;
 		}
 
-		void inc(Piece& piece) {
+		void inc(const Piece& piece) {
 			hand[piece.getInteger()]++;
 		}
 
-		void dec(Piece& piece) {
+		void dec(const Piece& piece) {
 			hand[piece.getInteger()]--;
 		}
 

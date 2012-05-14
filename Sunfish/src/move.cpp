@@ -18,7 +18,11 @@ namespace Shogi{
 		if (m.promote) {
 			oss << 'n';
 		}
-		oss << '(' << Square(m.from).toString() << ')';
+		if (!m.hand) {
+			oss << '(' << Square(m.from).toString() << ')';
+		} else {
+			oss << "(00)";
+		}
 		return oss.str();
 	}
 }

@@ -10,6 +10,7 @@
 
 #include "board.h"
 #include "hand.h"
+#include "move.h"
 
 namespace Shogi {
 	class Position {
@@ -49,6 +50,20 @@ namespace Shogi {
 		void turn() {
 			black = !black;
 		}
+
+		template <bool black>
+		bool move(const Move& move);
+
+		void moveUnsafe(const Move& move) {
+			if (black) {
+				moveUnsafe<true>(move);
+			} else {
+				moveUnsafe<false>(move);
+			}
+		}
+
+		template <bool black>
+		void moveUnsafe(const Move& move);
 
 		std::string toString() const;
 	};

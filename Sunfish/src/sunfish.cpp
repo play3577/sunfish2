@@ -5,10 +5,12 @@
  *      Author: ryosuke
  */
 
-#include <boost/thread.hpp>
+#include <boost/random.hpp>
 #include <iostream>
 #include "sunfish.h"
 #include "moveGenerator.h"
+
+using namespace boost;
 
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';
@@ -18,22 +20,20 @@ int main(int argc, char* argv[]) {
 	Shogi::Position position(Shogi::EVEN);
 	std::cout << position.toString();
 
-	/*
-	for (int i = 0; i < 13; i++) {
-		for (int j = 0; j < 16; j++) {
-			std::cout << position.getBoard(Shogi::Square(i*16+j)) << ' ';
-		}
-		std::cout << '\n';
-	}
-	*/
-
-	position.turn();
-
 	Shogi::MoveGenerator gen(position);
-	const Shogi::Move* pmove;
-	gen.generate();
-	while ((pmove = gen.next()) != NULL) {
-		std::cout << pmove->toString() << ' ';
+	boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
+	for (int i = 0; i < 10; i++) {
+		gen.generate();
+		if (gen.getNumber() == 0) {
+			std::cout << "There is no a legal move.\n";
+			break;
+		}
+		boost::uniform_smallint<> dst(0, gen.getNumber()-1);
+		boost::variate_generator<boost::mt19937&, boost::uniform_smallint<> > r(rgen, dst);
+		const Shogi::Move& move = gen.get(r());
+		position.moveUnsafe(move);
+		std::cout << move.toString() << '\n';
+		std::cout << position.toString();
 	}
 
 	return 0;

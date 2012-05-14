@@ -8,6 +8,9 @@
 #ifndef MOVE_H_
 #define MOVE_H_
 
+#include "square.h"
+#include "piece.h"
+
 namespace Shogi {
 	class Move {
 	private:
@@ -27,33 +30,33 @@ namespace Shogi {
 			m = move.m;
 		}
 
-		Move(unsigned from, unsigned to, bool promote,
-				bool hand, unsigned piece) {
-			m.from = from;
-			m.to = to;
-			m.promote = promote;
-			m.hand = hand;
-			m.piece = piece;
+		Move(const Square& from, const Square& to, bool promote,
+				bool hand, const Piece& piece) {
+			setFrom(from);
+			setTo(to);
+			setPromotion(promote);
+			setHand(hand);
+			setPiece(piece);
 		}
 
-		unsigned getFrom() const {
-			return m.from;
+		Square getFrom() const {
+			return Square(m.from);
 		}
 
-		void setFrom(unsigned from)
+		void setFrom(const Square& from)
 		{
-			m.from = from;
+			m.from = from.getIndex();
 		}
-		unsigned getTo() const {
-			return m.to;
+		Square getTo() const {
+			return Square(m.to);
 		}
 
-		void setTo(unsigned to)
+		void setTo(const Square& to)
 		{
-			m.to = to;
+			m.to = to.getIndex();
 		}
 
-		bool isHand() {
+		bool isHand() const {
 			return m.hand;
 		}
 
@@ -61,13 +64,21 @@ namespace Shogi {
 			m.hand = hand;
 		}
 
-		unsigned getPiece() const {
-			return this->m.piece;
+		bool isPromotion() const {
+			return m.promote;
 		}
 
-		void setPiece(unsigned piece)
+		void setPromotion(bool promote) {
+			m.promote = promote;
+		}
+
+		Piece getPiece() const {
+			return Piece(m.piece);
+		}
+
+		void setPiece(const Piece& piece)
 		{
-			m.piece = piece;
+			m.piece = piece.getPieceNumber();
 		}
 
 		Move& operator=(const Move& move) {

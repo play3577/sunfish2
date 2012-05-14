@@ -99,7 +99,7 @@ namespace Shogi {
 		}
 
 		void turnBlack() {
-			piece &= TURN;
+			piece &= PIECE;
 		}
 
 		void turnWhite() {
@@ -109,6 +109,12 @@ namespace Shogi {
 		Piece getPromoted() const {
 			Piece p(*this);
 			p.promote();
+			return p;
+		}
+
+		Piece getUnPromoted() const {
+			Piece p(*this);
+			p.unPromote();
 			return p;
 		}
 
@@ -161,6 +167,10 @@ namespace Shogi {
 			return piece;
 		}
 
+		unsigned getPieceNumber() const {
+			return piece;
+		}
+
 		bool isPromoted() const {
 			return piece & PROMOTE;
 		}
@@ -196,7 +206,7 @@ namespace Shogi {
 
 		std::string toStringNameOnly() const {
 			if (piece <= WDRAGON) {
-				return pieceName[piece&(~TURN)];
+				return pieceName[piece&PIECE];
 			} else {
 				return UNKNOWN_NAME;
 			}

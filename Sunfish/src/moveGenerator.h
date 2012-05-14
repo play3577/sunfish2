@@ -25,10 +25,10 @@ namespace Shogi {
 		template <bool black>
 		void generateOnBoard();
 
-		template <bool black>
-		void generate1Step(const Piece piece, const Square from, const Direction dir);
+//		template <bool black>
+//		void generate1Step(const Piece piece, const Square from, const Direction dir);
 
-		template <bool black>
+		template <bool black, bool oneStep>
 		void generateStraight(const Piece piece, const Square from, const Direction dir);
 
 	public:
@@ -41,12 +41,28 @@ namespace Shogi {
 
 		unsigned generate();
 
+		unsigned getNumber() const {
+			return num;
+		}
+
+		void setCurrent(unsigned curr) {
+			this->curr = curr;
+		}
+
+		unsigned getCurrent() const {
+			return curr;
+		}
+
 		const Move* next() {
 			if (curr < num) {
 				return &moves[curr++];
 			} else {
 				return NULL;
 			}
+		}
+
+		const Move& get(unsigned index) const {
+			return moves[index];
 		}
 	};
 }
