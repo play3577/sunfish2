@@ -23,30 +23,42 @@ namespace Shogi {
 	};
 
 	void Board::init(Handicap handicap) {
-		for (Square pos(Square::TOP_W); pos.inside(); pos.inc()) {
-			set(pos, Piece::WALL);
+		for (Square sq(Square::TOP_W); sq.inside(); sq.inc()) {
+			set(sq, Piece::WALL);
 		}
 
 		if (handicap == EMPTY) {
-			for (Square pos(Square::TOP); pos.inside(); pos.next()) {
-				set(pos, Piece::EMPTY);
+			for (Square sq(Square::TOP); sq.inside(); sq.next()) {
+				set(sq, Piece::EMPTY);
 			}
 		} else {
-			for (Square pos(Square::TOP); pos.inside(); pos.next()) {
-				set(pos, even[pos.getRank()-1][pos.getFile()-1]);
+			for (Square sq(Square::TOP); sq.inside(); sq.next()) {
+				set(sq, even[sq.getRank()-1][sq.getFile()-1]);
 			}
 			switch (handicap) {
 			case HANDICAP_8PIECES:
+				set(Square(3, 1), Piece::EMPTY);
+				set(Square(7, 1), Piece::EMPTY);
 			case HANDICAP_6PIECES:
+				set(Square(2, 1), Piece::EMPTY);
+				set(Square(8, 1), Piece::EMPTY);
 			case HANDICAP_4PIECES:
+				set(Square(1, 1), Piece::EMPTY);
+				set(Square(9, 1), Piece::EMPTY);
 			case HANDICAP_2PIECES:
+				set(Square(2, 2), Piece::EMPTY);
+				set(Square(8, 2), Piece::EMPTY);
 				break;
-			case ROOK_LANCE:
-			case ROOK:
+			case HANDICAP_ROOK_LANCE:
+				set(Square(1, 1), Piece::EMPTY);
+			case HANDICAO_ROOK:
+				set(Square(8, 2), Piece::EMPTY);
 				break;
-			case BISHOP:
+			case HANDICAP_BISHOP:
+				set(Square(2, 2), Piece::EMPTY);
 				break;
-			case LANCE:
+			case HANDICAP_LANCE:
+				set(Square(1, 1), Piece::EMPTY);
 				break;
 			default:
 				break;

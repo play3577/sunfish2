@@ -8,9 +8,11 @@
 #ifndef POSITION_H_
 #define POSITION_H_
 
+#include <iostream>
 #include "board.h"
 #include "hand.h"
 #include "move.h"
+#include "effectBoard.h"
 
 namespace Shogi {
 	class Position {
@@ -18,13 +20,21 @@ namespace Shogi {
 		Board board;
 		Hand blackHand;
 		Hand whiteHand;
+		EffectBoard effectBoard;
 		bool black;
 
 	public:
 		Position(bool black = true) : black(black) {
+			effectBoard.init(board);
 		}
 
-		Position(Handicap handicap, bool black = true) : board(handicap), black(black) {
+		Position(Handicap handicap) : board(handicap) {
+			black = (handicap == EVEN);
+			effectBoard.init(board);
+		}
+
+		Position(Handicap handicap, bool black) : board(handicap), black(black) {
+			effectBoard.init(board);
 		}
 
 		const Piece& getBoard(const Square& square) const {
