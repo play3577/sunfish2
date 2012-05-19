@@ -5,10 +5,10 @@
  *      Author: ryosuke
  */
 
-#include "directionBit.h"
+#include "directionFlags.h"
 
 namespace Shogi {
-	const unsigned int DirectionBit::firstBit[] = {
+	const unsigned int DirectionFlags::firstBit[] = {
 			 0, 1, 2, 1, 3, 1, 2, 1, 4, 1, 2, 1, 3, 1, 2, 1, 5, 1, 2, 1,
 			 3, 1, 2, 1, 4, 1, 2, 1, 3, 1, 2, 1, 6, 1, 2, 1, 3, 1, 2, 1,
 			 4, 1, 2, 1, 3, 1, 2, 1, 5, 1, 2, 1, 3, 1, 2, 1, 4, 1, 2, 1,
@@ -24,7 +24,7 @@ namespace Shogi {
 			 5, 1, 2, 1, 3, 1, 2, 1, 4, 1, 2, 1, 3, 1, 2, 1,
 	};
 
-	const unsigned int DirectionBit::direction[] = {
+	const unsigned int DirectionFlags::direction[] = {
 			Direction::NON,
 			Direction::RIGHT_UP,
 			Direction::UP,
@@ -34,6 +34,10 @@ namespace Shogi {
 			Direction::RIGHT_DOWN,
 			Direction::DOWN,
 			Direction::LEFT_DOWN,
+			Direction::RIGHT_UP2,
+			Direction::LEFT_UP2,
+			Direction::RIGHT_DOWN2,
+			Direction::LEFT_DOWN2,
 			Direction::RIGHT_UP,
 			Direction::UP,
 			Direction::LEFT_UP,
@@ -43,5 +47,15 @@ namespace Shogi {
 			Direction::DOWN,
 			Direction::LEFT_DOWN,
 	};
+
+	const unsigned int DirectionFlags::_dir2bit[] = {
+			SHORT_RIGHT_UP2,   0,          SHORT_LEFT_UP2,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			SHORT_RIGHT_UP,    SHORT_UP,   SHORT_LEFT_UP,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			SHORT_RIGHT,       0,          SHORT_LEFT,       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			SHORT_RIGHT_DOWN,  SHORT_DOWN, SHORT_LEFT_DOWN,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			SHORT_RIGHT_DOWN2, 0,          SHORT_LEFT_DOWN2,
+	};
+
+	const unsigned int* DirectionFlags::dir2bit = DirectionFlags::_dir2bit + 33;
 }
 

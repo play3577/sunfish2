@@ -76,6 +76,10 @@ namespace Shogi {
 		void moveUnsafe(const Move& move);
 
 		std::string toString() const;
+
+		std::string toStringEffect() const {
+			return effectBoard.toString();
+		}
 	};
 }
 

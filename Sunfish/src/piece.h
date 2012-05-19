@@ -9,6 +9,7 @@
 #define PIECE_H_
 
 #include <string>
+#include "directionFlags.h"
 
 namespace Shogi {
 	class Piece {
@@ -16,6 +17,7 @@ namespace Shogi {
 		unsigned piece;
 		static const char pieceName[][4];
 		static const char UNKNOWN_NAME[];
+		static const DirectionFlags direction[];
 
 	public:
 		enum {
@@ -198,6 +200,10 @@ namespace Shogi {
 			} else {
 				return piece == WKING;
 			}
+		}
+
+		DirectionFlags getMoveableDirection() const {
+			return direction[piece];
 		}
 
 		std::string toString() const {

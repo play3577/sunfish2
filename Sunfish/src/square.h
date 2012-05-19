@@ -117,7 +117,7 @@ namespace Shogi {
 			square = (square & MASK_FILE) | LOWERMOST;
 		}
 
-		bool inside() const {
+		bool valid() const {
 			return square <= END_W;
 		}
 

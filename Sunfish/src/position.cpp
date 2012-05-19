@@ -42,10 +42,12 @@ namespace Shogi {
 				piece.promote();
 			}
 			Piece capture = board.set(move.getTo(), piece);
-			if (black) {
-				blackHand.inc(capture.getUnPromoted().getPieceNumber());
-			} else {
-				whiteHand.inc(capture.getUnPromoted().getPieceNumber());
+			if (!capture.isEmpty()) {
+				if (black) {
+					blackHand.inc(capture.getUnPromoted().getPieceNumber());
+				} else {
+					whiteHand.inc(capture.getUnPromoted().getPieceNumber());
+				}
 			}
 		}
 		turn();

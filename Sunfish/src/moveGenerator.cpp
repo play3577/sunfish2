@@ -26,7 +26,7 @@ namespace Shogi {
 
 	template <bool black>
 	void MoveGenerator::generateOnBoard() {
-		for (Square sq = Square::TOP; sq.inside(); sq.next()) {
+		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
 			if (black && piece.isBlack()) {
 				switch (piece.getInteger()) {

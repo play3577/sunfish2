@@ -10,12 +10,26 @@
 
 #include "board.h"
 #include "square.h"
-#include "directionBit.h"
+#include "directionFlags.h"
 
 namespace Shogi {
 	class EffectBoard {
 	private:
-		DirectionBit effectBoard[Square::SIZE];
+		DirectionFlags blackEffectBoard[Square::SIZE];
+		DirectionFlags whiteEffectBoard[Square::SIZE];
+
+		template <bool black>
+		DirectionFlags* effectBoard() {
+			return black ? blackEffectBoard : whiteEffectBoard;
+		}
+
+		template <bool black>
+		const DirectionFlags* effectBoardConst() const {
+			return black ? blackEffectBoard : whiteEffectBoard;
+		}
+
+		template <bool black>
+		void createEffect(const Board& board, const Square& sq);
 
 	public:
 		EffectBoard() {
@@ -30,21 +44,32 @@ namespace Shogi {
 
 		void init(const Board& board);
 
-		void set(const Square& sq, const DirectionBit& effect) {
-			effectBoard[sq.getIndex()].set(effect);
+		template <bool black>
+		void set(const Square& sq, const DirectionFlags& effect) {
+			effectBoard<black>()[sq.getIndex()].set(effect);
 		}
 
-		void add(const Square& sq, const DirectionBit& effect) {
-			effectBoard[sq.getIndex()].add(effect);
+		template <bool black>
+		void add(const Square& sq, const DirectionFlags& effect) {
+			effectBoard<black>()[sq.getIndex()].add(effect);
 		}
 
-		void remove(const Square& sq, const DirectionBit& effect) {
-			effectBoard[sq.getIndex()].remove(effect);
+		template <bool black>
+		void remove(const Square& sq, const DirectionFlags& effect) {
+			effectBoard<black>()[sq.getIndex()].remove(effect);
 		}
 
-		const DirectionBit& get(const Square& sq) const {
-			return effectBoard[sq.getIndex()];
+		template <bool black>
+		bool isWall(const Square& sq) const {
+			return effectBoard<black>()[sq.getIndex()].isWall();
 		}
+
+		template <bool black>
+		const DirectionFlags& get(const Square& sq) const {
+			return effectBoardConst<black>()[sq.getIndex()];
+		}
+
+		std::string toString() const;
 	};
 }
 

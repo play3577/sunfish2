@@ -15,4 +15,42 @@ namespace Shogi {
 	};
 
 	const char Piece::UNKNOWN_NAME[] = "??";
+
+	const DirectionFlags Piece::direction[] = {
+			DirectionFlags(DirectionFlags::NON),
+
+			DirectionFlags(DirectionFlags::BPIECE),
+			DirectionFlags(DirectionFlags::BLANCE),
+			DirectionFlags(DirectionFlags::BKNIGHT),
+			DirectionFlags(DirectionFlags::BSILVER),
+			DirectionFlags(DirectionFlags::BGOLD),
+			DirectionFlags(DirectionFlags::BBISHOP),
+			DirectionFlags(DirectionFlags::BROOK),
+			DirectionFlags(DirectionFlags::BKING),
+			DirectionFlags(DirectionFlags::BGOLD),
+			DirectionFlags(DirectionFlags::BGOLD),
+			DirectionFlags(DirectionFlags::BGOLD),
+			DirectionFlags(DirectionFlags::BGOLD),
+			DirectionFlags(DirectionFlags::NON),
+			DirectionFlags(DirectionFlags::BHORSE),
+			DirectionFlags(DirectionFlags::BDRAGON),
+
+			DirectionFlags(DirectionFlags::NON),
+
+			DirectionFlags(DirectionFlags::WPIECE),
+			DirectionFlags(DirectionFlags::WLANCE),
+			DirectionFlags(DirectionFlags::WKNIGHT),
+			DirectionFlags(DirectionFlags::WSILVER),
+			DirectionFlags(DirectionFlags::WGOLD),
+			DirectionFlags(DirectionFlags::WBISHOP),
+			DirectionFlags(DirectionFlags::WROOK),
+			DirectionFlags(DirectionFlags::WKING),
+			DirectionFlags(DirectionFlags::WGOLD),
+			DirectionFlags(DirectionFlags::WGOLD),
+			DirectionFlags(DirectionFlags::WGOLD),
+			DirectionFlags(DirectionFlags::WGOLD),
+			DirectionFlags(DirectionFlags::NON),
+			DirectionFlags(DirectionFlags::WHORSE),
+			DirectionFlags(DirectionFlags::WDRAGON),
+	};
 }

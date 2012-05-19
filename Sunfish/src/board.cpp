@@ -23,16 +23,16 @@ namespace Shogi {
 	};
 
 	void Board::init(Handicap handicap) {
-		for (Square sq(Square::TOP_W); sq.inside(); sq.inc()) {
+		for (Square sq(Square::TOP_W); sq.valid(); sq.inc()) {
 			set(sq, Piece::WALL);
 		}
 
 		if (handicap == EMPTY) {
-			for (Square sq(Square::TOP); sq.inside(); sq.next()) {
+			for (Square sq(Square::TOP); sq.valid(); sq.next()) {
 				set(sq, Piece::EMPTY);
 			}
 		} else {
-			for (Square sq(Square::TOP); sq.inside(); sq.next()) {
+			for (Square sq(Square::TOP); sq.valid(); sq.next()) {
 				set(sq, even[sq.getRank()-1][sq.getFile()-1]);
 			}
 			switch (handicap) {
@@ -67,17 +67,17 @@ namespace Shogi {
 	}
 
 	void Board::init(const Board& b) {
-		for (Square pos(Square::TOP_W); pos.inside(); pos.inc()) {
+		for (Square pos(Square::TOP_W); pos.valid(); pos.inc()) {
 			set(pos, b.get(pos));
 		}
 	}
 
 	std::string Board::toString() const {
 		std::ostringstream oss;
-		Square pos(Square::TOP);
-		for (pos.leftmost(); !get(pos).isWall(); pos.leftmost(), pos.down()) {
-			for (; !get(pos).isWall(); pos.right()) {
-				oss << get(pos).toString();
+		Square sq(Square::TOP);
+		for (sq.leftmost(); !get(sq).isWall(); sq.leftmost(), sq.down()) {
+			for (; !get(sq).isWall(); sq.right()) {
+				oss << get(sq).toString();
 			}
 			oss << '\n';
 		}
