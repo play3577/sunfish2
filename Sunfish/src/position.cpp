@@ -38,15 +38,27 @@ namespace Shogi {
 			}
 		} else {
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY);
+			if (black) {
+				effectBoard.change<true, false>(move.getFrom(), piece.getMoveableDirection(), board);
+			} else {
+				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board);
+			}
 			if (move.isPromotion()) {
 				piece.promote();
 			}
 			Piece capture = board.set(move.getTo(), piece);
+			if (black) {
+				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
+			} else {
+				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
+			}
 			if (!capture.isEmpty()) {
 				if (black) {
 					blackHand.inc(capture.getUnPromoted().getPieceNumber());
+					effectBoard.change<false, false>(move.getTo(), capture.getMoveableDirection(), board);
 				} else {
 					whiteHand.inc(capture.getUnPromoted().getPieceNumber());
+					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board);
 				}
 			}
 		}

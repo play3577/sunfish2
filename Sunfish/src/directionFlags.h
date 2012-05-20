@@ -48,7 +48,7 @@ namespace Shogi {
 			LONG_LEFT_DOWN    = 0x080000,
 			WALL              = 0x100000,
 
-			LONG_SHIFT        = 16,
+			LONG_SHIFT        = 12,
 			SHORT_MASK        = 0x000fff,
 			LONG_MASK         = 0x0ff000,
 
@@ -112,14 +112,14 @@ namespace Shogi {
 		}
 
 		void set(const Direction& dir) {
-			bits = dir2bit[dir];
+			bits = dir2bit[(int)dir];
 		}
 
 		void set(const DirectionAndRange& dir) {
 			if (dir.isLongRange()) {
-				bits = longRangeShift(dir2bit[dir]);
+				bits = longRangeShift(dir2bit[(int)dir]);
 			} else {
-				bits = dir2bit[dir];
+				bits = dir2bit[(int)dir];
 			}
 		}
 
@@ -171,6 +171,14 @@ namespace Shogi {
 			return bits & SHORT_MASK;
 		}
 
+		DirectionFlags getLongRangeOnly() const {
+			return DirectionFlags(bits & LONG_MASK);
+		}
+
+		DirectionFlags getShortRangeOnly() const {
+			return DirectionFlags(bits & SHORT_MASK);
+		}
+
 		DirectionFlags pop() {
 			unsigned mask = bits-1;
 			unsigned temp = bits;
@@ -178,14 +186,18 @@ namespace Shogi {
 			return DirectionFlags(temp & ~mask);
 		}
 
-		DirectionAndRange toDirection() {
+		Direction toDirection() {
 			int b;
 			if( bits == 0U ){ b = 0; }
 			else if( ( b = firstBit[ bits     &0xff] ) != 0 ){ }
 			else if( ( b = firstBit[(bits>> 8)&0xff] ) != 0 ){ b += 8; }
 			else if( ( b = firstBit[(bits>>16)&0xff] ) != 0 ){ b += 16; }
 			else {     b = firstBit[(bits>>24)     ] + 24; }
-			return DirectionAndRange(direction[b], !isShortRange() );
+			return Direction(direction[b] );
+		}
+
+		DirectionAndRange toDirectionAndRange() {
+			return DirectionAndRange(toDirection(), !isShortRange() );
 		}
 	};
 }

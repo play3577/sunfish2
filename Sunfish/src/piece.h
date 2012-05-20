@@ -153,6 +153,10 @@ namespace Shogi {
 			return this->piece != piece;
 		}
 
+		bool is(unsigned piece) {
+			return this->piece != piece;
+		}
+
 		operator unsigned() const {
 			return piece;
 		}

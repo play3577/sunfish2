@@ -31,6 +31,12 @@ namespace Shogi {
 		template <bool black>
 		void createEffect(const Board& board, const Square& sq);
 
+		template <bool black, bool addition>
+		void changeStraight(const Square& sq, const Direction dir, const DirectionFlags& dirFlags, const Board& board);
+
+		template <bool black, bool addition>
+		void changeAround(const Square& sq, const Board& board);
+
 	public:
 		EffectBoard() {
 			init();
@@ -68,6 +74,9 @@ namespace Shogi {
 		const DirectionFlags& get(const Square& sq) const {
 			return effectBoardConst<black>()[sq.getIndex()];
 		}
+
+		template <bool black, bool addition>
+		void change(const Square& sq, const DirectionFlags& dirFlags, const Board& board);
 
 		std::string toString() const;
 	};

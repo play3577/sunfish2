@@ -16,7 +16,10 @@ namespace Shogi {
 		bool longRange;
 
 	public:
-		DirectionAndRange(unsigned direction = NON, bool longRange = false) : Direction(direction), longRange(longRange) {
+		DirectionAndRange(const Direction& dir, bool longRange = false) : Direction(dir), longRange(longRange) {
+		}
+
+		DirectionAndRange(int direction = NON, bool longRange = false) : Direction(direction), longRange(longRange) {
 		}
 
 		void setLongRange() {

@@ -11,7 +11,7 @@
 namespace Shogi {
 	class Direction {
 	private:
-		unsigned direction;
+		int direction;
 
 	public:
 		enum {
@@ -28,11 +28,15 @@ namespace Shogi {
 			LEFT_DOWN2_R = -33,               RIGHT_DOWN2_R = -31,
 		};
 
-		Direction(unsigned direction = NON) {
+		Direction(const Direction& dir) {
+			direction = dir.direction;
+		}
+
+		Direction(int direction = NON) {
 			this->direction = direction;
 		}
 
-		operator unsigned() const {
+		operator int() const {
 			return this->direction;
 		}
 	};

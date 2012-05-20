@@ -43,7 +43,7 @@ namespace Shogi {
 			this->square = square;
 		}
 
-		Square(int file, int rank) {
+		Square(unsigned file, unsigned rank) {
 			square = file + (rank << SHIFT_RANK) + OFFSET;
 		}
 
@@ -131,6 +131,10 @@ namespace Shogi {
 
 		unsigned getRank() const {
 			return ((square & MASK_RANK) - OFFSET) >> SHIFT_RANK;
+		}
+
+		bool is(unsigned file, unsigned rank) const {
+			return square == Square(file, rank).square;
 		}
 
 		template <bool black>

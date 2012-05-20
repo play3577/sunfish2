@@ -11,7 +11,7 @@
 namespace Shogi {
 	std::string Hand::toString() const {
 		std::ostringstream oss;
-		for (Piece piece = Piece::PAWN; piece != Piece::ROOK; piece.toNext()) {
+		for (Piece piece = Piece::PAWN; !piece.is(Piece::ROOK); piece.toNext()) {
 			int num = hand[piece.getInteger()];
 			if (num > 0) {
 				oss << ' ' << piece.toStringNameOnly();
