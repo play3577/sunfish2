@@ -203,6 +203,10 @@ namespace Shogi {
 			return bits & SHORT_MASK;
 		}
 
+		DirectionFlags pin(const DirectionFlags attacker) const {
+			return DirectionFlags(bits & (attacker.bits << KING_SHIFT) & KING_MASK);
+		}
+
 		DirectionFlags getKingOnly() const {
 			return DirectionFlags(bits & KING_MASK);
 		}

@@ -22,9 +22,8 @@ int main(int argc, char* argv[]) {
 	std::cout << position.toStringEffect() << '\n';
 
 	position.moveUnsafe(Shogi::Move(Shogi::Square(7, 7), Shogi::Square(7, 6), false, false, Shogi::Piece::PAWN));
-	//position.moveUnsafe(Shogi::Move(Shogi::Square(3, 3), Shogi::Square(3, 4), false, false, Shogi::Piece::PAWN));
-	//position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(3, 3), true, false, Shogi::Piece::PAWN));
-	//position.moveUnsafe(Shogi::Move(Shogi::Square(2, 2), Shogi::Square(3, 3), false, false, Shogi::Piece::PAWN));
+	position.moveUnsafe(Shogi::Move(Shogi::Square(3, 1), Shogi::Square(4, 2), false, false, Shogi::Piece::PAWN));
+	position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(3, 3), true, false, Shogi::Piece::PAWN));
 
 	std::cout << position.toString() << '\n';
 	std::cout << position.toStringEffect() << '\n';

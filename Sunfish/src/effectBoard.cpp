@@ -92,9 +92,9 @@ namespace Shogi {
 			Direction dir = flag.toDirection();
 			Square to = sq + dir;
 			if (addition) {
-				effectBoard<black>()[to.getIndex()].add(dirFlags);
+				effectBoard<black>()[to.getIndex()].add(flag);
 			} else {
-				effectBoard<black>()[to.getIndex()].remove(dirFlags);
+				effectBoard<black>()[to.getIndex()].remove(flag);
 			}
 		}
 		if (!addition) {

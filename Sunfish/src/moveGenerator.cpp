@@ -28,6 +28,8 @@ namespace Shogi {
 	void MoveGenerator::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
+			const DirectionFlags pin = pos.pin<black>(sq);
+			// TODO: pin
 			if (black && piece.isBlack()) {
 				switch (piece.getInteger()) {
 				case Piece::BPAWN:

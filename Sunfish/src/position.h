@@ -57,6 +57,15 @@ namespace Shogi {
 			return !black;
 		}
 
+		template <bool black>
+		DirectionFlags pin(const Square& sq) const {
+			if (black) {
+				return effectBoard.get<true>(sq).pin(effectBoard.get<false>(sq));
+			} else {
+				return effectBoard.get<false>(sq).pin(effectBoard.get<true>(sq));
+			}
+		}
+
 		void turn() {
 			black = !black;
 		}
