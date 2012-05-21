@@ -236,20 +236,6 @@ namespace Shogi {
 		}
 	}
 
-//	template <bool black>
-//	void MoveGenerator::generate1Step(const Piece piece, const Square from, const Direction dir) {
-//		Square to = from + dir;
-//		const Piece& piece2 = pos.getBoard(to);
-//		if (piece2.isEmpty() || (black && piece2.isWhite()) || (!black && piece2.isBlack())) {
-//			if (!piece.isPromoted() && !piece.isKing<black>() && to.isPromotableRank<black>()) {
-//				moves[num++] = Move(from, to, true, false, piece);
-//			}
-//			if (!to.isCompulsoryPromotion(piece)) {
-//				moves[num++] = Move(from, to, false, false, piece);
-//			}
-//		}
-//	}
-
 	template <bool black, bool oneStep>
 	void MoveGenerator::generateStraight(const Piece piece, const Square from, const Direction dir) {
 		Square to = from + dir;

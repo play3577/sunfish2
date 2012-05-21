@@ -25,32 +25,42 @@ namespace Shogi {
 
 	public:
 		enum {
-			NON               = 0x000000,
-			SHORT_RIGHT_UP    = 0x000001,
-			SHORT_UP          = 0x000002,
-			SHORT_LEFT_UP     = 0x000004,
-			SHORT_RIGHT       = 0x000008,
-			SHORT_LEFT        = 0x000010,
-			SHORT_RIGHT_DOWN  = 0x000020,
-			SHORT_DOWN        = 0x000040,
-			SHORT_LEFT_DOWN   = 0x000080,
-			SHORT_RIGHT_UP2   = 0x000100,
-			SHORT_LEFT_UP2    = 0x000200,
-			SHORT_RIGHT_DOWN2 = 0x000400,
-			SHORT_LEFT_DOWN2  = 0x000800,
-			LONG_RIGHT_UP     = 0x001000,
-			LONG_UP           = 0x002000,
-			LONG_LEFT_UP      = 0x004000,
-			LONG_RIGHT        = 0x008000,
-			LONG_LEFT         = 0x010000,
-			LONG_RIGHT_DOWN   = 0x020000,
-			LONG_DOWN         = 0x040000,
-			LONG_LEFT_DOWN    = 0x080000,
-			WALL              = 0x100000,
+			NON               = 0x00000000,
+			SHORT_RIGHT_UP    = 0x00000001,
+			SHORT_UP          = 0x00000002,
+			SHORT_LEFT_UP     = 0x00000004,
+			SHORT_RIGHT       = 0x00000008,
+			SHORT_LEFT        = 0x00000010,
+			SHORT_RIGHT_DOWN  = 0x00000020,
+			SHORT_DOWN        = 0x00000040,
+			SHORT_LEFT_DOWN   = 0x00000080,
+			SHORT_RIGHT_UP2   = 0x00000100,
+			SHORT_LEFT_UP2    = 0x00000200,
+			SHORT_RIGHT_DOWN2 = 0x00000400,
+			SHORT_LEFT_DOWN2  = 0x00000800,
+			LONG_RIGHT_UP     = 0x00001000,
+			LONG_UP           = 0x00002000,
+			LONG_LEFT_UP      = 0x00004000,
+			LONG_RIGHT        = 0x00008000,
+			LONG_LEFT         = 0x00010000,
+			LONG_RIGHT_DOWN   = 0x00020000,
+			LONG_DOWN         = 0x00040000,
+			LONG_LEFT_DOWN    = 0x00080000,
+			KING_LEFT_DOWN    = 0x00100000,
+			KING_DOWN         = 0x00200000,
+			KING_RIGHT_DOWN   = 0x00400000,
+			KING_LEFT         = 0x00800000,
+			KING_RIGHT        = 0x01000000,
+			KING_LEFT_UP      = 0x02000000,
+			KING_UP           = 0x04000000,
+			KING_RIGHT_UP     = 0x08000000,
+			WALL              = 0x10000000,
 
 			LONG_SHIFT        = 12,
-			SHORT_MASK        = 0x000fff,
-			LONG_MASK         = 0x0ff000,
+			KING_SHIFT        = 8,
+			SHORT_MASK        = 0x00000fff,
+			LONG_MASK         = 0x000ff000,
+			KING_MASK         = 0x0ff00000,
 
 			PIECE = SHORT_UP,
 			LANCE = LONG_UP,
@@ -59,7 +69,8 @@ namespace Shogi {
 			GOLD = SHORT_RIGHT_UP | SHORT_UP | SHORT_LEFT_UP | SHORT_RIGHT | SHORT_LEFT | SHORT_DOWN,
 			BISHOP = LONG_RIGHT_UP | LONG_LEFT_UP | LONG_RIGHT_DOWN | LONG_LEFT_DOWN,
 			ROOK = LONG_UP | LONG_LEFT | LONG_RIGHT | LONG_DOWN,
-			KING = SHORT_RIGHT_UP | SHORT_UP | SHORT_LEFT_UP | SHORT_RIGHT | SHORT_LEFT | SHORT_RIGHT_DOWN | SHORT_DOWN | SHORT_LEFT_DOWN,
+			KING = SHORT_RIGHT_UP | SHORT_UP | SHORT_LEFT_UP | SHORT_RIGHT | SHORT_LEFT | SHORT_RIGHT_DOWN | SHORT_DOWN | SHORT_LEFT_DOWN
+				| KING_RIGHT_UP | KING_UP | KING_LEFT_UP | KING_RIGHT | KING_LEFT | KING_RIGHT_DOWN | KING_DOWN | KING_LEFT_DOWN,
 			HORSE = LONG_RIGHT_UP | LONG_LEFT_UP | LONG_RIGHT_DOWN | LONG_LEFT_DOWN | SHORT_UP | SHORT_RIGHT | SHORT_LEFT | SHORT_DOWN,
 			DRAGON = LONG_UP | LONG_LEFT | LONG_RIGHT | LONG_DOWN | SHORT_RIGHT_UP  | SHORT_LEFT_UP | SHORT_RIGHT_DOWN | SHORT_LEFT_DOWN,
 
@@ -81,7 +92,8 @@ namespace Shogi {
 			WGOLD = SHORT_RIGHT_DOWN | SHORT_DOWN | SHORT_LEFT_DOWN | SHORT_RIGHT | SHORT_LEFT | SHORT_UP,
 			WBISHOP = LONG_RIGHT_DOWN | LONG_LEFT_DOWN | LONG_RIGHT_UP | LONG_LEFT_UP,
 			WROOK = LONG_DOWN | LONG_LEFT | LONG_RIGHT | LONG_UP,
-			WKING = SHORT_RIGHT_DOWN | SHORT_DOWN | SHORT_LEFT_DOWN | SHORT_RIGHT | SHORT_LEFT | SHORT_RIGHT_UP | SHORT_UP | SHORT_LEFT_UP,
+			WKING = SHORT_RIGHT_DOWN | SHORT_DOWN | SHORT_LEFT_DOWN | SHORT_RIGHT | SHORT_LEFT | SHORT_RIGHT_UP | SHORT_UP | SHORT_LEFT_UP
+				| KING_RIGHT_DOWN | KING_DOWN | KING_LEFT_DOWN | KING_RIGHT | KING_LEFT | KING_RIGHT_UP | KING_UP | KING_LEFT_UP,
 			WHORSE = LONG_RIGHT_DOWN | LONG_LEFT_DOWN | LONG_RIGHT_UP | LONG_LEFT_UP | SHORT_DOWN | SHORT_RIGHT | SHORT_LEFT | SHORT_UP,
 			WDRAGON = LONG_DOWN | LONG_LEFT | LONG_RIGHT | LONG_UP | SHORT_RIGHT_DOWN  | SHORT_LEFT_DOWN | SHORT_RIGHT_UP | SHORT_LEFT_UP,
 		};
@@ -159,8 +171,28 @@ namespace Shogi {
 			return !isZero();
 		}
 
+		bool longOrShortRange() const {
+			return (bits & (LONG_MASK | SHORT_MASK)) != 0U;
+		}
+
+		bool longRange() const {
+			return (bits & LONG_MASK) != 0U;
+		}
+
+		bool shortRange() const {
+			return (bits & SHORT_MASK) != 0U;
+		}
+
+		bool king() const {
+			return (bits & KING_MASK) != 0U;
+		}
+
 		bool isWall() const {
 			return bits == WALL;
+		}
+
+		bool isKing() const {
+			return bits & KING_MASK;
 		}
 
 		bool isLongRange() const {
@@ -171,12 +203,20 @@ namespace Shogi {
 			return bits & SHORT_MASK;
 		}
 
+		DirectionFlags getKingOnly() const {
+			return DirectionFlags(bits & KING_MASK);
+		}
+
 		DirectionFlags getLongRangeOnly() const {
 			return DirectionFlags(bits & LONG_MASK);
 		}
 
 		DirectionFlags getShortRangeOnly() const {
 			return DirectionFlags(bits & SHORT_MASK);
+		}
+
+		DirectionFlags getLongRangeAndKing() const {
+			return DirectionFlags(bits & (LONG_MASK | KING_MASK));
 		}
 
 		DirectionFlags pop() {
@@ -186,7 +226,7 @@ namespace Shogi {
 			return DirectionFlags(temp & ~mask);
 		}
 
-		Direction toDirection() {
+		Direction toDirection() const {
 			int b;
 			if( bits == 0U ){ b = 0; }
 			else if( ( b = firstBit[ bits     &0xff] ) != 0 ){ }
@@ -196,7 +236,7 @@ namespace Shogi {
 			return Direction(direction[b] );
 		}
 
-		DirectionAndRange toDirectionAndRange() {
+		DirectionAndRange toDirectionAndRange() const {
 			return DirectionAndRange(toDirection(), !isShortRange() );
 		}
 	};

@@ -38,10 +38,11 @@ namespace Shogi {
 		if (!piece.isEmpty()) {
 			DirectionFlags dirFlags = piece.getMoveableDirection();
 			while (dirFlags.isNonZero()) {
-				DirectionAndRange dir = dirFlags.pop().toDirectionAndRange();
+				const DirectionFlags flag = dirFlags.pop();
+				const Direction dir = flag.toDirection();
 				for (Square to = sq + dir; !board.get(to).isWall(); to += dir) {
-					effectBoard<black>()[to.getIndex()].add(dir);
-					if (!board.get(to).isEmpty() || dir.isShortRange()) {
+					effectBoard<black>()[to.getIndex()].add(flag);
+					if (!board.get(to).isEmpty() || flag.shortRange()) {
 						break;
 					}
 				}
@@ -50,12 +51,12 @@ namespace Shogi {
 	}
 
 	template <bool black, bool addition>
-	void EffectBoard::changeStraight(const Square& sq, const Direction dir, const DirectionFlags& dirFlags, const Board& board) {
+	void EffectBoard::changeStraight(const Square& sq, const Direction dir, const DirectionFlags& flag, const Board& board) {
 		for (Square to = sq + dir; !effectBoardConst<black>()[to.getIndex()].isWall(); to += dir) {
 			if (addition) {
-				effectBoard<black>()[to.getIndex()].add(dirFlags);
+				effectBoard<black>()[to.getIndex()].add(flag);
 			} else {
-				effectBoard<black>()[to.getIndex()].remove(dirFlags);
+				effectBoard<black>()[to.getIndex()].remove(flag);
 			}
 			if (!board.get(to).isEmpty()) {
 				break;
@@ -65,10 +66,10 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::changeAround(const Square& sq, const Board& board) {
-		DirectionFlags flags = effectBoardConst<black>()[sq.getIndex()].getLongRangeOnly();
+		DirectionFlags flags = effectBoardConst<black>()[sq.getIndex()].getLongRangeAndKing();
 		while (flags.isNonZero()) {
 			DirectionFlags flag = flags.pop();
-			DirectionAndRange dir = flag.toDirectionAndRange();
+			Direction dir = flag.toDirection();
 			changeStraight<black, addition>(sq, dir, flag, board);
 		}
 	}
@@ -79,7 +80,7 @@ namespace Shogi {
 			changeAround<true, false>(sq, board);
 			changeAround<false, false>(sq, board);
 		}
-		DirectionFlags flags = dirFlags.getLongRangeOnly();
+		DirectionFlags flags = dirFlags.getLongRangeAndKing();
 		while (flags.isNonZero()) {
 			DirectionFlags flag = flags.pop();
 			Direction dir = flag.toDirection();
@@ -111,8 +112,8 @@ namespace Shogi {
 		Square sq(Square::TOP);
 		for (sq.leftmost(); !get<true>(sq).isWall(); sq.leftmost(), sq.down()) {
 			for (; !get<true>(sq).isWall(); sq.right()) {
-				bool black = get<true>(sq).isNonZero();
-				bool white = get<false>(sq).isNonZero();
+				bool black = get<true>(sq).longOrShortRange();
+				bool white = get<false>(sq).longOrShortRange();
 				if (black && white) {
 					oss << " X ";
 				} else if (black) {

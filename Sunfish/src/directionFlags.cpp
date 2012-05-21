@@ -46,6 +46,14 @@ namespace Shogi {
 			Direction::RIGHT_DOWN,
 			Direction::DOWN,
 			Direction::LEFT_DOWN,
+			Direction::LEFT_DOWN,
+			Direction::DOWN,
+			Direction::RIGHT_DOWN,
+			Direction::LEFT,
+			Direction::RIGHT,
+			Direction::LEFT_UP,
+			Direction::UP,
+			Direction::RIGHT_UP,
 	};
 
 	const unsigned int DirectionFlags::_dir2bit[] = {
