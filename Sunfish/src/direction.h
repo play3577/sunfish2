@@ -39,6 +39,10 @@ namespace Shogi {
 		operator int() const {
 			return this->direction;
 		}
+
+		Direction reverse() const {
+			return Direction(-direction);
+		}
 	};
 }
 

@@ -204,7 +204,7 @@ namespace Shogi {
 		}
 
 		DirectionFlags pin(const DirectionFlags attacker) const {
-			return DirectionFlags(bits & (attacker.bits << KING_SHIFT) & KING_MASK);
+			return DirectionFlags((bits >> KING_SHIFT) & attacker.bits & LONG_MASK);
 		}
 
 		DirectionFlags getKingOnly() const {

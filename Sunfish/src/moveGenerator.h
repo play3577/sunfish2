@@ -29,7 +29,7 @@ namespace Shogi {
 //		void generate1Step(const Piece piece, const Square from, const Direction dir);
 
 		template <bool black, bool oneStep>
-		void generateStraight(const Piece piece, const Square from, const Direction dir);
+		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
 	public:
 		MoveGenerator(const Position& pos);
