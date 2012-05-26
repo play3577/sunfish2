@@ -42,6 +42,9 @@ namespace Shogi {
 			return oldPiece;
 		}
 
+		template <bool black>
+		Square getKingSquare() const;
+
 		std::string toString() const;
 	};
 }

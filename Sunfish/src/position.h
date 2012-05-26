@@ -21,20 +21,28 @@ namespace Shogi {
 		Hand blackHand;
 		Hand whiteHand;
 		EffectBoard effectBoard;
+		Square bking;
+		Square wking;
 		bool black;
 
 	public:
 		Position(bool black = true) : black(black) {
 			effectBoard.init(board);
+			bking = board.getKingSquare<true>();
+			wking = board.getKingSquare<false>();
 		}
 
 		Position(Handicap handicap) : board(handicap) {
 			black = (handicap == EVEN);
 			effectBoard.init(board);
+			bking = board.getKingSquare<true>();
+			wking = board.getKingSquare<false>();
 		}
 
 		Position(Handicap handicap, bool black) : board(handicap), black(black) {
 			effectBoard.init(board);
+			bking = board.getKingSquare<true>();
+			wking = board.getKingSquare<false>();
 		}
 
 		const Piece& getBoard(const Square& square) const {
@@ -55,6 +63,14 @@ namespace Shogi {
 
 		bool isWhiteTurn() const {
 			return !black;
+		}
+
+		bool isCheck() const {
+			if (black) {
+				return (bool)effectBoard.get<false>(bking);
+			} else {
+				return (bool)effectBoard.get<true>(wking);
+			}
 		}
 
 		template <bool black>

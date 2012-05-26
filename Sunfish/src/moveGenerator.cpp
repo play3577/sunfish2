@@ -15,11 +15,13 @@ namespace Shogi {
 	}
 
 	unsigned MoveGenerator::generate() {
-		clear();
-		if (pos.isBlackTurn()) {
-			generateOnBoard<true>();
+		if (pos.isCheck()) {
 		} else {
-			generateOnBoard<false>();
+			if (pos.isBlackTurn()) {
+				generateOnBoard<true>();
+			} else {
+				generateOnBoard<false>();
+			}
 		}
 		return num;
 	}

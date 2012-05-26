@@ -72,6 +72,18 @@ namespace Shogi {
 		}
 	}
 
+	template <bool black>
+	Square Board::getKingSquare() const {
+		for(Square sq = Square::TOP; sq.valid(); sq.next()) {
+			if (get(sq) == (black ? Piece::BKING : Piece::WKING)) {
+				return sq;
+			}
+		}
+		return Square::TOP_W;
+	}
+	template Square Board::getKingSquare<true>() const;
+	template Square Board::getKingSquare<false>() const;
+
 	std::string Board::toString() const {
 		std::ostringstream oss;
 		Square sq(Square::TOP);

@@ -45,6 +45,10 @@ namespace Shogi {
 			}
 			if (move.isPromotion()) {
 				piece.promote();
+			} else if (black && piece.isKing<true>()) {
+				bking = move.getTo();
+			} else if (!black && piece.isKing<false>()) {
+				wking = move.getTo();
 			}
 			Piece capture = board.set(move.getTo(), piece);
 			if (black) {

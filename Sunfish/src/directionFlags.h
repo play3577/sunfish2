@@ -230,6 +230,14 @@ namespace Shogi {
 			return DirectionFlags(temp & ~mask);
 		}
 
+		operator unsigned() const {
+			return bits;
+		}
+
+		operator bool() const {
+			return bits != 0U;
+		}
+
 		Direction toDirection() const {
 			int b;
 			if( bits == 0U ){ b = 0; }
