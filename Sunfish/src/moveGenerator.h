@@ -31,6 +31,21 @@ namespace Shogi {
 		template <bool black, bool oneStep>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
+		template <bool black, bool check>
+		void generateKing();
+
+		template <bool black, bool check>
+		void generateKingDirection(const Direction& dir);
+
+		template <bool black>
+		void generateDrop();
+
+		template <bool black, unsigned piece>
+		void generateDropPieces();
+
+		template <bool black>
+		void generateEvasion();
+
 	public:
 		MoveGenerator(const Position& pos);
 

@@ -28,6 +28,7 @@ namespace Shogi {
 
 	public:
 		static const unsigned SIZE = 0xD0;
+		static const unsigned NON = 0x00;
 		static const unsigned TOP_W = 0x00;
 		static const unsigned TOP = 0x21;
 		static const unsigned END = 0xA9;

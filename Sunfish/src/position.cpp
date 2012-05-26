@@ -32,9 +32,15 @@ namespace Shogi {
 			if (black) {
 				blackHand.dec(move.getPiece());
 				board.set(move.getTo(), move.getPiece().getTurnedBlack());
+				if (move.getPiece() == Piece::BPAWN) {
+					bpawns.set(move.getTo().getFile());
+				}
 			} else {
 				whiteHand.dec(move.getPiece());
 				board.set(move.getTo(), move.getPiece().getTurnedWhite());
+				if (move.getPiece() == Piece::WPAWN) {
+					wpawns.set(move.getTo().getFile());
+				}
 			}
 		} else {
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY);
@@ -44,6 +50,11 @@ namespace Shogi {
 				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board);
 			}
 			if (move.isPromotion()) {
+				if (black && piece == Piece::BPAWN) {
+					bpawns.unset(move.getFrom().getFile());
+				} else if (!black && piece == Piece::WPAWN) {
+					wpawns.unset(move.getFrom().getFile());
+				}
 				piece.promote();
 			} else if (black && piece.isKing<true>()) {
 				bking = move.getTo();
@@ -58,11 +69,17 @@ namespace Shogi {
 			}
 			if (!capture.isEmpty()) {
 				if (black) {
-					blackHand.inc(capture.getUnPromoted().getPieceNumber());
+					blackHand.inc(capture.getUnPromoted());
 					effectBoard.change<false, false>(move.getTo(), capture.getMoveableDirection(), board);
+					if (capture == Piece::WPAWN) {
+						wpawns.unset(move.getTo().getFile());
+					}
 				} else {
-					whiteHand.inc(capture.getUnPromoted().getPieceNumber());
+					whiteHand.inc(capture.getUnPromoted());
 					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board);
+					if (capture == Piece::BPAWN) {
+						bpawns.unset(move.getTo().getFile());
+					}
 				}
 			}
 		}

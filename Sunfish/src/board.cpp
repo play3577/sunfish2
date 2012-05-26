@@ -84,6 +84,19 @@ namespace Shogi {
 	template Square Board::getKingSquare<true>() const;
 	template Square Board::getKingSquare<false>() const;
 
+	template <bool black>
+	PawnFlags Board::getPawnFiles() const {
+		PawnFlags flags;
+		for(Square sq = Square::TOP; sq.valid(); sq.next()) {
+			if (get(sq) == (black ? Piece::BPAWN : Piece::WPAWN)) {
+				flags.set(sq.getFile());
+			}
+		}
+		return flags;
+	}
+	template PawnFlags Board::getPawnFiles<true>() const;
+	template PawnFlags Board::getPawnFiles<false>() const;
+
 	std::string Board::toString() const {
 		std::ostringstream oss;
 		Square sq(Square::TOP);

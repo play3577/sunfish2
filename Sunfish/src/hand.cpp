@@ -6,13 +6,14 @@
  */
 
 #include <sstream>
+#include "debug.h"
 #include "hand.h"
 
 namespace Shogi {
 	std::string Hand::toString() const {
 		std::ostringstream oss;
-		for (Piece piece = Piece::PAWN; !piece.is(Piece::ROOK); piece.toNext()) {
-			int num = hand[piece.getInteger()];
+		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
+			int num = hand[piece];
 			if (num > 0) {
 				oss << ' ' << piece.toStringNameOnly();
 				if (num != 1) {

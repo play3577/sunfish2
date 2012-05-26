@@ -12,6 +12,7 @@
 #include "piece.h"
 #include "handicap.h"
 #include "square.h"
+#include "pawnFlags.h"
 
 namespace Shogi {
 	class Board {
@@ -44,6 +45,9 @@ namespace Shogi {
 
 		template <bool black>
 		Square getKingSquare() const;
+
+		template <bool black>
+		PawnFlags getPawnFiles() const;
 
 		std::string toString() const;
 	};

@@ -26,19 +26,19 @@ namespace Shogi {
 		}
 
 		void set(const Piece& piece, int num) {
-			hand[piece.getInteger()] = num;
+			hand[piece.getTurnedBlack()] = num;
 		}
 
 		void inc(const Piece& piece) {
-			hand[piece.getInteger()]++;
+			hand[piece.getTurnedBlack()]++;
 		}
 
 		void dec(const Piece& piece) {
-			hand[piece.getInteger()]--;
+			hand[piece.getTurnedBlack()]--;
 		}
 
 		int get(const Piece& piece) const {
-			return hand[piece.getInteger()];
+			return hand[piece.getTurnedBlack()];
 		}
 
 		std::string toString() const;

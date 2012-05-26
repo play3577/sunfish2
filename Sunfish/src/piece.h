@@ -137,24 +137,8 @@ namespace Shogi {
 			return *this;
 		}
 
-		bool operator==(const Piece& p) {
-			return this->piece == p.piece;
-		}
-
-		bool operator==(unsigned piece) {
-			return this->piece == piece;
-		}
-
-		bool operator!=(const Piece& p) {
-			return this->piece != p.piece;
-		}
-
-		bool operator!=(unsigned piece) {
-			return this->piece != piece;
-		}
-
 		bool is(unsigned piece) {
-			return this->piece != piece;
+			return this->piece == piece;
 		}
 
 		operator unsigned() const {
@@ -197,6 +181,14 @@ namespace Shogi {
 			return piece & TURN;
 		}
 
+		bool isBlackMovable() const {
+			return isWhite() || isEmpty();
+		}
+
+		bool isWhiteMovable() const {
+			return (piece & (WALL | TURN)) == 0U;
+		}
+
 		template <bool black>
 		bool isKing() const {
 			if (black) {
@@ -211,7 +203,11 @@ namespace Shogi {
 		}
 
 		std::string toString() const {
-			return ' ' + toStringNameOnly();
+			if (!isWhite()) {
+				return ' ' + toStringNameOnly();
+			} else {
+				return 'v' + toStringNameOnly();
+			}
 		}
 
 		std::string toStringNameOnly() const {

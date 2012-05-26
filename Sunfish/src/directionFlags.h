@@ -8,6 +8,9 @@
 #ifndef DIRECTIONFLAGS_H_
 #define DIRECTIONFLAGS_H_
 
+#include <string>
+#include <sstream>
+#include <iostream>
 #include "directionAndRange.h"
 
 namespace Shogi {
@@ -163,6 +166,14 @@ namespace Shogi {
 			bits &= ~DirectionFlags(dir).bits;
 		}
 
+		bool check(const DirectionFlags& bit) {
+			return bits & bit.bits;
+		}
+
+		bool check(const Direction& dir) {
+			return bits & dir2bit[(int)dir];
+		}
+
 		bool isZero() const {
 			return bits == NON;
 		}
@@ -238,6 +249,11 @@ namespace Shogi {
 			return bits != 0U;
 		}
 
+		const DirectionFlags& operator=(unsigned bits) {
+			this->bits = bits;
+			return *this;
+		}
+
 		Direction toDirection() const {
 			int b;
 			if( bits == 0U ){ b = 0; }
@@ -250,6 +266,12 @@ namespace Shogi {
 
 		DirectionAndRange toDirectionAndRange() const {
 			return DirectionAndRange(toDirection(), !isShortRange() );
+		}
+
+		std::string toString() const {
+			std::ostringstream oss;
+			oss << "0x" << std::ostringstream::hex << bits;
+			return oss.str();
 		}
 	};
 }

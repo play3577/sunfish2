@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include "debug.h"
 #include "square.h"
 #include "moveGenerator.h"
 
@@ -16,11 +17,22 @@ namespace Shogi {
 
 	unsigned MoveGenerator::generate() {
 		if (pos.isCheck()) {
+			if (pos.isBlackTurn()) {
+				generateEvasion<true>();
+				generateKing<true, true>();
+			} else {
+				generateEvasion<false>();
+				generateKing<false, true>();
+			}
 		} else {
 			if (pos.isBlackTurn()) {
 				generateOnBoard<true>();
+				generateKing<true, false>();
+				generateDrop<true>();
 			} else {
 				generateOnBoard<false>();
+				generateKing<false, false>();
+				generateDrop<false>();
 			}
 		}
 		return num;
@@ -30,7 +42,7 @@ namespace Shogi {
 	void MoveGenerator::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
-			const Direction pin = pos.pin<black>(sq).toDirection();
+			const Direction pin = pos.pin(sq, black).toDirection();
 			if (black && piece.isBlack()) {
 				switch (piece.getInteger()) {
 				case Piece::BPAWN:
@@ -69,16 +81,6 @@ namespace Shogi {
 					generateStraight<true, false>(Piece::BROOK, sq, Direction::DOWN, pin);
 					generateStraight<true, false>(Piece::BROOK, sq, Direction::LEFT, pin);
 					generateStraight<true, false>(Piece::BROOK, sq, Direction::RIGHT, pin);
-					break;
-				case Piece::BKING:
-					generateStraight<true, true>(Piece::BKING, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::UP, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::LEFT, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::RIGHT, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::LEFT_DOWN, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::DOWN, pin);
-					generateStraight<true, true>(Piece::BKING, sq, Direction::RIGHT_DOWN, pin);
 					break;
 				case Piece::BTOKIN:
 					generateStraight<true, true>(Piece::BTOKIN, sq, Direction::LEFT_UP, pin);
@@ -172,16 +174,6 @@ namespace Shogi {
 					generateStraight<false, false>(Piece::WROOK, sq, Direction::LEFT_R, pin);
 					generateStraight<false, false>(Piece::WROOK, sq, Direction::RIGHT_R, pin);
 					break;
-				case Piece::WKING:
-					generateStraight<false, true>(Piece::WKING, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::UP_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::LEFT_DOWN_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::DOWN_R, pin);
-					generateStraight<false, true>(Piece::WKING, sq, Direction::RIGHT_DOWN_R, pin);
-					break;
 				case Piece::WTOKIN:
 					generateStraight<false, true>(Piece::WTOKIN, sq, Direction::LEFT_UP_R, pin);
 					generateStraight<false, true>(Piece::WTOKIN, sq, Direction::UP_R, pin);
@@ -264,5 +256,78 @@ namespace Shogi {
 			}
 			to += dir;
 		}
+	}
+
+	template <bool black, bool check>
+	void MoveGenerator::generateKing() {
+		generateKingDirection<black, check>(Direction::LEFT_UP);
+		generateKingDirection<black, check>(Direction::UP);
+		generateKingDirection<black, check>(Direction::RIGHT_UP);
+		generateKingDirection<black, check>(Direction::LEFT);
+		generateKingDirection<black, check>(Direction::RIGHT);
+		generateKingDirection<black, check>(Direction::LEFT_DOWN);
+		generateKingDirection<black, check>(Direction::DOWN);
+		generateKingDirection<black, check>(Direction::RIGHT_DOWN);
+	}
+
+	template <bool black, bool check>
+	void MoveGenerator::generateKingDirection(const Direction& dir) {
+		Square from = (black ? pos.getBKing() : pos.getWKing());
+		Square to = from + dir;
+		Piece piece = pos.getBoard(to);
+		DirectionFlags effectTo = pos.getEffect(to, !black);
+		DirectionFlags effectFrom = pos.getEffect(from, !black);
+		if ((black && !piece.isBlackMovable()) || (!black && !piece.isWhiteMovable())
+				|| effectTo.isNonZero() || (check && effectFrom.check(dir))) {
+			return;
+		}
+		moves[num++] = Move(from, to, false, false, (black ? Piece::BKING : Piece::WKING));
+	}
+
+	template <bool black>
+	void MoveGenerator::generateDrop() {
+		generateDropPieces<black, (black ? Piece::BPAWN : Piece::WPAWN)>();
+		generateDropPieces<black, (black ? Piece::BLANCE : Piece::WLANCE)>();
+		generateDropPieces<black, (black ? Piece::BKNIGHT : Piece::WKNIGHT)>();
+		generateDropPieces<black, (black ? Piece::BSILVER : Piece::WSILVER)>();
+		generateDropPieces<black, (black ? Piece::BGOLD : Piece::WGOLD)>();
+		generateDropPieces<black, (black ? Piece::BBISHOP : Piece::WBISHOP)>();
+		generateDropPieces<black, (black ? Piece::BROOK : Piece::WROOK)>();
+	}
+
+	template <bool black, unsigned piece>
+	void MoveGenerator::generateDropPieces() {
+		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
+			for (unsigned file = 1; file <= Square::FILE_NUM; file++) {
+				if (black && piece == Piece::BPAWN && pos.getBPawnFiles().exist(file)) {
+					continue;
+				}
+				if (!black && piece == Piece::WPAWN && pos.getWPawnFiles().exist(file)) {
+					continue;
+				}
+				unsigned rank_top = 1;
+				unsigned rank_bottom = Square::RANK_NUM;
+				if (piece == Piece::BPAWN || piece == Piece::BLANCE) {
+					rank_top = 2;
+				} else if (piece == Piece::BKNIGHT) {
+					rank_top = 3;
+				} else if (piece == Piece::WPAWN || piece == Piece::WLANCE) {
+					rank_bottom = Square::RANK_NUM - 1;
+				} else if (piece == Piece::WKNIGHT) {
+					rank_bottom = Square::RANK_NUM - 2;
+				}
+				for (unsigned rank = rank_top; rank <= rank_bottom; rank++) {
+					Square sq(file, rank);
+					if (pos.getBoard(sq).isEmpty()) {
+						moves[num++] = Move(Square::NON, sq, false, true, piece);
+					}
+				}
+			}
+		}
+	}
+
+	template <bool black>
+	void MoveGenerator::generateEvasion() {
+		// TODO:
 	}
 }
