@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
-#include "../Util/Bit.h"
+#include "../Util/bit.h"
 #include "effectBoard.h"
 
 namespace Shogi {
