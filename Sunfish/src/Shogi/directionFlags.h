@@ -222,6 +222,10 @@ namespace Shogi {
 			return DirectionFlags(bits & KING_MASK);
 		}
 
+		DirectionFlags getExcludeKing() const {
+			return DirectionFlags(bits & ~KING_MASK);
+		}
+
 		DirectionFlags getLongRangeOnly() const {
 			return DirectionFlags(bits & LONG_MASK);
 		}
@@ -249,6 +253,10 @@ namespace Shogi {
 			return bits != 0U;
 		}
 
+		unsigned numberOfFlags() const {
+			return 0;
+		}
+
 		const DirectionFlags& operator=(unsigned bits) {
 			this->bits = bits;
 			return *this;
@@ -270,7 +278,8 @@ namespace Shogi {
 
 		std::string toString() const {
 			std::ostringstream oss;
-			oss << "0x" << std::ostringstream::hex << bits;
+			oss << "0x";
+			oss << oss.hex << bits;
 			return oss.str();
 		}
 	};

@@ -5,6 +5,7 @@
  *      Author: ryosuke
  */
 
+#include <cassert>
 #include <sstream>
 #include "position.h"
 
@@ -29,18 +30,25 @@ namespace Shogi {
 	template <bool black>
 	void Position::moveUnsafe(const Move& move) {
 		if (move.isHand()) {
+			Piece piece = move.getPiece();
 			if (black) {
-				blackHand.dec(move.getPiece());
-				board.set(move.getTo(), move.getPiece().getTurnedBlack());
-				if (move.getPiece() == Piece::BPAWN) {
+				assert(piece.isBlack());
+				blackHand.dec(piece);
+				board.set(move.getTo(), piece);
+				if (piece == Piece::BPAWN) {
 					bpawns.set(move.getTo().getFile());
 				}
+				std::cout << piece.toString() << std::endl;
+				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
 			} else {
-				whiteHand.dec(move.getPiece());
-				board.set(move.getTo(), move.getPiece().getTurnedWhite());
-				if (move.getPiece() == Piece::WPAWN) {
+				assert(piece.isWhite());
+				whiteHand.dec(piece);
+				board.set(move.getTo(), piece);
+				if (piece == Piece::WPAWN) {
 					wpawns.set(move.getTo().getFile());
 				}
+				std::cout << piece.toString() << std::endl;
+				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
 			}
 		} else {
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY);
@@ -62,11 +70,6 @@ namespace Shogi {
 				wking = move.getTo();
 			}
 			Piece capture = board.set(move.getTo(), piece);
-			if (black) {
-				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
-			} else {
-				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
-			}
 			if (!capture.isEmpty()) {
 				if (black) {
 					blackHand.inc(capture.getUnPromoted());
@@ -81,6 +84,11 @@ namespace Shogi {
 						bpawns.unset(move.getTo().getFile());
 					}
 				}
+			}
+			if (black) {
+				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
+			} else {
+				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
 			}
 		}
 		turn();

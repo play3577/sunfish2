@@ -6,7 +6,7 @@
  */
 
 #include <sstream>
-#include "debug.h"
+#include "../Debug/debug.h"
 #include "hand.h"
 
 namespace Shogi {

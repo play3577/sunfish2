@@ -28,7 +28,7 @@ namespace Shogi {
 //		template <bool black>
 //		void generate1Step(const Piece piece, const Square from, const Direction dir);
 
-		template <bool black, bool oneStep>
+		template <bool black, bool oneStep, bool promotable>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
 		template <bool black, bool check>

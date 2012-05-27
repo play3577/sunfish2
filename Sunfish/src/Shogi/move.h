@@ -19,7 +19,7 @@ namespace Shogi {
 			unsigned to : 8;
 			unsigned promote : 1;
 			unsigned hand : 1;
-			unsigned piece : 4;
+			unsigned piece : 5;
 		} m;
 
 	public:

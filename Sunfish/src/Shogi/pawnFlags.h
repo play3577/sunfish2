@@ -24,6 +24,9 @@ namespace Shogi{
 			setAll(1 << file);
 		}
 
+		PawnFlags(const PawnFlags& pawnFlags) : bits(pawnFlags.bits) {
+		}
+
 		bool exist(int file) const {
 			return (bits & (1 << file)) != 0U;
 		}

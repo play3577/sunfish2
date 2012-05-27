@@ -28,14 +28,6 @@ namespace Shogi {
 		PawnFlags wpawns;
 		bool black;
 
-		void update() {
-			effectBoard.init(board);
-			bking = board.getKingSquare<true>();
-			wking = board.getKingSquare<false>();
-			bpawns = board.getPawnFiles<true>();
-			wpawns = board.getPawnFiles<false>();
-		}
-
 	public:
 		Position(bool black = true) : black(black) {
 			update();
@@ -48,6 +40,20 @@ namespace Shogi {
 
 		Position(Handicap handicap, bool black) : board(handicap), black(black) {
 			update();
+		}
+
+		Position(const Position& position) : board(position.board), blackHand(position.blackHand),
+				whiteHand(position.whiteHand), effectBoard(position.effectBoard),
+				bking(position.bking), wking(position.wking),
+				bpawns(position.bpawns), wpawns(position.wpawns) {
+		}
+
+		void update() {
+			effectBoard.init(board);
+			bking = board.getKingSquare<true>();
+			wking = board.getKingSquare<false>();
+			bpawns = board.getPawnFiles<true>();
+			wpawns = board.getPawnFiles<false>();
 		}
 
 		const Piece& getBoard(const Square& square) const {
@@ -68,6 +74,10 @@ namespace Shogi {
 			} else {
 				return effectBoard.get<false>(square);
 			}
+		}
+
+		const EffectBoard& getEffectBoard() const {
+			return effectBoard;
 		}
 
 		bool isBlackTurn() const {
@@ -96,9 +106,9 @@ namespace Shogi {
 
 		bool isCheck() const {
 			if (black) {
-				return (bool)effectBoard.get<false>(bking);
+				return (bool)effectBoard.get<false>(bking).getExcludeKing();
 			} else {
-				return (bool)effectBoard.get<true>(wking);
+				return (bool)effectBoard.get<true>(wking).getExcludeKing();
 			}
 		}
 
@@ -130,8 +140,8 @@ namespace Shogi {
 
 		std::string toString() const;
 
-		std::string toStringEffect() const {
-			return effectBoard.toString();
+		std::string toStringEffect(bool king = false) const {
+			return effectBoard.toString(king);
 		}
 
 		std::string toStringBPawns() const {

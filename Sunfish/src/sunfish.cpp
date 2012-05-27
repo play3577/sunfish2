@@ -7,8 +7,9 @@
 
 #include <boost/random.hpp>
 #include <iostream>
+#include "Debug/debug.h"
 #include "sunfish.h"
-#include "moveGenerator.h"
+#include "Shogi/moveGenerator.h"
 
 using namespace boost;
 
@@ -50,6 +51,7 @@ int main(int argc, char* argv[]) {
 
 	boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 	for (int i = 0; i < 10000; i++) {
+		std::cout << i << '\n';
 		Shogi::MoveGenerator gen(position);
 		gen.generate();
 		if (gen.getNumber() == 0) {
@@ -62,7 +64,18 @@ int main(int argc, char* argv[]) {
 		position.moveUnsafe(move);
 		std::cout << move.toString() << '\n';
 		std::cout << position.toString();
-		std::cout << position.toStringEffect();
+		std::cout << position.toStringEffect(true);
+		std::cout.flush();
+
+		// Debug
+		Shogi::Position temp(position);
+		temp.update();
+		if (!temp.getEffectBoard().equals(position.getEffectBoard())) {
+			std::cout << '\n';
+			std::cout << temp.toStringEffect(true);
+			DEBUG_PRINT_LINE;
+			break;
+		}
 	}
 
 	return 0;

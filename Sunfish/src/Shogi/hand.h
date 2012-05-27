@@ -8,6 +8,7 @@
 #ifndef HAND_H_
 #define HAND_H_
 
+#include <cstdlib>
 #include <cstring>
 #include "piece.h"
 
@@ -21,8 +22,16 @@ namespace Shogi {
 			init();
 		}
 
+		Hand(const Hand& hand) {
+			init(hand);
+		}
+
 		void init() {
-			memset(hand, 0, sizeof(hand));
+			memset((void*)hand, 0, sizeof(hand));
+		}
+
+		void init(const Hand& source) {
+			memcpy((void*)hand, (const void*)source.hand, sizeof(hand));
 		}
 
 		void set(const Piece& piece, int num) {

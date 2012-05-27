@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <cassert>
+#include "../Util/Bit.h"
 #include "effectBoard.h"
 
 namespace Shogi {
@@ -52,7 +54,7 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::changeStraight(const Square& sq, const Direction dir, const DirectionFlags& flag, const Board& board) {
-		for (Square to = sq + dir; !effectBoardConst<black>()[to.getIndex()].isWall(); to += dir) {
+		for (Square to = sq + dir; !get<black>(to).isWall(); to += dir) {
 			if (addition) {
 				effectBoard<black>()[to.getIndex()].add(flag);
 			} else {
@@ -66,7 +68,7 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::changeAround(const Square& sq, const Board& board) {
-		DirectionFlags flags = effectBoardConst<black>()[sq.getIndex()].getLongRangeAndKing();
+		DirectionFlags flags = get<black>(sq).getLongRangeAndKing();
 		while (flags.isNonZero()) {
 			DirectionFlags flag = flags.pop();
 			Direction dir = flag.toDirection();
@@ -76,6 +78,8 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::change(const Square& sq, const DirectionFlags& dirFlags, const Board& board) {
+		assert(sq.valid());
+		assert(!board.get(sq).isWall());
 		if (addition) {
 			changeAround<true, false>(sq, board);
 			changeAround<false, false>(sq, board);
@@ -91,10 +95,12 @@ namespace Shogi {
 			DirectionFlags flag = flags.pop();
 			Direction dir = flag.toDirection();
 			Square to = sq + dir;
-			if (addition) {
-				effectBoard<black>()[to.getIndex()].add(flag);
-			} else {
-				effectBoard<black>()[to.getIndex()].remove(flag);
+			if (!get<black>(to).isWall()) {
+				if (addition) {
+					effectBoard<black>()[to.getIndex()].add(flag);
+				} else {
+					effectBoard<black>()[to.getIndex()].remove(flag);
+				}
 			}
 		}
 		if (!addition) {
@@ -107,11 +113,25 @@ namespace Shogi {
 	template void EffectBoard::change<false, true>(const Square& sq, const DirectionFlags& dirFlags, const Board& board);
 	template void EffectBoard::change<false, false>(const Square& sq, const DirectionFlags& dirFlags, const Board& board);
 
-	std::string EffectBoard::toString() const {
+	bool EffectBoard::equals(const EffectBoard& effectBoard) const {
+		for (Square sq(Square::TOP_W); sq.valid(); sq.inc()) {
+			if ((unsigned)blackEffectBoard[sq.getIndex()] != (unsigned)effectBoard.blackEffectBoard[sq.getIndex()] ||
+					(unsigned)whiteEffectBoard[sq.getIndex()] != (unsigned)effectBoard.whiteEffectBoard[sq.getIndex()]) {
+#if 1
+				std::cout << sq.toString();
+#endif
+				return false;
+			}
+		}
+		return true;
+	}
+
+	std::string EffectBoard::toString(bool king) const {
 		std::ostringstream oss;
 		Square sq(Square::TOP);
 		for (sq.leftmost(); !get<true>(sq).isWall(); sq.leftmost(), sq.down()) {
 			for (; !get<true>(sq).isWall(); sq.right()) {
+#if 0
 				bool black = get<true>(sq).longOrShortRange();
 				bool white = get<false>(sq).longOrShortRange();
 				if (black && white) {
@@ -123,6 +143,17 @@ namespace Shogi {
 				} else {
 					oss << " * ";
 				}
+#else
+				oss.width(3);
+				DirectionFlags bflags = get<true>(sq);
+				DirectionFlags wflags = get<false>(sq);
+				if (!king) {
+					bflags = bflags.getExcludeKing();
+					wflags = wflags.getExcludeKing();
+				}
+				oss << ((int)Util::Bit::count(bflags.getInteger())
+					- (int)Util::Bit::count(wflags.getInteger()));
+#endif
 			}
 			oss << '\n';
 		}

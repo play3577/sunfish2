@@ -8,6 +8,7 @@
 #ifndef EFFECTBOARD_H_
 #define EFFECTBOARD_H_
 
+#include <cstring>
 #include "board.h"
 #include "square.h"
 #include "directionFlags.h"
@@ -46,6 +47,11 @@ namespace Shogi {
 			init(board);
 		}
 
+		EffectBoard(const EffectBoard& effectBoard) {
+			memcpy(blackEffectBoard, effectBoard.blackEffectBoard, sizeof(blackEffectBoard));
+			memcpy(whiteEffectBoard, effectBoard.whiteEffectBoard, sizeof(whiteEffectBoard));
+		}
+
 		void init();
 
 		void init(const Board& board);
@@ -78,7 +84,9 @@ namespace Shogi {
 		template <bool black, bool addition>
 		void change(const Square& sq, const DirectionFlags& dirFlags, const Board& board);
 
-		std::string toString() const;
+		bool equals(const EffectBoard& effectBoard) const;
+
+		std::string toString(bool king = false) const;
 	};
 }
 
