@@ -112,6 +112,14 @@ namespace Shogi {
 			}
 		}
 
+		DirectionFlags getCheckDirection() const {
+			if (black) {
+				return effectBoard.get<false>(bking).getExcludeKing();
+			} else {
+				return effectBoard.get<true>(wking).getExcludeKing();
+			}
+		}
+
 		DirectionFlags pin(const Square& sq, bool black) const {
 			if (black) {
 				return effectBoard.get<true>(sq).pin(effectBoard.get<false>(sq));

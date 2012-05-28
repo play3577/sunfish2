@@ -139,7 +139,7 @@ namespace Shogi {
 		}
 
 		template <bool black>
-		bool isPromotableRank() {
+		bool isPromotableRank() const {
 			if (black) {
 				return square <= Square(9, 3).getIndex();
 			} else {
@@ -147,7 +147,7 @@ namespace Shogi {
 			}
 		}
 
-		bool isCompulsoryPromotion(const Piece& piece) {
+		bool isCompulsoryPromotion(const Piece& piece) const {
 			switch (piece.getInteger()) {
 			case Piece::BPAWN: case Piece::BLANCE:
 				return square <= Square(9, 1).getIndex();

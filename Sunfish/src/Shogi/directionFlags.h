@@ -166,11 +166,11 @@ namespace Shogi {
 			bits &= ~DirectionFlags(dir).bits;
 		}
 
-		bool check(const DirectionFlags& bit) {
+		bool check(const DirectionFlags& bit) const {
 			return bits & bit.bits;
 		}
 
-		bool check(const Direction& dir) {
+		bool check(const Direction& dir) const {
 			return bits & dir2bit[(int)dir];
 		}
 
@@ -212,6 +212,10 @@ namespace Shogi {
 
 		bool isShortRange() const {
 			return bits & SHORT_MASK;
+		}
+
+		bool isPlural() const {
+			return (bits & (bits-1)) != 0U;
 		}
 
 		DirectionFlags pin(const DirectionFlags attacker) const {

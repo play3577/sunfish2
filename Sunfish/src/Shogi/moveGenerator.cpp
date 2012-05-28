@@ -243,12 +243,7 @@ namespace Shogi {
 			if (piece2.isWall() || (black && piece2.isBlack()) || (!black && piece2.isWhite())) {
 				break;
 			}
-			if (promotable && to.isPromotableRank<black>()) {
-				moves[num++] = Move(from, to, true, false, piece);
-			}
-			if (!to.isCompulsoryPromotion(piece)) {
-				moves[num++] = Move(from, to, false, false, piece);
-			}
+			generateMoveOneMove<black, promotable>(piece, from, to);
 			if(oneStep) {
 				break;
 			}
@@ -256,6 +251,16 @@ namespace Shogi {
 				break;
 			}
 			to += dir;
+		}
+	}
+
+	template <bool black, bool promotable>
+	void MoveGenerator::generateMoveOneMove(const Piece piece, const Square from, const Square to) {
+		if (promotable && to.isPromotableRank<black>()) {
+			moves[num++] = Move(from, to, true, false, piece);
+		}
+		if (!to.isCompulsoryPromotion(piece)) {
+			moves[num++] = Move(from, to, false, false, piece);
 		}
 	}
 
@@ -321,7 +326,7 @@ namespace Shogi {
 				for (unsigned rank = rank_top; rank <= rank_bottom; rank++) {
 					Square sq(file, rank);
 					if (pos.getBoard(sq).isEmpty()) {
-						// TODO:
+						// TODO: uchi fu zume!!
 						/*
 						if (black && piece == Piece::BPAWN &&) {
 							continue;
@@ -339,5 +344,58 @@ namespace Shogi {
 	template <bool black>
 	void MoveGenerator::generateEvasion() {
 		// TODO:
+		DirectionFlags flags = pos.getCheckDirection();
+		if (!flags.isPlural()) {
+			Direction dir = flags.toDirection().reverse();
+			Square sq = (black ? pos.getBKing() : pos.getWKing());
+			for (sq += dir; pos.getBoard(sq) == Piece::EMPTY; sq += dir) {
+				generateEvasionOnBoard<black>(sq);
+				generateEvasionDrop<black, (black ? Piece::BPAWN : Piece::WPAWN)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BLANCE : Piece::WLANCE)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BKNIGHT : Piece::WKNIGHT)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BSILVER : Piece::WSILVER)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BGOLD : Piece::WGOLD)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BBISHOP : Piece::WBISHOP)>(sq);
+				generateEvasionDrop<black, (black ? Piece::BROOK : Piece::WROOK)>(sq);
+			}
+			generateEvasionOnBoard<black>(sq);
+		}
+	}
+
+	template <bool black>
+	void MoveGenerator::generateEvasionOnBoard(Square to) {
+		DirectionFlags flags = pos.getEffect(to, black).getExcludeKing();
+		while (flags.isNonZero()) {
+			Direction dir = flags.pop().toDirection().reverse();
+			Square from = to;
+			for (from += dir; pos.getBoard(from) == EMPTY; from += dir)
+				;
+			Piece piece = pos.getBoard(from);
+			if (!piece.isKing<black>() && pos.pin(from, black).isZero()) {
+				if (!piece.isPromoted()) {
+					generateMoveOneMove<black, true>(piece, from, to);
+				} else {
+					generateMoveOneMove<black, false>(piece, from, to);
+				}
+			}
+		}
+	}
+
+	template <bool black, unsigned piece>
+	void MoveGenerator::generateEvasionDrop(Square to) {
+		assert(black != (piece & Piece::TURN));
+		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
+			if (black && piece == Piece::BPAWN && pos.getBPawnFiles().exist(to.getFile())) {
+				return;
+			}
+			if (!black && piece == Piece::WPAWN && pos.getWPawnFiles().exist(to.getFile())) {
+				return;
+			}
+			if (to.isCompulsoryPromotion(piece)) {
+				return;
+			}
+			// TODO: uchi fu zume!!
+			moves[num++] = Move(Square::NON, to, false, true, piece);
+		}
 	}
 }
