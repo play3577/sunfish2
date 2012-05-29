@@ -28,6 +28,12 @@ namespace Shogi {
 		PawnFlags wpawns;
 		bool black;
 
+		template <bool black>
+		bool isLegalMove(const Move& move);
+
+		template <bool black>
+		void moveUnsafe(const Move& move);
+
 	public:
 		Position(bool black = true) : black(black) {
 			update();
@@ -132,8 +138,17 @@ namespace Shogi {
 			black = !black;
 		}
 
-		template <bool black>
-		bool move(const Move& move);
+		bool isLegalMove(const Move& move) {
+			return (black ? isLegalMove<true>(move) : isLegalMove<false>(move));
+		}
+
+		bool move(const Move& move) {
+			if (isLegalMove(move)) {
+				moveUnsafe(move);
+				return true;
+			}
+			return false;
+		}
 
 		void moveUnsafe(const Move& move) {
 			if (black) {
@@ -142,9 +157,6 @@ namespace Shogi {
 				moveUnsafe<false>(move);
 			}
 		}
-
-		template <bool black>
-		void moveUnsafe(const Move& move);
 
 		std::string toString() const;
 

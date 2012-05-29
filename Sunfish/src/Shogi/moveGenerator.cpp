@@ -343,7 +343,6 @@ namespace Shogi {
 
 	template <bool black>
 	void MoveGenerator::generateEvasion() {
-		// TODO:
 		DirectionFlags flags = pos.getCheckDirection();
 		if (!flags.isPlural()) {
 			Direction dir = flags.toDirection().reverse();

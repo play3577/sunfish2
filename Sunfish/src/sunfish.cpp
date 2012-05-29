@@ -29,8 +29,10 @@ int main(int argc, char* argv[]) {
 //	position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(2, 2), true, false, Shogi::Piece::BBISHOP));
 //	position.moveUnsafe(Shogi::Move(Shogi::Square(3, 1), Shogi::Square(2, 2), false, false, Shogi::Piece::WSILVER));
 
-	position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(7, 7), false, false, Shogi::Piece::BBISHOP));
-	position.moveUnsafe(Shogi::Move(Shogi::Square(2, 2), Shogi::Square(7, 7), true, false, Shogi::Piece::WBISHOP));
+	position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(3, 3), true, false, Shogi::Piece::BBISHOP));
+
+//	position.moveUnsafe(Shogi::Move(Shogi::Square(8, 8), Shogi::Square(7, 7), false, false, Shogi::Piece::BBISHOP));
+//	position.moveUnsafe(Shogi::Move(Shogi::Square(2, 2), Shogi::Square(7, 7), true, false, Shogi::Piece::WBISHOP));
 
 //	position.moveUnsafe(Shogi::Move(Shogi::Square(2, 7), Shogi::Square(2, 6), false, false, Shogi::Piece::BPAWN));
 //	position.moveUnsafe(Shogi::Move(Shogi::Square(2, 3), Shogi::Square(2, 4), false, false, Shogi::Piece::WPAWN));

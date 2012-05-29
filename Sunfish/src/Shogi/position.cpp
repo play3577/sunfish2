@@ -19,13 +19,31 @@ namespace Shogi {
 	}
 
 	template <bool black>
-	bool Position::move(const Move& move) {
+	bool Position::isLegalMove(const Move& move) {
 		// TODO:
+		if (move.isHand()) {
+			Piece piece = move.getPiece();
+			if (black && blackHand.get(piece) == 0) {
+				return false;
+			}
+			if (!black && whiteHand.get(piece) == 0) {
+				return false;
+			}
+			int file = move.getTo().getFile();
+			if (black && piece == Piece::BPAWN && bpawns.exist(file)) {
+				return false;
+			}
+			if (!black && piece == Piece::WPAWN && wpawns.exist(file)) {
+				return false;
+			}
+			return true;
+		} else {
+
+		}
 		return false;
 	}
-
-	template bool Position::move<true>(const Move& move);
-	template bool Position::move<false>(const Move& move);
+	template bool Position::isLegalMove<true>(const Move& move);
+	template bool Position::isLegalMove<false>(const Move& move);
 
 	template <bool black>
 	void Position::moveUnsafe(const Move& move) {
