@@ -7,22 +7,23 @@
 
 #include <cassert>
 #include <sstream>
+#include "../Debug/debug.h"
 #include "position.h"
+#include "squareDiff.h"
 
 namespace Shogi {
 	std::string Position::toString() const {
 		std::ostringstream oss;
-		oss << "Black:" << blackHand.toString();
-		oss << board.toString();
 		oss << "White:" << whiteHand.toString();
+		oss << board.toString();
+		oss << "Black:" << blackHand.toString();
 		return oss.str();
 	}
 
 	template <bool black>
-	bool Position::isLegalMove(const Move& move) {
-		// TODO:
+	bool Position::isLegalMove(const Move& move) const {
+		Piece piece = move.getPiece();
 		if (move.isHand()) {
-			Piece piece = move.getPiece();
 			if (black && blackHand.get(piece) == 0) {
 				return false;
 			}
@@ -36,14 +37,54 @@ namespace Shogi {
 			if (!black && piece == Piece::WPAWN && wpawns.exist(file)) {
 				return false;
 			}
+			if (move.getTo().isCompulsoryPromotion(piece)) {
+				return false;
+			}
+			Piece pieceTo = board.get(move.getTo());
+			if (!pieceTo.isEmpty()) {
+				return false;
+			}
+			// TODO: uchi fu zume!!
 			return true;
 		} else {
-
+			if (move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
+				return false;
+			}
+			if (!move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
+				return false;
+			}
+			SquareDiff diff = SquareDiff(move.getFrom(), move.getTo());
+			DirectionAndRange dir = diff.toDirectionAndRange();
+			if (DirectionFlags(dir, true).king()) {
+				std::cout << dir << std::endl;
+				DEBUG_PRINT_LINE;
+			}
+			if (dir == Direction::NON) {
+				return false;
+			} else if (dir.isShortRange()) {
+				if (piece.getMoveableDirection().check(dir) || piece.getMoveableDirection().check(dir, true)) {
+					Piece pieceTo = board.get(move.getTo());
+					return pieceTo.isEmpty() || (black ? pieceTo.isWhite() : pieceTo.isBlack());
+				}
+				return false;
+			} else {
+				if (piece.getMoveableDirection().check(dir)) {
+					for (Square sq = move.getFrom() + dir; ; sq += dir) {
+						Piece pieceTo = board.get(sq);
+						if (!pieceTo.isEmpty()) {
+							return sq == move.getTo() && (black ? pieceTo.isWhite() : pieceTo.isBlack());
+						}
+						if (sq == move.getTo()) {
+							return true;
+						}
+					}
+				}
+				return false;
+			}
 		}
-		return false;
 	}
-	template bool Position::isLegalMove<true>(const Move& move);
-	template bool Position::isLegalMove<false>(const Move& move);
+	template bool Position::isLegalMove<true>(const Move& move) const;
+	template bool Position::isLegalMove<false>(const Move& move) const;
 
 	template <bool black>
 	void Position::moveUnsafe(const Move& move) {

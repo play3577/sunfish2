@@ -8,7 +8,7 @@
 #include "squareDiff.h"
 
 namespace Shogi {
-	const int SquareDiff::_dir2diff[] = {
+	const int SquareDiff::_diff2dir[] = {
 		-17,  0,  0,  0,  0,  0,  0,  0,-16,  0,  0,  0,  0,  0,  0,  0,
 		-15,-17,  0,  0,  0,  0,  0,  0,-16,  0,  0,  0,  0,  0,  0,-15,
 		  0,  0,-17,  0,  0,  0,  0,  0,-16,  0,  0,  0,  0,  0,-15,  0,
@@ -29,5 +29,5 @@ namespace Shogi {
 		 17,
 	};
 
-	const int* SquareDiff::diff2dir = SquareDiff::_diff2dir + 0x88;
+	const int* SquareDiff::diff2dir = _diff2dir + 0x88;
 }

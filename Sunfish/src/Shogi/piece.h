@@ -18,6 +18,8 @@ namespace Shogi {
 		static const char pieceName[][4];
 		static const char UNKNOWN_NAME[];
 		static const DirectionFlags direction[];
+		static const int _diff2dir[];
+		static const int* diff2dir;
 
 	public:
 		enum {
@@ -163,6 +165,10 @@ namespace Shogi {
 
 		bool isPromoted() const {
 			return piece & PROMOTE;
+		}
+
+		bool isPromotable() const {
+			return !isPromoted() && (piece&PIECE)!=KING && (piece&PIECE)!=GOLD;
 		}
 
 		bool isEmpty() const {

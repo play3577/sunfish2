@@ -138,8 +138,7 @@ namespace Shogi {
 			return square == Square(file, rank).square;
 		}
 
-		template <bool black>
-		bool isPromotableRank() const {
+		bool isPromotableRank(bool black) const {
 			if (black) {
 				return square <= Square(9, 3).getIndex();
 			} else {

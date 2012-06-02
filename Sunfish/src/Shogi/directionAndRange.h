@@ -16,6 +16,9 @@ namespace Shogi {
 		bool longRange;
 
 	public:
+		DirectionAndRange(const DirectionAndRange& dir) : Direction(dir), longRange(dir.longRange) {
+		}
+
 		DirectionAndRange(const Direction& dir, bool longRange = false) : Direction(dir), longRange(longRange) {
 		}
 
@@ -36,6 +39,12 @@ namespace Shogi {
 
 		bool isShortRange() const {
 			return !isLongRange();
+		}
+
+		const DirectionAndRange& operator=(const DirectionAndRange& dir) {
+			operator=(dir);
+			longRange = dir.longRange;
+			return *this;
 		}
 	};
 }

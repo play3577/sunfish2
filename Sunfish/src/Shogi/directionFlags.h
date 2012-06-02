@@ -22,8 +22,8 @@ namespace Shogi {
 		static const unsigned int* dir2bit;
 		unsigned bits;
 
-		unsigned longRangeShift(unsigned bits) {
-			return bits << LONG_SHIFT;
+		static unsigned longRangeShift(unsigned bits) {
+			return (bits << LONG_SHIFT) & LONG_MASK;
 		}
 
 	public:
@@ -110,8 +110,8 @@ namespace Shogi {
 		DirectionFlags(const DirectionFlags& bit) : bits(bit.bits) {
 		}
 
-		DirectionFlags(const Direction& dir) {
-			set(dir);
+		DirectionFlags(const Direction& dir, bool longRange = false) {
+			set(dir, longRange);
 		}
 
 		DirectionFlags(const DirectionAndRange& dir) {
@@ -126,15 +126,17 @@ namespace Shogi {
 			this->bits = bits;
 		}
 
-		void set(const Direction& dir) {
+		void set(const Direction& dir, bool longRange = false) {
 			bits = dir2bit[(int)dir];
+			if (longRange) {
+				bits = longRangeShift(bits);
+			}
 		}
 
 		void set(const DirectionAndRange& dir) {
+			bits = dir2bit[(int)dir];
 			if (dir.isLongRange()) {
-				bits = longRangeShift(dir2bit[(int)dir]);
-			} else {
-				bits = dir2bit[(int)dir];
+				bits = longRangeShift(bits);
 			}
 		}
 
@@ -170,8 +172,12 @@ namespace Shogi {
 			return bits & bit.bits;
 		}
 
-		bool check(const Direction& dir) const {
-			return bits & dir2bit[(int)dir];
+		bool check(const DirectionAndRange& dir) const {
+			return bits & DirectionFlags(dir).bits;
+		}
+
+		bool check(const Direction& dir, bool longRange = false) const {
+			return bits & DirectionFlags(dir, longRange).bits;
 		}
 
 		bool isZero() const {

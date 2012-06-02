@@ -22,12 +22,21 @@ namespace Shogi {
 			this->diff = diff;
 		}
 
-		SquareDiff(const Square to, const Square from) {
-			diff = diff2dir[(unsigned)to-(unsigned)from];
+		SquareDiff(const Square from, const Square to) {
+			diff = (unsigned)to-(unsigned)from;
 		}
 
 		operator int() {
 			return diff;
+		}
+
+		Direction toDirection() const {
+			return diff2dir[diff];
+		}
+
+		DirectionAndRange toDirectionAndRange() const {
+			int dir = diff2dir[diff];
+			return DirectionAndRange(dir, diff != dir);
 		}
 	};
 }

@@ -86,7 +86,37 @@ namespace Shogi {
 			return *this;
 		}
 
+		bool operator<(const Move& move) const {
+			return (unsigned)*this< (unsigned)move;
+		}
+
+		bool operator<=(const Move& move) const {
+			return (unsigned)*this<= (unsigned)move;
+		}
+
+		bool operator>(const Move& move) const {
+			return (unsigned)*this> (unsigned)move;
+		}
+
+		bool operator>=(const Move& move) const {
+			return (unsigned)*this>= (unsigned)move;
+		}
+
+		bool operator==(const Move& move) const {
+			return (unsigned)*this== (unsigned)move;
+		}
+
+		bool operator!=(const Move& move) const {
+			return !operator==(move);
+		}
+
+		operator unsigned() const {
+			return (m.piece << 18) | (m.hand << 17) | (m.promote << 16) | (m.to << 8) | m.from;
+		}
+
 		std::string toString() const;
+
+		std::string toString4Debug() const;
 	};
 }
 

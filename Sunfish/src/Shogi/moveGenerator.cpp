@@ -256,7 +256,7 @@ namespace Shogi {
 
 	template <bool black, bool promotable>
 	void MoveGenerator::generateMoveOneMove(const Piece piece, const Square from, const Square to) {
-		if (promotable && to.isPromotableRank<black>()) {
+		if (promotable && to.isPromotableRank(black)) {
 			moves[num++] = Move(from, to, true, false, piece);
 		}
 		if (!to.isCompulsoryPromotion(piece)) {
@@ -284,7 +284,7 @@ namespace Shogi {
 		DirectionFlags effectTo = pos.getEffect(to, !black);
 		DirectionFlags effectFrom = pos.getEffect(from, !black);
 		if ((black && !piece.isBlackMovable()) || (!black && !piece.isWhiteMovable())
-				|| effectTo.isNonZero() || (check && effectFrom.getLongRangeOnly().check(dir))) {
+				|| effectTo.longOrShortRange() || (check && effectFrom.getLongRangeOnly().check(dir))) {
 			return;
 		}
 		moves[num++] = Move(from, to, false, false, (black ? Piece::BKING : Piece::WKING));
@@ -396,5 +396,62 @@ namespace Shogi {
 			// TODO: uchi fu zume!!
 			moves[num++] = Move(Square::NON, to, false, true, piece);
 		}
+	}
+
+	unsigned MoveGenerator::generateTardy() {
+		for (Square from = Square::TOP; from.valid(); from.next()) {
+			Piece piece = pos.getBoard(from);
+			if (!piece.isEmpty() && piece.isBlack() == pos.isBlackTurn()) {
+				for (Square to = Square::TOP; to.valid(); to.next()) {
+					Move move(from, to, false, false, piece);
+					if (pos.isLegalMove(move)) {
+						moves[num++] = move;
+					}
+					move.setPromotion(true);
+					if (pos.isLegalMove(move)) {
+						moves[num++] = move;
+					}
+				}
+			}
+		}
+		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
+			if (pos.getHand(piece) != 0) {
+				for (Square to = Square::TOP; to.valid(); to.next()) {
+					Move move(Square::NON, to, false, true, piece);
+					if (pos.isLegalMove(move)) {
+						moves[num++] = move;
+					}
+				}
+			}
+		}
+		return num;
+	}
+
+	void MoveGenerator::sort() {
+		// TODO: use boost
+//		boost::sort(moves);
+		for (int i = 1; (unsigned)i < num; i++) {
+			Move move = moves[i];
+			int j;
+			for (j = i - 1; j >= 0; j--) {
+				if (move < moves[j]) {
+					break;
+				}
+				moves[j+1] = moves[j];
+			}
+			moves[j+1] = move;
+		}
+	}
+
+	bool MoveGenerator::equals(const MoveGenerator gen) const {
+		if (num != gen.num) {
+			return false;
+		}
+		for (unsigned i = 0; i < num; i++) {
+			if (moves[i] != gen.moves[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

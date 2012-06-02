@@ -29,7 +29,7 @@ namespace Shogi {
 		bool black;
 
 		template <bool black>
-		bool isLegalMove(const Move& move);
+		bool isLegalMove(const Move& move) const;
 
 		template <bool black>
 		void moveUnsafe(const Move& move);
@@ -72,6 +72,10 @@ namespace Shogi {
 
 		int getWhiteHand(const Piece& piece) const {
 			return whiteHand.get(piece);
+		}
+
+		int getHand(const Piece& piece) const {
+			return black ? getBlackHand(piece) : getWhiteHand(piece);
 		}
 
 		const DirectionFlags& getEffect(const Square& square, bool black) const {
@@ -138,7 +142,7 @@ namespace Shogi {
 			black = !black;
 		}
 
-		bool isLegalMove(const Move& move) {
+		bool isLegalMove(const Move& move) const {
 			return (black ? isLegalMove<true>(move) : isLegalMove<false>(move));
 		}
 

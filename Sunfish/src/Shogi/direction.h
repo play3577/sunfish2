@@ -43,6 +43,11 @@ namespace Shogi {
 		Direction reverse() const {
 			return Direction(-direction);
 		}
+
+		const Direction& operator=(const Direction& dir) {
+			direction = dir.direction;
+			return *this;
+		}
 	};
 }
 

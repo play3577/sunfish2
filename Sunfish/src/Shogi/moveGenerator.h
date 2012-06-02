@@ -8,6 +8,7 @@
 #ifndef MOVEGENERATOR_H_
 #define MOVEGENERATOR_H_
 
+#include <boost/range/algorithm.hpp>
 #include "position.h"
 #include "move.h"
 
@@ -65,6 +66,8 @@ namespace Shogi {
 
 		unsigned generate();
 
+		unsigned generateTardy();
+
 		unsigned getNumber() const {
 			return num;
 		}
@@ -76,6 +79,10 @@ namespace Shogi {
 		unsigned getCurrent() const {
 			return curr;
 		}
+
+		void sort();
+
+		bool equals(const MoveGenerator gen) const;
 
 		const Move* next() {
 			if (curr < num) {

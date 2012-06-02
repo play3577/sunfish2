@@ -25,5 +25,15 @@ namespace Shogi{
 		}
 		return oss.str();
 	}
+
+	std::string Move::toString4Debug() const {
+		std::ostringstream oss;
+		oss << m.from << ',';
+		oss << m.to << ',';
+		oss << m.promote << ',';
+		oss << m.hand << ',';
+		oss << m.piece;
+		return oss.str();
+	}
 }
 
