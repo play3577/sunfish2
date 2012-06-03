@@ -416,8 +416,9 @@ namespace Shogi {
 		}
 		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
 			if (pos.getHand(piece) != 0) {
+				Piece drop = pos.isBlackTurn() ? piece : piece.getTurnedWhite();
 				for (Square to = Square::TOP; to.valid(); to.next()) {
-					Move move(Square::NON, to, false, true, piece);
+					Move move(Square::NON, to, false, true, drop);
 					if (pos.isLegalMove(move)) {
 						moves[num++] = move;
 					}

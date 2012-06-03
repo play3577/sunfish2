@@ -44,6 +44,7 @@ namespace Shogi {
 			if (!pieceTo.isEmpty()) {
 				return false;
 			}
+			// TODO: evasion
 			// TODO: uchi fu zume!!
 			return true;
 		} else {
@@ -58,6 +59,11 @@ namespace Shogi {
 			if (DirectionFlags(dir, true).king()) {
 				std::cout << dir << std::endl;
 				DEBUG_PRINT_LINE;
+			}
+			// TODO: evasion
+			if (black && move.getPiece() == Piece::BKING) {
+			}
+			if (!black && move.getPiece() == Piece::WKING) {
 			}
 			if (dir == Direction::NON) {
 				return false;
