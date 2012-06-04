@@ -7,7 +7,7 @@
 
 #include <sstream>
 #include "pawnFlags.h"
-#include "Square.h"
+#include "square.h"
 
 namespace Shogi{
 	std::string PawnFlags::toString() const {
