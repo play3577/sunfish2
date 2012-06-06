@@ -153,9 +153,9 @@ namespace Shogi {
 			case Piece::BKNIGHT:
 				return square <= Square(9, 2).getIndex();
 			case Piece::WPAWN: case Piece::WLANCE:
-				return square >= Square(1, 8).getIndex();
+				return square >= Square(1, 9).getIndex();
 			case Piece::WKNIGHT:
-				return square >= Square(1, 7).getIndex();
+				return square >= Square(1, 8).getIndex();
 			default:
 				return false;
 			}

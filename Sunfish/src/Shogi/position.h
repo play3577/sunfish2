@@ -79,11 +79,7 @@ namespace Shogi {
 		}
 
 		const DirectionFlags& getEffect(const Square& square, bool black) const {
-			if (black) {
-				return effectBoard.get<true>(square);
-			} else {
-				return effectBoard.get<false>(square);
-			}
+			return effectBoard.get(square, black);
 		}
 
 		const EffectBoard& getEffectBoard() const {
@@ -116,25 +112,25 @@ namespace Shogi {
 
 		bool isCheck() const {
 			if (black) {
-				return (bool)effectBoard.get<false>(bking).getExcludeKing();
+				return (bool)effectBoard.get(bking, false).getExcludeKing();
 			} else {
-				return (bool)effectBoard.get<true>(wking).getExcludeKing();
+				return (bool)effectBoard.get(wking, true).getExcludeKing();
 			}
 		}
 
 		DirectionFlags getCheckDirection() const {
 			if (black) {
-				return effectBoard.get<false>(bking).getExcludeKing();
+				return effectBoard.get(bking, false).getExcludeKing();
 			} else {
-				return effectBoard.get<true>(wking).getExcludeKing();
+				return effectBoard.get(wking, true).getExcludeKing();
 			}
 		}
 
 		DirectionFlags pin(const Square& sq, bool black) const {
 			if (black) {
-				return effectBoard.get<true>(sq).pin(effectBoard.get<false>(sq));
+				return effectBoard.get(sq, true).pin(effectBoard.get(sq, false));
 			} else {
-				return effectBoard.get<false>(sq).pin(effectBoard.get<true>(sq));
+				return effectBoard.get(sq, false).pin(effectBoard.get(sq, true));
 			}
 		}
 

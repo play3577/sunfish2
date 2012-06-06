@@ -24,8 +24,7 @@ namespace Shogi {
 			return black ? blackEffectBoard : whiteEffectBoard;
 		}
 
-		template <bool black>
-		const DirectionFlags* effectBoardConst() const {
+		const DirectionFlags* effectBoardConst(bool black) const {
 			return black ? blackEffectBoard : whiteEffectBoard;
 		}
 
@@ -76,9 +75,8 @@ namespace Shogi {
 			return effectBoard<black>()[sq.getIndex()].isWall();
 		}
 
-		template <bool black>
-		const DirectionFlags& get(const Square& sq) const {
-			return effectBoardConst<black>()[sq.getIndex()];
+		const DirectionFlags& get(const Square& sq, bool black) const {
+			return effectBoardConst(black)[sq.getIndex()];
 		}
 
 		template <bool black, bool addition>

@@ -371,7 +371,7 @@ namespace Shogi {
 				;
 			Piece piece = pos.getBoard(from);
 			if (!piece.isKing<black>() && pos.pin(from, black).isZero()) {
-				if (!piece.isPromoted()) {
+				if (piece.isPromotable()) {
 					generateMoveOneMove<black, true>(piece, from, to);
 				} else {
 					generateMoveOneMove<black, false>(piece, from, to);

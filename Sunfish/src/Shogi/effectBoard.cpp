@@ -54,7 +54,7 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::changeStraight(const Square& sq, const Direction dir, const DirectionFlags& flag, const Board& board) {
-		for (Square to = sq + dir; !get<black>(to).isWall(); to += dir) {
+		for (Square to = sq + dir; !get(to, black).isWall(); to += dir) {
 			if (addition) {
 				effectBoard<black>()[to.getIndex()].add(flag);
 			} else {
@@ -68,7 +68,7 @@ namespace Shogi {
 
 	template <bool black, bool addition>
 	void EffectBoard::changeAround(const Square& sq, const Board& board) {
-		DirectionFlags flags = get<black>(sq).getLongRangeAndKing();
+		DirectionFlags flags = get(sq, black).getLongRangeAndKing();
 		while (flags.isNonZero()) {
 			DirectionFlags flag = flags.pop();
 			Direction dir = flag.toDirection();
@@ -95,7 +95,7 @@ namespace Shogi {
 			DirectionFlags flag = flags.pop();
 			Direction dir = flag.toDirection();
 			Square to = sq + dir;
-			if (!get<black>(to).isWall()) {
+			if (!get(to, black).isWall()) {
 				if (addition) {
 					effectBoard<black>()[to.getIndex()].add(flag);
 				} else {
@@ -129,11 +129,11 @@ namespace Shogi {
 	std::string EffectBoard::toString(bool king) const {
 		std::ostringstream oss;
 		Square sq(Square::TOP);
-		for (sq.leftmost(); !get<true>(sq).isWall(); sq.leftmost(), sq.down()) {
-			for (; !get<true>(sq).isWall(); sq.right()) {
+		for (sq.leftmost(); !get(sq, true).isWall(); sq.leftmost(), sq.down()) {
+			for (; !get(sq, true).isWall(); sq.right()) {
 #if 0
-				bool black = get<true>(sq).longOrShortRange();
-				bool white = get<false>(sq).longOrShortRange();
+				bool black = get(sq, true).longOrShortRange();
+				bool white = get(sq, false).longOrShortRange();
 				if (black && white) {
 					oss << " X ";
 				} else if (black) {
@@ -145,8 +145,8 @@ namespace Shogi {
 				}
 #else
 				oss.width(3);
-				DirectionFlags bflags = get<true>(sq);
-				DirectionFlags wflags = get<false>(sq);
+				DirectionFlags bflags = get(sq, true);
+				DirectionFlags wflags = get(sq, false);
 				if (!king) {
 					bflags = bflags.getExcludeKing();
 					wflags = wflags.getExcludeKing();

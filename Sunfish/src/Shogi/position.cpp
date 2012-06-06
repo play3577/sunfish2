@@ -23,58 +23,99 @@ namespace Shogi {
 	template <bool black>
 	bool Position::isLegalMove(const Move& move) const {
 		Piece piece = move.getPiece();
-		if (move.isHand()) {
+		if (move.isHand()) { // 持ち駒を打つ場合
 			if (black && blackHand.get(piece) == 0) {
-				return false;
+				return false; // 持ち駒が無い。
 			}
 			if (!black && whiteHand.get(piece) == 0) {
-				return false;
+				return false; // 持ち駒が無い。
 			}
 			int file = move.getTo().getFile();
 			if (black && piece == Piece::BPAWN && bpawns.exist(file)) {
-				return false;
+				return false; // 二歩
 			}
 			if (!black && piece == Piece::WPAWN && wpawns.exist(file)) {
-				return false;
+				return false; // 二歩
 			}
 			if (move.getTo().isCompulsoryPromotion(piece)) {
-				return false;
+				return false; // 行きどころのない駒
 			}
 			Piece pieceTo = board.get(move.getTo());
 			if (!pieceTo.isEmpty()) {
-				return false;
+				return false; // 移動先に駒がある。
 			}
-			// TODO: evasion
+			if (isCheck()) { // 王手がかかっている場合
+				DirectionFlags flags = getCheckDirection();
+				if (flags.isPlural()) {
+					return false; // 両王手
+				}
+				SquareDiff diff(move.getTo(), black? bking : wking);
+				if (flags.toDirection() != diff.toDirection()){
+					return false; // 王手している方向ではない。
+				}
+				if (!effectBoard.get(move.getTo(), black).king()) {
+					return false; // 王手している駒より遠い。
+				}
+			}
 			// TODO: uchi fu zume!!
 			return true;
 		} else {
 			if (move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
-				return false;
+				return false; // 成れない駒
 			}
 			if (!move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
-				return false;
+				return false; // 行きどころのない駒
 			}
 			SquareDiff diff = SquareDiff(move.getFrom(), move.getTo());
 			DirectionAndRange dir = diff.toDirectionAndRange();
-			if (DirectionFlags(dir, true).king()) {
-				std::cout << dir << std::endl;
-				DEBUG_PRINT_LINE;
-			}
-			// TODO: evasion
-			if (black && move.getPiece() == Piece::BKING) {
-			}
-			if (!black && move.getPiece() == Piece::WKING) {
-			}
 			if (dir == Direction::NON) {
-				return false;
-			} else if (dir.isShortRange()) {
+				return false; // 移動不能
+			}
+			if ((black && move.getPiece() == Piece::BKING) || // 先手玉
+					(!black && move.getPiece() == Piece::WKING)) { // 後手玉
+				DirectionFlags effectTo = effectBoard.get(move.getTo(), !black);
+				DirectionFlags effectFrom = effectBoard.get(move.getFrom(), !black);
+				if (effectFrom.getLongRangeOnly().check(dir) // 利きの方向に移動しようとしている。
+						|| effectTo.longOrShortRange()) { // 移動先に利きがある。
+					return false;
+				}
+			} else { // 玉以外
+				if (isCheck()) {
+					DirectionFlags flags = getCheckDirection();
+					if (flags.isPlural()) {
+						return false; // 両王手
+					}
+					SquareDiff diff(move.getTo(), black? bking : wking);
+					if (flags.toDirection() != diff.toDirection()){
+						return false; // 王手している方向ではない。
+					}
+					if (flags.shortRange()) {
+						if (move.getTo() != (black ? bking : wking) - flags.toDirection()) {
+							return false;
+						}
+					} else {
+						if (!effectBoard.get(move.getTo(), black).king()) {
+							return false; // 王手している駒より遠い。
+						}
+					}
+				}
+				Direction p = pin(move.getFrom(), black).toDirection();
+				if (p != Direction::NON && dir != p && dir != p.reverse()) {
+					return false;
+				}
+			}
+			if (dir.isShortRange()) { // 1マス
+				// 移動可能な方向か
 				if (piece.getMoveableDirection().check(dir) || piece.getMoveableDirection().check(dir, true)) {
 					Piece pieceTo = board.get(move.getTo());
+					// 移動先に駒がいないか相手の駒か
 					return pieceTo.isEmpty() || (black ? pieceTo.isWhite() : pieceTo.isBlack());
 				}
 				return false;
-			} else {
+			} else { // 跳び駒の移動
+				// 移動可能な方向か
 				if (piece.getMoveableDirection().check(dir)) {
+					// 間に駒がないか
 					for (Square sq = move.getFrom() + dir; ; sq += dir) {
 						Piece pieceTo = board.get(sq);
 						if (!pieceTo.isEmpty()) {
