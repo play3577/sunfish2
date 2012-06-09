@@ -138,6 +138,10 @@ namespace Shogi {
 			return square == Square(file, rank).square;
 		}
 
+		static bool isInside(unsigned file, unsigned rank) {
+			return file >= 1 && file <= FILE_NUM && rank >= 1 && rank <= RANK_NUM;
+		}
+
 		bool isPromotableRank(bool black) const {
 			if (black) {
 				return square <= Square(9, 3).getIndex();

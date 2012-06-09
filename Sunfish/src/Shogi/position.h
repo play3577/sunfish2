@@ -54,6 +54,17 @@ namespace Shogi {
 				bpawns(position.bpawns), wpawns(position.wpawns) {
 		}
 
+		void initNoUpdate() {
+			board.init(NOPIECES);
+			blackHand.init();
+			whiteHand.init();
+		}
+
+		void init() {
+			initNoUpdate();
+			update();
+		}
+
 		void update() {
 			effectBoard.init(board);
 			bking = board.getKingSquare<true>();
@@ -66,12 +77,40 @@ namespace Shogi {
 			return board.get(square);
 		}
 
+		void setBoard(const Square& square, const Piece& piece) {
+			board.set(square, piece);
+		}
+
 		int getBlackHand(const Piece& piece) const {
 			return blackHand.get(piece);
 		}
 
 		int getWhiteHand(const Piece& piece) const {
 			return whiteHand.get(piece);
+		}
+
+		void setBlackHand(const Piece& piece, int num) {
+			blackHand.set(piece, num);
+		}
+
+		void setWhiteHand(const Piece& piece, int num) {
+			whiteHand.set(piece, num);
+		}
+
+		void incBlackHand(const Piece& piece) {
+			blackHand.inc(piece);
+		}
+
+		void incWhiteHand(const Piece& piece) {
+			whiteHand.inc(piece);
+		}
+
+		void decBlackHand(const Piece& piece) {
+			blackHand.dec(piece);
+		}
+
+		void decWhiteHand(const Piece& piece) {
+			whiteHand.dec(piece);
 		}
 
 		int getHand(const Piece& piece) const {
@@ -92,6 +131,18 @@ namespace Shogi {
 
 		bool isWhiteTurn() const {
 			return !black;
+		}
+
+		bool setBlackTurn() {
+			bool prev = black;
+			black = true;
+			return prev;
+		}
+
+		bool setWhiteTurn() {
+			bool prev = black;
+			black = false;
+			return !prev;
 		}
 
 		Square getBKing() const {

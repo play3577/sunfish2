@@ -22,6 +22,7 @@ namespace Shogi {
 
 	template <bool black>
 	bool Position::isLegalMove(const Move& move) const {
+		// TODO: Debug.txtの局面を検証
 		Piece piece = move.getPiece();
 		if (move.isHand()) { // 持ち駒を打つ場合
 			if (black && blackHand.get(piece) == 0) {
@@ -176,6 +177,8 @@ namespace Shogi {
 				wking = move.getTo();
 			}
 			Piece capture = board.set(move.getTo(), piece);
+			assert(capture != Piece::BKING);
+			assert(capture != Piece::WKING);
 			if (!capture.isEmpty()) {
 				if (black) {
 					blackHand.inc(capture.getUnPromoted());

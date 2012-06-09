@@ -27,7 +27,7 @@ namespace Shogi {
 			set(sq, Piece::WALL);
 		}
 
-		if (handicap == EMPTY) {
+		if (handicap == NOPIECES) {
 			for (Square sq(Square::TOP); sq.valid(); sq.next()) {
 				set(sq, Piece::EMPTY);
 			}

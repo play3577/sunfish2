@@ -208,6 +208,8 @@ namespace Shogi {
 			return direction[piece];
 		}
 
+		static Piece parseCsa(const char* str);
+
 		std::string toString() const {
 			if (!isWhite()) {
 				return ' ' + toStringNameOnly();

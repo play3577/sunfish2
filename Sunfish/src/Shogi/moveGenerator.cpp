@@ -17,6 +17,7 @@ namespace Shogi {
 	}
 
 	unsigned MoveGenerator::generate() {
+		// TODO: Debug.txtの局面を検証
 		if (pos.isCheck()) {
 			if (pos.isBlackTurn()) {
 				generateEvasion<true>();
@@ -367,7 +368,7 @@ namespace Shogi {
 		while (flags.isNonZero()) {
 			Direction dir = flags.pop().toDirection().reverse();
 			Square from = to;
-			for (from += dir; pos.getBoard(from) == EMPTY; from += dir)
+			for (from += dir; pos.getBoard(from) == Piece::EMPTY; from += dir)
 				;
 			Piece piece = pos.getBoard(from);
 			if (!piece.isKing<black>() && pos.pin(from, black).isZero()) {

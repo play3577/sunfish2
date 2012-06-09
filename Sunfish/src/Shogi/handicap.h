@@ -10,7 +10,7 @@
 
 namespace Shogi {
 	enum Handicap {
-		EMPTY = 0,
+		NOPIECES = 0,
 		EVEN,
 		HANDICAP_LANCE,
 		HANDICAP_BISHOP,

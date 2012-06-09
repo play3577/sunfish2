@@ -25,8 +25,8 @@ namespace Shogi {
 			init(handicap);
 		}
 
-		Board(const Board& b) {
-			init(b);
+		Board(const Board& board) {
+			init(board);
 		}
 
 		void init(Handicap handicap = EVEN);

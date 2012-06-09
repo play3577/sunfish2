@@ -6,6 +6,7 @@
  */
 
 #include "piece.h"
+#include "../Csa/csa.h"
 
 namespace Shogi {
 	const char Piece::pieceName[][4] = {
@@ -53,4 +54,24 @@ namespace Shogi {
 			DirectionFlags(DirectionFlags::WHORSE),
 			DirectionFlags(DirectionFlags::WDRAGON),
 	};
+
+	Piece Piece::parseCsa(const char* str) {
+		Piece piece(EMPTY);
+		for (; str[0] == ' '; str++)
+			;
+		if (str[0] == Csa::CHAR_BLK) {
+			piece.turnBlack();
+			str++;
+		} else if (str[0] == Csa::CHAR_WHT) {
+			piece.turnWhite();
+			str++;
+		}
+		for (unsigned i = PAWN; i <= DRAGON; i++) {
+			if (str[0] == pieceName[i][0] && str[1] == pieceName[i][1]) {
+				piece.piece |= i;
+				return piece;
+			}
+		}
+		return Piece(EMPTY);
+	}
 }
