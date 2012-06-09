@@ -26,7 +26,7 @@ namespace Shogi {
 		Square wking;
 		PawnFlags bpawns;
 		PawnFlags wpawns;
-		bool black;
+		bool blackTurn;
 
 		template <bool black>
 		bool isLegalMove(const Move& move) const;
@@ -34,17 +34,23 @@ namespace Shogi {
 		template <bool black>
 		void moveUnsafe(const Move& move);
 
+		template <bool black, unsigned excludingFlag>
+		bool isKingMoveable(Direction dir) const;
+
+		template<bool black>
+		bool canPawnDropCheck() const;
+
 	public:
-		Position(bool black = true) : black(black) {
+		Position(bool blackTurn = true) : blackTurn(blackTurn) {
 			update();
 		}
 
 		Position(Handicap handicap) : board(handicap) {
-			black = (handicap == EVEN);
+			blackTurn = (handicap == EVEN);
 			update();
 		}
 
-		Position(Handicap handicap, bool black) : board(handicap), black(black) {
+		Position(Handicap handicap, bool blackTurn) : board(handicap), blackTurn(blackTurn) {
 			update();
 		}
 
@@ -114,11 +120,11 @@ namespace Shogi {
 		}
 
 		int getHand(const Piece& piece) const {
-			return black ? getBlackHand(piece) : getWhiteHand(piece);
+			return blackTurn ? getBlackHand(piece) : getWhiteHand(piece);
 		}
 
-		const DirectionFlags& getEffect(const Square& square, bool black) const {
-			return effectBoard.get(square, black);
+		const DirectionFlags& getEffect(const Square& square, bool blackTurn) const {
+			return effectBoard.get(square, blackTurn);
 		}
 
 		const EffectBoard& getEffectBoard() const {
@@ -126,22 +132,22 @@ namespace Shogi {
 		}
 
 		bool isBlackTurn() const {
-			return black;
+			return blackTurn;
 		}
 
 		bool isWhiteTurn() const {
-			return !black;
+			return !blackTurn;
 		}
 
 		bool setBlackTurn() {
-			bool prev = black;
-			black = true;
+			bool prev = blackTurn;
+			blackTurn = true;
 			return prev;
 		}
 
 		bool setWhiteTurn() {
-			bool prev = black;
-			black = false;
+			bool prev = blackTurn;
+			blackTurn = false;
 			return !prev;
 		}
 
@@ -162,23 +168,31 @@ namespace Shogi {
 		}
 
 		bool isCheck() const {
-			if (black) {
+			if (blackTurn) {
 				return (bool)effectBoard.get(bking, false).getExcludeKing();
 			} else {
 				return (bool)effectBoard.get(wking, true).getExcludeKing();
 			}
 		}
 
+		bool isPawnDropMate(const Square& sq, bool blackTurn) const {
+			if (blackTurn) {
+				return sq == wking + Direction::DOWN && !canPawnDropCheck<true>();
+			} else {
+				return sq == bking + Direction::UP && !canPawnDropCheck<false>();
+			}
+		}
+
 		DirectionFlags getCheckDirection() const {
-			if (black) {
+			if (blackTurn) {
 				return effectBoard.get(bking, false).getExcludeKing();
 			} else {
 				return effectBoard.get(wking, true).getExcludeKing();
 			}
 		}
 
-		DirectionFlags pin(const Square& sq, bool black) const {
-			if (black) {
+		DirectionFlags pin(const Square& sq, bool blackTurn) const {
+			if (blackTurn) {
 				return effectBoard.get(sq, true).pin(effectBoard.get(sq, false));
 			} else {
 				return effectBoard.get(sq, false).pin(effectBoard.get(sq, true));
@@ -186,11 +200,11 @@ namespace Shogi {
 		}
 
 		void turn() {
-			black = !black;
+			blackTurn = !blackTurn;
 		}
 
 		bool isLegalMove(const Move& move) const {
-			return (black ? isLegalMove<true>(move) : isLegalMove<false>(move));
+			return (blackTurn ? isLegalMove<true>(move) : isLegalMove<false>(move));
 		}
 
 		bool move(const Move& move) {
@@ -202,7 +216,7 @@ namespace Shogi {
 		}
 
 		void moveUnsafe(const Move& move) {
-			if (black) {
+			if (blackTurn) {
 				moveUnsafe<true>(move);
 			} else {
 				moveUnsafe<false>(move);
@@ -210,6 +224,8 @@ namespace Shogi {
 		}
 
 		std::string toString() const;
+
+		std::string toStringCsa() const;
 
 		std::string toStringEffect(bool king = false) const {
 			return effectBoard.toString(king);

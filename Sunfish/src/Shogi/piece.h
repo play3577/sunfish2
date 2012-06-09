@@ -218,6 +218,16 @@ namespace Shogi {
 			}
 		}
 
+		std::string toStringCsa() const {
+			if (isBlack()) {
+				return '+' + toStringNameOnly();
+			} else if(isWhite()) {
+				return '-' + toStringNameOnly();
+			} else {
+				return ' ' + toStringNameOnly();
+			}
+		}
+
 		std::string toStringNameOnly() const {
 			if (piece <= WDRAGON) {
 				return pieceName[piece&PIECE];

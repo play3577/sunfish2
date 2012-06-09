@@ -285,7 +285,7 @@ namespace Shogi {
 		DirectionFlags effectTo = pos.getEffect(to, !black);
 		DirectionFlags effectFrom = pos.getEffect(from, !black);
 		if ((black && !piece.isBlackMovable()) || (!black && !piece.isWhiteMovable())
-				|| effectTo.longOrShortRange() || (check && effectFrom.getLongRangeOnly().check(dir))) {
+				|| effectTo.longOrShortRange() || (check && effectFrom.getLongRangeOnly().check(dir, true))) {
 			return;
 		}
 		moves[num++] = Move(from, to, false, false, (black ? Piece::BKING : Piece::WKING));
@@ -327,14 +327,11 @@ namespace Shogi {
 				for (unsigned rank = rank_top; rank <= rank_bottom; rank++) {
 					Square sq(file, rank);
 					if (pos.getBoard(sq).isEmpty()) {
-						// TODO: uchi fu zume!!
-						/*
-						if (black && piece == Piece::BPAWN &&) {
+						if (black && piece == Piece::BPAWN && pos.isPawnDropMate(sq, true)) {
 							continue;
-						} else if (!black && piece == Piece::WPAWN &&) {
+						} else if (!black && piece == Piece::WPAWN && pos.isPawnDropMate(sq, false)) {
 							continue;
 						}
-						*/
 						moves[num++] = Move(Square::NON, sq, false, true, piece);
 					}
 				}

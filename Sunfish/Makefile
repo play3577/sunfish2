@@ -8,12 +8,18 @@ $(wildcard ./src/Shogi/*.cpp) \
 $(wildcard ./src/Csa/*.cpp) \
 $(wildcard ./src/Debug/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
-DEPENDS=$(SOURCES:.cpp=.d)
+DEPENDS:=$(SOURCES:.cpp=.d)
+
+override CFLAGS+=-Wall
+override CFLAGS+=-W
+#override CFLAGS+=-O2
+#override CFLAGS+=-NDEBUG
+override CFLAGS+=-g
 
 .PHONY: all
 all: $(PROGRAM)
 $(PROGRAM): $(OBJECTS)
-	$(GPP) -o $(PROGRAM) $(CPPFLAGS) $^
+	$(GPP) -o $(PROGRAM) $(CFLAGS) $^
 
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<
@@ -23,6 +29,6 @@ clean:
 	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS)
 
 %.d: %.cpp
-	@$(SHELL) -c 'echo $*.o $@ `$(CC) -MM $(CPPFLAGS) $< | sed "s/^[^ ]*\.o[ :]*/: /g"` | sed "s/\\\\//g" > $@'
+	@$(SHELL) -c '$(CC) -MM $(CFLAGS) $< | sed "s|^.*:|$*.o $@:|g" > $@; [ -s $@ ] || rm -f $@'
 
 -include $(DEPENDS)

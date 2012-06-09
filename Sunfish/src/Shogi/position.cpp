@@ -8,6 +8,7 @@
 #include <cassert>
 #include <sstream>
 #include "../Debug/debug.h"
+#include "../Csa/csa.h"
 #include "position.h"
 #include "squareDiff.h"
 
@@ -20,9 +21,17 @@ namespace Shogi {
 		return oss.str();
 	}
 
+	std::string Position::toStringCsa() const {
+		std::ostringstream oss;
+		oss << board.toStringCsa();
+		oss << Csa::CHAR_POS << Csa::CHAR_BLK << blackHand.toString();
+		oss << Csa::CHAR_POS << Csa::CHAR_WHT << whiteHand.toString();
+		oss << (blackTurn ? Csa::CHAR_BLK : Csa::CHAR_WHT) << '\n';
+		return oss.str();
+	}
+
 	template <bool black>
 	bool Position::isLegalMove(const Move& move) const {
-		// TODO: Debug.txtの局面を検証
 		Piece piece = move.getPiece();
 		if (move.isHand()) { // 持ち駒を打つ場合
 			if (black && blackHand.get(piece) == 0) {
@@ -58,7 +67,11 @@ namespace Shogi {
 					return false; // 王手している駒より遠い。
 				}
 			}
-			// TODO: uchi fu zume!!
+			if (black && piece == Piece::BPAWN && isPawnDropMate(move.getTo(), true)) {
+				return false;
+			} else if (!black && piece == Piece::WPAWN && isPawnDropMate(move.getTo(), false)) {
+				return false;
+			}
 			return true;
 		} else {
 			if (move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
@@ -76,7 +89,7 @@ namespace Shogi {
 					(!black && move.getPiece() == Piece::WKING)) { // 後手玉
 				DirectionFlags effectTo = effectBoard.get(move.getTo(), !black);
 				DirectionFlags effectFrom = effectBoard.get(move.getFrom(), !black);
-				if (effectFrom.getLongRangeOnly().check(dir) // 利きの方向に移動しようとしている。
+				if (effectFrom.getLongRangeOnly().check(dir, true) // 利きの方向に移動しようとしている。
 						|| effectTo.longOrShortRange()) { // 移動先に利きがある。
 					return false;
 				}
@@ -205,5 +218,47 @@ namespace Shogi {
 
 	template void Position::moveUnsafe<true>(const Move& move);
 	template void Position::moveUnsafe<false>(const Move& move);
+
+	template <bool black, unsigned excludingFlag>
+	bool Position::isKingMoveable(Direction dir) const {
+		Square square = (black ? bking : wking) + dir;
+		Piece piece = board.get(square);
+		if (!piece.isEmpty()) {
+			if (black && piece.isBlack()) {
+				return false;
+			} else if (!black && piece.isWhite()) {
+				return false;
+			}
+		}
+		DirectionFlags flags = effectBoard.get(square, !black);
+		flags.remove(DirectionFlags(excludingFlag));
+		return !flags.longOrShortRange();
+	}
+
+	template<bool black>
+	bool Position::canPawnDropCheck() const {
+		if (black) {
+			return isKingMoveable<false, DirectionFlags::NON           >(Direction::LEFT_UP)
+				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::UP)
+				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::RIGHT_UP)
+				|| isKingMoveable<false, DirectionFlags::LONG_LEFT_UP  >(Direction::LEFT)
+				|| isKingMoveable<false, DirectionFlags::LONG_RIGHT_UP >(Direction::RIGHT)
+				|| isKingMoveable<false, DirectionFlags::LONG_LEFT     >(Direction::LEFT_DOWN)
+				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::DOWN)
+				|| isKingMoveable<false, DirectionFlags::LONG_RIGHT    >(Direction::RIGHT_DOWN);
+		} else {
+			return isKingMoveable<true, DirectionFlags::LONG_LEFT      >(Direction::LEFT_UP)
+				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::UP)
+				|| isKingMoveable<true, DirectionFlags::LONG_RIGHT     >(Direction::RIGHT_UP)
+				|| isKingMoveable<true, DirectionFlags::LONG_LEFT_DOWN >(Direction::LEFT)
+				|| isKingMoveable<true, DirectionFlags::LONG_RIGHT_DOWN>(Direction::RIGHT)
+				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::LEFT_DOWN)
+				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::DOWN)
+				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::RIGHT_DOWN);
+		}
+	}
+
+	template bool Position::canPawnDropCheck<true>() const;
+	template bool Position::canPawnDropCheck<false>() const;
 }
 

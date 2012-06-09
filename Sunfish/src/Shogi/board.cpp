@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include "board.h"
+#include "../Csa/csa.h"
 
 namespace Shogi {
 	const Piece Board::even[Square::RANK_NUM][Square::FILE_NUM] = {
@@ -103,6 +104,19 @@ namespace Shogi {
 		for (sq.leftmost(); !get(sq).isWall(); sq.leftmost(), sq.down()) {
 			for (; !get(sq).isWall(); sq.right()) {
 				oss << get(sq).toString();
+			}
+			oss << '\n';
+		}
+		return oss.str();
+	}
+
+	std::string Board::toStringCsa() const {
+		std::ostringstream oss;
+		Square sq(Square::TOP);
+		for (sq.leftmost(); !get(sq).isWall(); sq.leftmost(), sq.down()) {
+			oss << Csa::CHAR_POS << sq.getRank();
+			for (; !get(sq).isWall(); sq.right()) {
+				oss << get(sq).toStringCsa();
 			}
 			oss << '\n';
 		}

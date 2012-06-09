@@ -22,6 +22,7 @@ namespace Csa {
 			pos.setBoard(Shogi::Square(file, rank), piece);
 			line += 3;
 		}
+		return true;
 	}
 
 	bool CsaReader::parseLineHand(const char* line, Shogi::Position& pos, bool black) {

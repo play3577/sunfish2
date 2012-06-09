@@ -50,6 +50,8 @@ namespace Shogi {
 		PawnFlags getPawnFiles() const;
 
 		std::string toString() const;
+
+		std::string toStringCsa() const;
 	};
 }
 

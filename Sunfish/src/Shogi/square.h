@@ -77,15 +77,19 @@ namespace Shogi {
 		}
 
 		void to(const Direction& dir) {
-			square += (unsigned)dir;
+			square += (int)dir;
 		}
 
 		void to(const Direction& dir, int num) {
-			square += (unsigned)dir * num;
+			square += (int)dir * num;
 		}
 
 		void operator+=(const Direction& dir) {
-			square += (unsigned)dir;
+			square += (int)dir;
+		}
+
+		void operator+=(int dir) {
+			square += (int)dir;
 		}
 
 		Square add(const Direction& dir) const {
@@ -94,7 +98,17 @@ namespace Shogi {
 			return sq;
 		}
 
+		Square add(int dir) const {
+			Square sq(*this);
+			sq += dir;
+			return sq;
+		}
+
 		Square operator+(const Direction& dir) const {
+			return add(dir);
+		}
+
+		Square operator+(int dir) const {
 			return add(dir);
 		}
 
