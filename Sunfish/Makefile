@@ -6,7 +6,7 @@ PROGRAM:=sunfish
 SOURCES:=$(wildcard ./src/*.cpp) \
 $(wildcard ./src/Shogi/*.cpp) \
 $(wildcard ./src/Csa/*.cpp) \
-$(wildcard ./src/Debug/*.cpp)
+$(wildcard ./src/Tools/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 

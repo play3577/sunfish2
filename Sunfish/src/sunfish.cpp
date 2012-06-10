@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include "Debug/debug.h"
+#include "Tools/debug.h"
 #include "sunfish.h"
 
 int main(int argc, char* argv[]) {

@@ -7,7 +7,7 @@
 
 #include "csaReader.h"
 #include "../Shogi/square.h"
-#include "../Debug/debug.h"
+#include "../Tools/debug.h"
 #include <cstring>
 #include <fstream>
 #include <iostream>

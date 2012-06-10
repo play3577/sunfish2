@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <sstream>
-#include "../Debug/debug.h"
+#include "../Tools/debug.h"
 #include "../Csa/csa.h"
 #include "position.h"
 #include "squareDiff.h"

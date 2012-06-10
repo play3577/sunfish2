@@ -7,7 +7,7 @@
 
 #include <cassert>
 #include <iostream>
-#include "../Debug/debug.h"
+#include "../Tools/debug.h"
 #include "square.h"
 #include "moveGenerator.h"
 
