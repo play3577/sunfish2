@@ -33,6 +33,7 @@ namespace Shogi {
 		static const unsigned TOP = 0x21;
 		static const unsigned END = 0xA9;
 		static const unsigned END_W = 0xCF;
+		static const unsigned INVALID = 0x100;
 		static const unsigned FILE_NUM = 9;
 		static const unsigned RANK_NUM = 9;
 

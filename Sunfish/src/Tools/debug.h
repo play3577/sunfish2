@@ -26,6 +26,8 @@ namespace Tools{
 		static void Print( const char* str, ... );
 
 		static bool GeneratorRandomTest(const char* filename);
+
+		static bool GeneratorTest(const char* filename);
 	};
 }
 

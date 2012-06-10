@@ -267,14 +267,16 @@ namespace Shogi {
 
 	template <bool black, bool check>
 	void MoveGenerator::generateKing() {
-		generateKingDirection<black, check>(Direction::LEFT_UP);
-		generateKingDirection<black, check>(Direction::UP);
-		generateKingDirection<black, check>(Direction::RIGHT_UP);
-		generateKingDirection<black, check>(Direction::LEFT);
-		generateKingDirection<black, check>(Direction::RIGHT);
-		generateKingDirection<black, check>(Direction::LEFT_DOWN);
-		generateKingDirection<black, check>(Direction::DOWN);
-		generateKingDirection<black, check>(Direction::RIGHT_DOWN);
+		if (black ? pos.getBKing().valid() : pos.getWKing().valid()) {
+			generateKingDirection<black, check>(Direction::LEFT_UP);
+			generateKingDirection<black, check>(Direction::UP);
+			generateKingDirection<black, check>(Direction::RIGHT_UP);
+			generateKingDirection<black, check>(Direction::LEFT);
+			generateKingDirection<black, check>(Direction::RIGHT);
+			generateKingDirection<black, check>(Direction::LEFT_DOWN);
+			generateKingDirection<black, check>(Direction::DOWN);
+			generateKingDirection<black, check>(Direction::RIGHT_DOWN);
+		}
 	}
 
 	template <bool black, bool check>

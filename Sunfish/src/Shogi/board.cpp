@@ -80,7 +80,7 @@ namespace Shogi {
 				return sq;
 			}
 		}
-		return Square::TOP_W;
+		return Square::INVALID;
 	}
 	template Square Board::getKingSquare<true>() const;
 	template Square Board::getKingSquare<false>() const;

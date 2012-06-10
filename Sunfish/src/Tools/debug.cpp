@@ -88,7 +88,7 @@ namespace Tools{
 			const Shogi::Move& move = gen.get(r());
 			pos.moveUnsafe(move);
 			std::cout << move.toString() << '\n';
-			std::cout << pos.toString();
+			std::cout << pos.toStringCsa();
 			std::cout << pos.toStringEffect(true);
 			std::cout.flush();
 	
@@ -102,6 +102,34 @@ namespace Tools{
 				return false;;
 			}
 		}
+		return true;
+	}
+
+	bool Debug::GeneratorTest(const char* filename) {
+		Shogi::Position pos(Shogi::EVEN);
+		if (filename) {
+			Csa::CsaReader::read(filename, pos);
+		}
+		std::cout << pos.toStringCsa();
+		std::cout << pos.toStringEffect();
+		std::cout << pos.toStringBPawns() << '\n';
+		std::cout << pos.toStringWPawns() << '\n';
+
+		Shogi::MoveGenerator gen(pos);
+		gen.generate();
+		gen.sort();
+		Shogi::MoveGenerator gen2(pos);
+		gen2.generateTardy();
+		gen2.sort();
+		const Shogi::Move* pmove;
+		while ((pmove = gen.next()) != NULL) {
+			std::cout << pmove->toString() << ' ';
+		}
+		std::cout << std::endl;
+		while ((pmove = gen2.next()) != NULL) {
+			std::cout << pmove->toString() << ' ';
+		}
+		std::cout << std::endl;
 		return true;
 	}
 }

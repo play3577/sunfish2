@@ -169,9 +169,9 @@ namespace Shogi {
 
 		bool isCheck() const {
 			if (blackTurn) {
-				return (bool)effectBoard.get(bking, false).getExcludeKing();
+				return bking.valid() && (bool)effectBoard.get(bking, false).getExcludeKing();
 			} else {
-				return (bool)effectBoard.get(wking, true).getExcludeKing();
+				return wking.valid() && (bool)effectBoard.get(wking, true).getExcludeKing();
 			}
 		}
 

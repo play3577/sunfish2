@@ -8,6 +8,7 @@
 #ifndef SQUAREDIFF_H_
 #define SQUAREDIFF_H_
 
+#include <cassert>
 #include "square.h"
 
 namespace Shogi {
@@ -35,6 +36,8 @@ namespace Shogi {
 		}
 
 		DirectionAndRange toDirectionAndRange() const {
+			assert(diff >= -0x88);
+			assert(diff <= +0x88);
 			int dir = diff2dir[diff];
 			return DirectionAndRange(dir, diff != dir);
 		}
