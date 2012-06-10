@@ -24,5 +24,16 @@ namespace Shogi {
 		oss << '\n';
 		return oss.str();
 	}
+
+	std::string Hand::toStringCsa() const {
+		std::ostringstream oss;
+		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
+			for (int i = hand[piece]; i > 0; i--) {
+				oss << piece.toStringNameOnly();
+			}
+		}
+		oss << '\n';
+		return oss.str();
+	}
 }
 

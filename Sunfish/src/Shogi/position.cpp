@@ -13,6 +13,8 @@
 #include "squareDiff.h"
 
 namespace Shogi {
+	PositionHash* Position::pPositionHash = NULL;
+
 	std::string Position::toString() const {
 		std::ostringstream oss;
 		oss << "White:" << whiteHand.toString();
@@ -24,10 +26,29 @@ namespace Shogi {
 	std::string Position::toStringCsa() const {
 		std::ostringstream oss;
 		oss << board.toStringCsa();
-		oss << Csa::CHAR_POS << Csa::CHAR_BLK << blackHand.toString();
-		oss << Csa::CHAR_POS << Csa::CHAR_WHT << whiteHand.toString();
+		oss << Csa::CHAR_POS << Csa::CHAR_BLK << blackHand.toStringCsa();
+		oss << Csa::CHAR_POS << Csa::CHAR_WHT << whiteHand.toStringCsa();
 		oss << (blackTurn ? Csa::CHAR_BLK : Csa::CHAR_WHT) << '\n';
 		return oss.str();
+	}
+
+	void Position::updateHash() {
+		hash = U64(0);
+		for (Square square = Square::TOP; square.valid(); square.next()) {
+			Piece piece = board.get(square);
+			if (!piece.isEmpty()) {
+				hash ^= hashBoard(piece, square);
+			}
+		}
+		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
+			for (int h = 0; h <= blackHand.get(piece); h++) {
+				hash ^= hashHand(piece, h, true);
+			}
+			for (int h = 0; h <= whiteHand.get(piece); h++) {
+				hash ^= hashHand(piece, h, false);
+			}
+		}
+		hash ^= blackTurn ? hashBlack() : U64(0);
 	}
 
 	template <bool black>
@@ -149,60 +170,67 @@ namespace Shogi {
 
 	template <bool black>
 	void Position::moveUnsafe(const Move& move) {
-		if (move.isHand()) {
+		if (move.isHand()) { // 持ち駒を打つ場合
 			Piece piece = move.getPiece();
-			if (black) {
+			if (black) { // 先手
 				assert(piece.isBlack());
-				blackHand.dec(piece);
-				board.set(move.getTo(), piece);
+				blackHand.dec(piece); // hand
+				hash ^= hashHand(piece, blackHand.get(piece), true); // hash
+				board.set(move.getTo(), piece); // board
+				hash ^= hashBoard(piece, move.getTo()); // hash
 				if (piece == Piece::BPAWN) {
 					bpawns.set(move.getTo().getFile());
 				}
-				std::cout << piece.toString() << std::endl;
-				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
-			} else {
+				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board); // effect
+			} else { // 後手
 				assert(piece.isWhite());
-				whiteHand.dec(piece);
-				board.set(move.getTo(), piece);
+				whiteHand.dec(piece); // hand
+				hash ^= hashHand(piece, whiteHand.get(piece), false); // hash
+				board.set(move.getTo(), piece); // board
+				hash ^= hashBoard(piece, move.getTo()); // hash
 				if (piece == Piece::WPAWN) {
 					wpawns.set(move.getTo().getFile());
 				}
-				std::cout << piece.toString() << std::endl;
-				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
+				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board); // effect
 			}
-		} else {
-			Piece piece = board.set(move.getFrom(), Piece::EMPTY);
-			if (black) {
-				effectBoard.change<true, false>(move.getFrom(), piece.getMoveableDirection(), board);
-			} else {
-				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board);
+		} else { // 盤上の駒
+			Piece piece = board.set(move.getFrom(), Piece::EMPTY); // board
+			hash ^= hashBoard(piece, move.getFrom()); // hash
+			if (black) { // 先手
+				effectBoard.change<true, false>(move.getFrom(), piece.getMoveableDirection(), board); // effect
+			} else { // 後手
+				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board); // effect
 			}
-			if (move.isPromotion()) {
-				if (black && piece == Piece::BPAWN) {
+			if (move.isPromotion()) { // 成
+				if (black && piece == Piece::BPAWN) { // 先手の歩
 					bpawns.unset(move.getFrom().getFile());
-				} else if (!black && piece == Piece::WPAWN) {
+				} else if (!black && piece == Piece::WPAWN) { // 後手の歩
 					wpawns.unset(move.getFrom().getFile());
 				}
 				piece.promote();
-			} else if (black && piece.isKing<true>()) {
+			} else if (black && piece.isKing<true>()) { // 先手玉
 				bking = move.getTo();
-			} else if (!black && piece.isKing<false>()) {
+			} else if (!black && piece.isKing<false>()) { // 後手玉
 				wking = move.getTo();
 			}
-			Piece capture = board.set(move.getTo(), piece);
+			Piece capture = board.set(move.getTo(), piece); // board
+			hash ^= hashBoard(piece, move.getTo()); // hash
 			assert(capture != Piece::BKING);
 			assert(capture != Piece::WKING);
 			if (!capture.isEmpty()) {
+				Piece captureUP = capture.getUnPromoted();
 				if (black) {
-					blackHand.inc(capture.getUnPromoted());
-					effectBoard.change<false, false>(move.getTo(), capture.getMoveableDirection(), board);
-					if (capture == Piece::WPAWN) {
+					hash ^= hashHand(captureUP, blackHand.get(captureUP), true); // hash
+					blackHand.inc(captureUP); // hand
+					effectBoard.change<false, false>(move.getTo(), capture.getMoveableDirection(), board); // effect
+					if (capture == Piece::WPAWN) { // 後手の歩
 						wpawns.unset(move.getTo().getFile());
 					}
 				} else {
-					whiteHand.inc(capture.getUnPromoted());
-					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board);
-					if (capture == Piece::BPAWN) {
+					hash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hash
+					whiteHand.inc(capture.getUnPromoted()); // hand
+					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board); // effect
+					if (capture == Piece::BPAWN) { // 先手の歩
 						bpawns.unset(move.getTo().getFile());
 					}
 				}

@@ -90,6 +90,7 @@ namespace Tools{
 			std::cout << move.toString() << '\n';
 			std::cout << pos.toStringCsa();
 			std::cout << pos.toStringEffect(true);
+			std::cout << Util::Int::toString64(pos.getHash()) << '\n';
 			std::cout.flush();
 	
 			// effect

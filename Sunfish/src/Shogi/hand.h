@@ -18,6 +18,8 @@ namespace Shogi {
 		int hand[Piece::ROOK+1];
 
 	public:
+		static const int MAX = 18;
+
 		Hand() {
 			init();
 		}
@@ -51,6 +53,8 @@ namespace Shogi {
 		}
 
 		std::string toString() const;
+
+		std::string toStringCsa() const;
 	};
 }
 

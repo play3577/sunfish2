@@ -14,6 +14,7 @@
 #include "move.h"
 #include "effectBoard.h"
 #include "pawnFlags.h"
+#include "positionHash.h"
 
 namespace Shogi {
 	class Position {
@@ -27,6 +28,24 @@ namespace Shogi {
 		PawnFlags bpawns;
 		PawnFlags wpawns;
 		bool blackTurn;
+		static PositionHash* pPositionHash;
+		Util::uint64 hash;
+
+		static Util::int64 hashBoard(const Piece& piece, const Square& square) {
+			return pPositionHash->getBoard(piece, square);
+		}
+
+		static Util::int64 hashHand(const Piece& piece, int h, bool black) {
+			if (black) {
+				return pPositionHash->getBlackHand(piece, h);
+			} else {
+				return pPositionHash->getWhiteHand(piece, h);
+			}
+		}
+
+		static Util::int64 hashBlack() {
+			return pPositionHash->getBlack();
+		}
 
 		template <bool black>
 		bool isLegalMove(const Move& move) const;
@@ -57,7 +76,16 @@ namespace Shogi {
 		Position(const Position& position) : board(position.board), blackHand(position.blackHand),
 				whiteHand(position.whiteHand), effectBoard(position.effectBoard),
 				bking(position.bking), wking(position.wking),
-				bpawns(position.bpawns), wpawns(position.wpawns) {
+				bpawns(position.bpawns), wpawns(position.wpawns),
+				hash(position.hash) {
+		}
+
+		static void setPositionHash(PositionHash* pPositionHash) {
+			Position::pPositionHash = pPositionHash;
+		}
+
+		Util::uint64 getHash() const {
+			return hash;
 		}
 
 		void initNoUpdate() {
@@ -77,7 +105,10 @@ namespace Shogi {
 			wking = board.getKingSquare<false>();
 			bpawns = board.getPawnFiles<true>();
 			wpawns = board.getPawnFiles<false>();
+			updateHash();
 		}
+
+		void updateHash();
 
 		const Piece& getBoard(const Square& square) const {
 			return board.get(square);

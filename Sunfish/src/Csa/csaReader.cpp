@@ -76,6 +76,7 @@ namespace Csa {
 		pos.initNoUpdate();
 		while (true) {
 			fin.getline(line, sizeof(line));
+			if (fin.fail()) { return false; }
 			if (fin.eof()) { break; }
 			if (!parseLine(line, pos)) {
 				//return false;
