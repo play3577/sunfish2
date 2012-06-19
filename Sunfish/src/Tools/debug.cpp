@@ -58,9 +58,9 @@ namespace Tools{
 		boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 		for (int i = 0; i < 10000; i++) {
 			std::cout << '[' << i << ']' << '\n';
-			Shogi::MoveGenerator gen(pos);
+			Shogi::MoveGenerator<Shogi::Move> gen(pos);
 			gen.generate();
-			Shogi::MoveGenerator gen2(pos);
+			Shogi::MoveGenerator<Shogi::Move> gen2(pos);
 			gen2.generateTardy();
 	
 			gen.sort();
@@ -92,6 +92,15 @@ namespace Tools{
 			std::cout << pos.toStringEffect(true);
 			std::cout << Util::Int::toString64(pos.getHash()) << '\n';
 			std::cout.flush();
+
+			// hash
+			if (pos.getHash() != pos.generateHash()) {
+				std::cout << '\n';
+				std::cout << "HASH CODE ERROR!!!\n";
+				std::cout << std::hex << pos.generateHash() << '\n';
+				DEBUG_PRINT_LINE;
+				return false;
+			}
 	
 			// effect
 			Shogi::Position temp(pos);
@@ -116,10 +125,10 @@ namespace Tools{
 		std::cout << pos.toStringBPawns() << '\n';
 		std::cout << pos.toStringWPawns() << '\n';
 
-		Shogi::MoveGenerator gen(pos);
+		Shogi::MoveGenerator<Shogi::Move> gen(pos);
 		gen.generate();
 		gen.sort();
-		Shogi::MoveGenerator gen2(pos);
+		Shogi::MoveGenerator<Shogi::Move> gen2(pos);
 		gen2.generateTardy();
 		gen2.sort();
 		const Shogi::Move* pmove;

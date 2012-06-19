@@ -13,21 +13,19 @@
 #include "move.h"
 
 namespace Shogi {
+	template <class M>
 	class MoveGenerator {
 	private:
 		static const unsigned MAX_MOVES_NUM = 1024;
 		const Position& pos;
 		unsigned num;
 		unsigned curr;
-		Move moves[MAX_MOVES_NUM];
+		M moves[MAX_MOVES_NUM];
 
 		void generateOnBoard();
 
 		template <bool black>
 		void generateOnBoard();
-
-//		template <bool black>
-//		void generate1Step(const Piece piece, const Square from, const Direction dir);
 
 		template <bool black, bool oneStep, bool promotable>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
@@ -57,7 +55,9 @@ namespace Shogi {
 		void generateEvasionDrop(Square to);
 
 	public:
-		MoveGenerator(const Position& pos);
+		MoveGenerator(const Position& pos) : pos(pos) {
+			clear();
+		}
 
 		void clear() {
 			num = 0;
@@ -84,7 +84,7 @@ namespace Shogi {
 
 		bool equals(const MoveGenerator gen) const;
 
-		const Move* next() {
+		const M* next() {
 			if (curr < num) {
 				return &moves[curr++];
 			} else {
@@ -92,7 +92,7 @@ namespace Shogi {
 			}
 		}
 
-		const Move& get(unsigned index) const {
+		const M& get(unsigned index) const {
 			return moves[index];
 		}
 	};

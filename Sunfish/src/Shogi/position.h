@@ -15,6 +15,7 @@
 #include "effectBoard.h"
 #include "pawnFlags.h"
 #include "positionHash.h"
+#include "change.h"
 
 namespace Shogi {
 	class Position {
@@ -50,8 +51,26 @@ namespace Shogi {
 		template <bool black>
 		bool isLegalMove(const Move& move) const;
 
-		template <bool black>
-		void moveUnsafe(const Move& move);
+		template <bool black, bool chNotNull>
+		void moveUnsafe(const Move& move, Change* change);
+
+		template <bool chNotNull>
+		void moveUnsafe(const Move& move, Change* change) {
+			if (blackTurn) {
+				moveUnsafe<true, chNotNull>(move, change);
+			} else {
+				moveUnsafe<false, chNotNull>(move, change);
+			}
+		}
+
+		template <bool chNotNull>
+		bool move(const Move& move, Change* change) {
+			if (isLegalMove(move)) {
+				moveUnsafe<chNotNull>(move, change);
+				return true;
+			}
+			return false;
+		}
 
 		template <bool black, unsigned excludingFlag>
 		bool isKingMoveable(Direction dir) const;
@@ -108,7 +127,11 @@ namespace Shogi {
 			updateHash();
 		}
 
-		void updateHash();
+		void updateHash() {
+			hash = generateHash();
+		}
+
+		Util::uint64 generateHash() const;
 
 		const Piece& getBoard(const Square& square) const {
 			return board.get(square);
@@ -239,19 +262,19 @@ namespace Shogi {
 		}
 
 		bool move(const Move& move) {
-			if (isLegalMove(move)) {
-				moveUnsafe(move);
-				return true;
-			}
-			return false;
+			return this->move<false>(move, NULL);
+		}
+
+		bool move(const Move& move, Change& change) {
+			return this->move<true>(move, &change);
 		}
 
 		void moveUnsafe(const Move& move) {
-			if (blackTurn) {
-				moveUnsafe<true>(move);
-			} else {
-				moveUnsafe<false>(move);
-			}
+			moveUnsafe<false>(move, NULL);
+		}
+
+		void moveUnsafe(const Move& move, Change& change) {
+			moveUnsafe<true>(move, &change);
 		}
 
 		std::string toString() const;

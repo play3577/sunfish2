@@ -12,12 +12,8 @@
 #include "moveGenerator.h"
 
 namespace Shogi {
-	MoveGenerator::MoveGenerator(const Position& pos) : pos(pos) {
-		clear();
-	}
-
-	unsigned MoveGenerator::generate() {
-		// TODO: Debug.txtの局面を検証
+	template <class M>
+	unsigned MoveGenerator<M>::generate() {
 		if (pos.isCheck()) {
 			if (pos.isBlackTurn()) {
 				generateEvasion<true>();
@@ -39,9 +35,11 @@ namespace Shogi {
 		}
 		return num;
 	}
+	template unsigned MoveGenerator<Move>::generate();
 
+	template <class M>
 	template <bool black>
-	void MoveGenerator::generateOnBoard() {
+	void MoveGenerator<M>::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
 			const Direction pin = pos.pin(sq, black).toDirection();
@@ -233,8 +231,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black, bool oneStep, bool promotable>
-	void MoveGenerator::generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin) {
+	void MoveGenerator<M>::generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin) {
 		if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
 			return;
 		}
@@ -255,8 +254,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black, bool promotable>
-	void MoveGenerator::generateMoveOneMove(const Piece piece, const Square from, const Square to) {
+	void MoveGenerator<M>::generateMoveOneMove(const Piece piece, const Square from, const Square to) {
 		if (promotable && to.isPromotableRank(black)) {
 			moves[num++] = Move(from, to, true, false, piece);
 		}
@@ -265,8 +265,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black, bool check>
-	void MoveGenerator::generateKing() {
+	void MoveGenerator<M>::generateKing() {
 		if (black ? pos.getBKing().valid() : pos.getWKing().valid()) {
 			generateKingDirection<black, check>(Direction::LEFT_UP);
 			generateKingDirection<black, check>(Direction::UP);
@@ -279,8 +280,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black, bool check>
-	void MoveGenerator::generateKingDirection(const Direction& dir) {
+	void MoveGenerator<M>::generateKingDirection(const Direction& dir) {
 		Square from = (black ? pos.getBKing() : pos.getWKing());
 		Square to = from + dir;
 		Piece piece = pos.getBoard(to);
@@ -293,8 +295,9 @@ namespace Shogi {
 		moves[num++] = Move(from, to, false, false, (black ? Piece::BKING : Piece::WKING));
 	}
 
+	template <class M>
 	template <bool black>
-	void MoveGenerator::generateDrop() {
+	void MoveGenerator<M>::generateDrop() {
 		generateDropPieces<black, (black ? Piece::BPAWN : Piece::WPAWN)>();
 		generateDropPieces<black, (black ? Piece::BLANCE : Piece::WLANCE)>();
 		generateDropPieces<black, (black ? Piece::BKNIGHT : Piece::WKNIGHT)>();
@@ -304,8 +307,9 @@ namespace Shogi {
 		generateDropPieces<black, (black ? Piece::BROOK : Piece::WROOK)>();
 	}
 
+	template <class M>
 	template <bool black, unsigned piece>
-	void MoveGenerator::generateDropPieces() {
+	void MoveGenerator<M>::generateDropPieces() {
 		assert(black != (piece & Piece::TURN));
 		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
 			for (unsigned file = 1; file <= Square::FILE_NUM; file++) {
@@ -341,8 +345,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black>
-	void MoveGenerator::generateEvasion() {
+	void MoveGenerator<M>::generateEvasion() {
 		DirectionFlags flags = pos.getCheckDirection();
 		if (!flags.isPlural()) {
 			Direction dir = flags.toDirection().reverse();
@@ -361,8 +366,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black>
-	void MoveGenerator::generateEvasionOnBoard(Square to) {
+	void MoveGenerator<M>::generateEvasionOnBoard(Square to) {
 		DirectionFlags flags = pos.getEffect(to, black).getExcludeKing();
 		while (flags.isNonZero()) {
 			Direction dir = flags.pop().toDirection().reverse();
@@ -380,8 +386,9 @@ namespace Shogi {
 		}
 	}
 
+	template <class M>
 	template <bool black, unsigned piece>
-	void MoveGenerator::generateEvasionDrop(Square to) {
+	void MoveGenerator<M>::generateEvasionDrop(Square to) {
 		assert(black != (piece & Piece::TURN));
 		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
 			if (black && piece == Piece::BPAWN && pos.getBPawnFiles().exist(to.getFile())) {
@@ -393,12 +400,17 @@ namespace Shogi {
 			if (to.isCompulsoryPromotion(piece)) {
 				return;
 			}
-			// TODO: uchi fu zume!!
+			if (black && piece == Piece::BPAWN && pos.isPawnDropMate(to, true)) {
+				return;
+			} else if (!black && piece == Piece::WPAWN && pos.isPawnDropMate(to, false)) {
+				return;
+			}
 			moves[num++] = Move(Square::NON, to, false, true, piece);
 		}
 	}
 
-	unsigned MoveGenerator::generateTardy() {
+	template <class M>
+	unsigned MoveGenerator<M>::generateTardy() {
 		for (Square from = Square::TOP; from.valid(); from.next()) {
 			Piece piece = pos.getBoard(from);
 			if (!piece.isEmpty() && piece.isBlack() == pos.isBlackTurn()) {
@@ -427,8 +439,10 @@ namespace Shogi {
 		}
 		return num;
 	}
+	template unsigned MoveGenerator<Move>::generateTardy();
 
-	void MoveGenerator::sort() {
+	template <class M>
+	void MoveGenerator<M>::sort() {
 		// TODO: use boost
 //		boost::sort(moves);
 		for (int i = 1; (unsigned)i < num; i++) {
@@ -443,8 +457,10 @@ namespace Shogi {
 			moves[j+1] = move;
 		}
 	}
+	template void MoveGenerator<Move>::sort();
 
-	bool MoveGenerator::equals(const MoveGenerator gen) const {
+	template <class M>
+	bool MoveGenerator<M>::equals(const MoveGenerator gen) const {
 		if (num != gen.num) {
 			return false;
 		}
@@ -455,4 +471,5 @@ namespace Shogi {
 		}
 		return true;
 	}
+	template bool MoveGenerator<Move>::equals(const MoveGenerator gen) const;
 }

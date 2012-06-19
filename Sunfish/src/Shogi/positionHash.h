@@ -46,11 +46,11 @@ namespace Shogi {
 		}
 
 		Util::uint64 getBlackHand(const Piece& piece, int h) {
-			return blackHand[piece][h];
+			return blackHand[piece.getTurnedBlack()][h];
 		}
 
 		Util::uint64 getWhiteHand(const Piece& piece, int h) {
-			return whiteHand[piece][h];
+			return whiteHand[piece.getTurnedBlack()][h];
 		}
 
 		Util::uint64 getBlack() {
