@@ -171,6 +171,7 @@ namespace Shogi {
 
 	template <bool black, bool chNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change) {
+		if (chNotNull) { change->setHash(hash); } // hash
 		if (move.isHand()) { // 持ち駒を打つ場合
 			if (chNotNull) { change->setType(Change::DROP); } // type of change
 			Piece piece = move.getPiece();
@@ -268,6 +269,67 @@ namespace Shogi {
 	template void Position::moveUnsafe<true, false>(const Move& move, Change* change);
 	template void Position::moveUnsafe<false, true>(const Move& move, Change* change);
 	template void Position::moveUnsafe<false, false>(const Move& move, Change* change);
+
+	template <bool black>
+	void Position::back(const Change& change) {
+		Piece handPiece;
+		Piece fromPiece;
+		Piece toPiece;
+		Square to;
+		Square from;
+		switch (change.getType()) {
+		case Change::NULL_MOVE:
+			break;
+		case Change::DROP:
+			handPiece = change.getHandPiece();
+			to = change.getToSquare();
+			if (black) {
+				blackHand.set(handPiece, change.getHandNum());
+			} else {
+				whiteHand.set(handPiece, change.getHandNum());
+			}
+			board.set(to, Piece::EMPTY);
+			if (black) {
+				effectBoard.change<true, false>(to, handPiece.getMoveableDirection(), board); // effect
+			} else {
+				effectBoard.change<false, false>(to, handPiece.getMoveableDirection(), board); // effect
+			}
+			break;
+		case Change::CAPTURE:
+			handPiece = change.getHandPiece();
+			if (black) {
+				blackHand.set(handPiece, change.getHandNum());
+				effectBoard.change<false, true>(to, toPiece.getMoveableDirection(), board); // effect
+			} else {
+				whiteHand.set(handPiece, change.getHandNum());
+				effectBoard.change<true, true>(to, toPiece.getMoveableDirection(), board); // effect
+			}
+			// fall threw
+		case Change::NO_CAPTURE:
+			from = change.getFromSquare();
+			to = change.getFromSquare();
+			fromPiece = change.getFromPiece();
+			toPiece = change.getToPiece();
+			board.set(from, fromPiece);
+			if (black) { // 先手
+				effectBoard.change<true, true>(from, fromPiece.getMoveableDirection(), board); // effect
+			} else { // 後手
+				effectBoard.change<false, true>(from, fromPiece.getMoveableDirection(), board); // effect
+			}
+			Piece toAfterPiece = board.set(to, toPiece);
+			if (black) {
+				effectBoard.change<true, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+			} else {
+				effectBoard.change<false, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+			}
+			break;
+		default:
+			// 不明な変更
+			break;
+		}
+		turn();
+		hash = change.getHash();
+	}
 
 	template <bool black, unsigned excludingFlag>
 	bool Position::isKingMoveable(Direction dir) const {

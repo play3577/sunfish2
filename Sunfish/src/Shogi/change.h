@@ -8,6 +8,7 @@
 #ifndef CHANGE_H_
 #define CHANGE_H_
 
+#include "../Util/int.h"
 #include "square.h"
 #include "piece.h"
 
@@ -15,6 +16,7 @@ namespace Shogi {
 	class Change {
 	private:
 		struct {
+			Util::uint64 hash;
 			unsigned type : 2;
 			unsigned handPiece : 3;
 			unsigned handNum : 5;
@@ -113,6 +115,14 @@ namespace Shogi {
 
 		void setToPiece(const Piece& piece) {
 			c.toPiece = piece.getInteger();
+		}
+
+		Util::uint64 getHash() {
+			return c.hash;
+		}
+
+		void setHash(Util::uint64 hash) {
+			c.hash = hash;
 		}
 	};
 }

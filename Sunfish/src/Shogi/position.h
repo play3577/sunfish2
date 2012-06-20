@@ -63,6 +63,9 @@ namespace Shogi {
 			}
 		}
 
+		template <bool black>
+		void back(const Change& change);
+
 		template <bool chNotNull>
 		bool move(const Move& move, Change* change) {
 			if (isLegalMove(move)) {
