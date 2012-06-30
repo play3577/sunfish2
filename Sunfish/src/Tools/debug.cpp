@@ -49,6 +49,28 @@ namespace Tools{
 		va_end( argx );
 	}
 
+	bool Debug::PositionOk(const Shogi::Position pos) {
+		// hash
+		if (pos.getHash() != pos.generateHash()) {
+			std::cout << "***** HASH CODE ERROR!!! *****\n";
+			std::cout << std::hex << pos.generateHash() << '\n';
+			DEBUG_PRINT_LINE;
+			std::cout.flush();
+			return false;
+		}
+		// effect
+		Shogi::Position temp(pos);
+		temp.update();
+		if (!temp.getEffectBoard().equals(pos.getEffectBoard())) {
+			std::cout << "***** EFFECT BOARD ERROR!!! *****\n";
+			std::cout << temp.toStringEffect(true);
+			DEBUG_PRINT_LINE;
+			std::cout.flush();
+			return false;;
+		}
+		return true;
+	}
+
 	bool Debug::GeneratorRandomTest(const char* filename) {
 		Shogi::Position pos(Shogi::EVEN);
 		if (filename) {
@@ -93,23 +115,8 @@ namespace Tools{
 			std::cout << Util::Int::toString64(pos.getHash()) << '\n';
 			std::cout.flush();
 
-			// hash
-			if (pos.getHash() != pos.generateHash()) {
-				std::cout << '\n';
-				std::cout << "HASH CODE ERROR!!!\n";
-				std::cout << std::hex << pos.generateHash() << '\n';
-				DEBUG_PRINT_LINE;
+			if (!PositionOk(pos)) {
 				return false;
-			}
-	
-			// effect
-			Shogi::Position temp(pos);
-			temp.update();
-			if (!temp.getEffectBoard().equals(pos.getEffectBoard())) {
-				std::cout << '\n';
-				std::cout << temp.toStringEffect(true);
-				DEBUG_PRINT_LINE;
-				return false;;
 			}
 		}
 		return true;
@@ -140,6 +147,43 @@ namespace Tools{
 			std::cout << pmove->toString() << ' ';
 		}
 		std::cout << std::endl;
+		return true;
+	}
+
+	void Debug::TreeSearch(Shogi::Tree& tree) {
+		std::cout << tree.getDepth() << '/'
+			<< tree.getMaxDepth() << '\n';
+		std::cout << tree.toString();
+#if 0
+		static char line[1024];
+		std::cin.getline(line, sizeof(line));
+#endif
+		if (tree.isMaxDepth()) {
+			return;
+		}
+		tree.generateMoves();
+		while (tree.next()) {
+			tree.makeMove();
+			std::cout << tree.getChange()->toString() << '\n';
+			std::cout << tree.getPrevMove()->toString() << '\n';
+			if (!PositionOk(tree.getPosition())) {
+				abort();
+			}
+			TreeSearch(tree);
+			tree.unmakeMove();
+			if (!PositionOk(tree.getPosition())) {
+				abort();
+			}
+		}
+	}
+
+	bool Debug::TreeTest(const char* filename) {
+		Shogi::Position pos(Shogi::EVEN);
+		if (filename) {
+			Csa::CsaReader::read(filename, pos);
+		}
+		Shogi::Tree tree(pos, 5);
+		TreeSearch(tree);
 		return true;
 	}
 }

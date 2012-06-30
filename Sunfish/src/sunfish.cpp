@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 		filename = argv[1];
 	}
 
-	Tools::Debug::GeneratorRandomTest(filename);
+	Tools::Debug::TreeTest(filename);
 
 	return 0;
 }

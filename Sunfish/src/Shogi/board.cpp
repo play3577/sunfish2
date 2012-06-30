@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <cstring>
 #include "board.h"
 #include "../Csa/csa.h"
 
@@ -68,9 +69,13 @@ namespace Shogi {
 	}
 
 	void Board::init(const Board& b) {
+#if 0
 		for (Square pos(Square::TOP_W); pos.valid(); pos.inc()) {
 			set(pos, b.get(pos));
 		}
+#else
+		memcpy(&board, &b.board, sizeof(board));
+#endif
 	}
 
 	template <bool black>

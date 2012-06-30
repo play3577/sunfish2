@@ -20,6 +20,8 @@
 namespace Shogi {
 	class Position {
 	private:
+		static PositionHash* pPositionHash;
+		Util::uint64 hash;
 		Board board;
 		Hand blackHand;
 		Hand whiteHand;
@@ -29,8 +31,6 @@ namespace Shogi {
 		PawnFlags bpawns;
 		PawnFlags wpawns;
 		bool blackTurn;
-		static PositionHash* pPositionHash;
-		Util::uint64 hash;
 
 		static Util::int64 hashBoard(const Piece& piece, const Square& square) {
 			return pPositionHash->getBoard(piece, square);
@@ -95,12 +95,16 @@ namespace Shogi {
 			update();
 		}
 
-		Position(const Position& position) : board(position.board), blackHand(position.blackHand),
-				whiteHand(position.whiteHand), effectBoard(position.effectBoard),
+		Position(const Position& position) : hash(position.hash),
+				board(position.board),
+				blackHand(position.blackHand), whiteHand(position.whiteHand),
+				effectBoard(position.effectBoard),
 				bking(position.bking), wking(position.wking),
 				bpawns(position.bpawns), wpawns(position.wpawns),
-				hash(position.hash) {
+				blackTurn(position.blackTurn) {
 		}
+
+		void copy(const Position& position);
 
 		static void setPositionHash(PositionHash* pPositionHash) {
 			Position::pPositionHash = pPositionHash;
@@ -278,6 +282,14 @@ namespace Shogi {
 
 		void moveUnsafe(const Move& move, Change& change) {
 			moveUnsafe<true>(move, &change);
+		}
+
+		void back(const Change& change) {
+			if (blackTurn) {
+				back<false>(change);
+			} else {
+				back<true>(change);
+			}
 		}
 
 		std::string toString() const;

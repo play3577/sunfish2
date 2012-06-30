@@ -15,6 +15,19 @@
 namespace Shogi {
 	PositionHash* Position::pPositionHash = NULL;
 
+	void Position::copy(const Position& position) {
+		board.init(position.board);
+		blackHand.init(position.blackHand);
+		whiteHand.init(position.whiteHand);
+		effectBoard.init(position.effectBoard);
+		bking = position.bking;
+		wking = position.wking;
+		bpawns = position.bpawns;
+		wpawns = position.wpawns;
+		blackTurn = position.blackTurn;
+		hash = position.hash;
+	}
+
 	std::string Position::toString() const {
 		std::ostringstream oss;
 		oss << "White:" << whiteHand.toString();
@@ -171,7 +184,13 @@ namespace Shogi {
 
 	template <bool black, bool chNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change) {
-		if (chNotNull) { change->setHash(hash); } // hash
+		if (chNotNull) {
+			change->setHash(hash); // hash
+			change->setBlackKing(bking); // black king's square
+			change->setWhiteKing(wking); // white king's square
+			change->setBlackPawns(bpawns); // black pawns
+			change->setWhitePawns(wpawns); // white pawns
+		}
 		if (move.isHand()) { // 持ち駒を打つ場合
 			if (chNotNull) { change->setType(Change::DROP); } // type of change
 			Piece piece = move.getPiece();
@@ -231,6 +250,8 @@ namespace Shogi {
 			assert(capture != Piece::BKING);
 			assert(capture != Piece::WKING);
 			if (!capture.isEmpty()) {
+				assert(capture != Piece::BKING);
+				assert(capture != Piece::WKING);
 				hash ^= hashBoard(capture, move.getTo()); // hash
 				if (chNotNull) { change->setType(Change::CAPTURE); } // type of change
 				Piece captureUP = capture.getUnPromoted();
@@ -307,7 +328,7 @@ namespace Shogi {
 			// fall threw
 		case Change::NO_CAPTURE:
 			from = change.getFromSquare();
-			to = change.getFromSquare();
+			to = change.getToSquare();
 			fromPiece = change.getFromPiece();
 			toPiece = change.getToPiece();
 			board.set(from, fromPiece);
@@ -323,13 +344,16 @@ namespace Shogi {
 				effectBoard.change<false, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
 			}
 			break;
-		default:
-			// 不明な変更
-			break;
 		}
 		turn();
 		hash = change.getHash();
+		bking = change.getBlackKing();
+		wking = change.getWhiteKing();
+		bpawns = change.getBlackPawns();
+		wpawns = change.getWhitePawns();
 	}
+	template void Position::back<true>(const Change& change);
+	template void Position::back<false>(const Change& change);
 
 	template <bool black, unsigned excludingFlag>
 	bool Position::isKingMoveable(Direction dir) const {

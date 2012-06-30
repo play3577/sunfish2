@@ -9,6 +9,7 @@
 #define DEBUG_H_
 
 #include <iostream>
+#include "../Shogi/tree.h"
 
 #ifdef NDEBUG
 #define DEBUG_PRINT_LINE		do { } while (false)
@@ -25,9 +26,15 @@ namespace Tools{
 	public:
 		static void Print( const char* str, ... );
 
+		static bool PositionOk(const Shogi::Position pos);
+
 		static bool GeneratorRandomTest(const char* filename);
 
 		static bool GeneratorTest(const char* filename);
+
+		static void TreeSearch(Shogi::Tree& tree);
+
+		static bool TreeTest(const char* filename);
 	};
 }
 

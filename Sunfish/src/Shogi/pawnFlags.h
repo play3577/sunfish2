@@ -51,6 +51,14 @@ namespace Shogi{
 			bits &= ~(1 << file);
 		}
 
+		unsigned getBits() const {
+			return bits;
+		}
+
+		void setBits(unsigned bits) {
+			this->bits = bits;
+		}
+
 		std::string toString() const;
 	};
 }

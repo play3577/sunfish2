@@ -47,13 +47,17 @@ namespace Shogi {
 		}
 
 		EffectBoard(const EffectBoard& effectBoard) {
-			memcpy(blackEffectBoard, effectBoard.blackEffectBoard, sizeof(blackEffectBoard));
-			memcpy(whiteEffectBoard, effectBoard.whiteEffectBoard, sizeof(whiteEffectBoard));
+			init(effectBoard);
 		}
 
 		void init();
 
 		void init(const Board& board);
+
+		void init(const EffectBoard& effectBoard) {
+			memcpy(blackEffectBoard, effectBoard.blackEffectBoard, sizeof(blackEffectBoard));
+			memcpy(whiteEffectBoard, effectBoard.whiteEffectBoard, sizeof(whiteEffectBoard));
+		}
 
 		template <bool black>
 		void set(const Square& sq, const DirectionFlags& effect) {

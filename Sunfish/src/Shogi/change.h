@@ -20,12 +20,14 @@ namespace Shogi {
 			unsigned type : 2;
 			unsigned handPiece : 3;
 			unsigned handNum : 5;
-			//unsigned handEnemyPiece : 3;
-			//unsigned handEnemyNum : 5;
 			unsigned fromSquare : 8;
 			unsigned fromPiece : 5;
 			unsigned toSquare : 8;
 			unsigned toPiece : 5;
+			unsigned bking : 8;
+			unsigned wking : 8;
+			unsigned bpawns : 10;
+			unsigned wpawns : 10;
 		} c;
 
 	public:
@@ -43,7 +45,7 @@ namespace Shogi {
 			c = change.c;
 		}
 
-		unsigned getType() {
+		unsigned getType() const {
 			return c.type;
 		}
 
@@ -66,24 +68,6 @@ namespace Shogi {
 		void setHandNum(int num) {
 			c.handNum = num;
 		}
-
-/*
-		Piece getHandEnemyPiece() const {
-			return Piece(c.handEnemyPiece);
-		}
-
-		void setHandEnemyPiece(const Piece& piece) {
-			c.handEnemyPiece = piece.getTurnedBlack().getInteger();
-		}
-
-		unsigned getHandEnemyNum() const {
-			return c.handEnemyNum;
-		}
-
-		void setHandEnemyNum(int num) {
-			c.handEnemyNum = num;
-		}
-*/
 
 		Square getFromSquare() const {
 			return Square(c.fromSquare);
@@ -117,12 +101,61 @@ namespace Shogi {
 			c.toPiece = piece.getInteger();
 		}
 
-		Util::uint64 getHash() {
+		Util::uint64 getHash() const {
 			return c.hash;
 		}
 
 		void setHash(Util::uint64 hash) {
 			c.hash = hash;
+		}
+
+		Square getBlackKing() const {
+			return Square(c.bking);
+		}
+
+		void setBlackKing(const Square& square) {
+			c.bking = square.getIndex();
+		}
+
+		Square getWhiteKing() const {
+			return Square(c.wking);
+		}
+
+		void setWhiteKing(const Square& square) {
+			c.wking = square.getIndex();
+		}
+
+		PawnFlags getBlackPawns() const {
+			PawnFlags pawns;
+			pawns.setBits(c.bpawns);
+			return pawns;
+		}
+
+		void setBlackPawns(const PawnFlags& pawns) {
+			c.bpawns = pawns.getBits();
+		}
+
+		PawnFlags getWhitePawns() const {
+			PawnFlags pawns;
+			pawns.setBits(c.wpawns);
+			return pawns;
+		}
+
+		void setWhitePawns(const PawnFlags& pawns) {
+			c.wpawns = pawns.getBits();
+		}
+
+		std::string toString() const {
+			std::ostringstream oss;
+			oss << "hash=[" << c.hash << "], ";
+			oss << "type=[" << c.type << "], ";
+			oss << "handPiece=[" << c.handPiece << "], ";
+			oss << "handNum=[" << c.handNum << "], ";
+			oss << "fromSquare=[" << c.fromSquare << "], ";
+			oss << "fromPiece=[" << c.fromPiece << "], ";
+			oss << "toSquare=[" << c.toSquare << "], ";
+			oss << "toPiece=[" << c.toPiece << "]";
+			return oss.str();
 		}
 	};
 }
