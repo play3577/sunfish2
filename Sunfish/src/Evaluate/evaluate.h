@@ -14,11 +14,11 @@ namespace Evaluate {
 	class Evaluate {
 	private:
 		const Param& param;
-		Value value;
+		Value baseValue;
 
 	public:
-		Evaluate(const Param& param, Value value = Value(0)) :
-				param(param), value(value) {
+		Evaluate(const Param& param, Value baseValue = Value(0)) :
+				param(param), baseValue(baseValue) {
 		}
 
 		Evaluate(const Param& param, const Shogi::Position& pos) :
@@ -28,12 +28,40 @@ namespace Evaluate {
 
 		void init(const Shogi::Position& pos);
 
-		void setValue(Value value) {
-			this->value = value;
+		void addBaseValue(const Shogi::Piece piece) {
+			baseValue += param.getPiece(piece);
+		}
+
+		void subBaseValue(const Shogi::Piece piece) {
+			baseValue -= param.getPiece(piece);
+		}
+
+		void addBaseValueEx(const Shogi::Piece piece) {
+			baseValue += param.getPieceExchange(piece);
+		}
+
+		void subBaseValueEx(const Shogi::Piece piece) {
+			baseValue -= param.getPieceExchange(piece);
+		}
+
+		void addBaseValuePr(const Shogi::Piece piece) {
+			baseValue += param.getPiecePromote(piece);
+		}
+
+		void subBaseValuePr(const Shogi::Piece piece) {
+			baseValue -= param.getPiecePromote(piece);
+		}
+
+		Value getBaseValue() const {
+			return baseValue;
+		}
+
+		void setBaseValue(const Value& baseValue) {
+			this->baseValue = baseValue;
 		}
 
 		Value getValue() const {
-			return value;
+			return baseValue + Value(0); // TODO
 		}
 	};
 }

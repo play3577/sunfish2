@@ -182,8 +182,9 @@ namespace Shogi {
 	template bool Position::isLegalMove<true>(const Move& move) const;
 	template bool Position::isLegalMove<false>(const Move& move) const;
 
-	template <bool black, bool chNotNull>
-	void Position::moveUnsafe(const Move& move, Change* change) {
+	template <bool black, bool chNotNull, bool evNotNull>
+	void Position::moveUnsafe(const Move& move, Change* change,
+			Evaluate::Evaluate* eval) {
 		if (chNotNull) {
 			change->setHash(hash); // hash
 			change->setBlackKing(bking); // black king's square
@@ -237,6 +238,7 @@ namespace Shogi {
 				} else if (!black && piece == Piece::WPAWN) { // 後手の歩
 					wpawns.unset(move.getFrom().getFile());
 				}
+				if (evNotNull) { eval->addBaseValuePr(piece); } // evaluate
 				piece.promote();
 			} else if (black && piece.isKing<true>()) { // 先手玉
 				bking = move.getTo();
@@ -254,6 +256,7 @@ namespace Shogi {
 				assert(capture != Piece::WKING);
 				hash ^= hashBoard(capture, move.getTo()); // hash
 				if (chNotNull) { change->setType(Change::CAPTURE); } // type of change
+				if (evNotNull) { eval->subBaseValueEx(capture); } // evaluate
 				Piece captureUP = capture.getUnPromoted();
 				if (black) {
 					if (chNotNull) { change->setHandNum(blackHand.get(captureUP)); } // number of pieces
@@ -286,10 +289,30 @@ namespace Shogi {
 		turn();
 		hash ^= hashBlack();
 	}
-	template void Position::moveUnsafe<true, true>(const Move& move, Change* change);
-	template void Position::moveUnsafe<true, false>(const Move& move, Change* change);
-	template void Position::moveUnsafe<false, true>(const Move& move, Change* change);
-	template void Position::moveUnsafe<false, false>(const Move& move, Change* change);
+	template void Position::moveUnsafe<true, true, true>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<true, false, true>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<false, true, true>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<false, false, true>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<true, true, false>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<true, false, false>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<false, true, false>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
+	template void Position::moveUnsafe<false, false, false>
+			(const Move& move, Change* change,
+			Evaluate::Evaluate* eval);
 
 	template <bool black>
 	void Position::back(const Change& change) {

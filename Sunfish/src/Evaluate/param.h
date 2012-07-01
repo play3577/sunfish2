@@ -16,6 +16,8 @@ namespace Evaluate {
 	class TempParam {
 	private:
 		T piece[Shogi::Piece::DRAGON+1];
+		T pieceEx[Shogi::Piece::DRAGON+1];
+		T piecePr[Shogi::Piece::DRAGON+1];
 
 	public:
 		TempParam() {
@@ -30,7 +32,13 @@ namespace Evaluate {
 		}
 
 		void setPiece(const Shogi::Piece& p, T value) {
-			piece[p.getTurnedBlack()] = value;
+			Shogi::Piece bp = p.getTurnedBlack();
+			piece[bp] = value;
+			Shogi::Piece up = bp.getUnPromoted();
+			Shogi::Piece pp = bp.getPromoted();
+			pieceEx[up] = piece[up] * 2;
+			pieceEx[pp] = piece[up] + piece[pp];
+			piecePr[up] = piecePr[pp] = piece[pp] - piece[up];
 		}
 
 		T getPiece(const Shogi::Piece& p) const {
@@ -38,6 +46,22 @@ namespace Evaluate {
 				return  piece[p];
 			} else {
 				return -piece[p.getTurnedBlack()];
+			}
+		}
+
+		T getPieceExchange(const Shogi::Piece& p) const {
+			if (!p.isWhite()) {
+				return  pieceEx[p];
+			} else {
+				return -pieceEx[p.getTurnedBlack()];
+			}
+		}
+
+		T getPiecePromote(const Shogi::Piece& p) const {
+			if (!p.isWhite()) {
+				return  piecePr[p];
+			} else {
+				return -piecePr[p.getTurnedBlack()];
 			}
 		}
 	};

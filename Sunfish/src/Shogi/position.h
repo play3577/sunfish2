@@ -17,6 +17,10 @@
 #include "positionHash.h"
 #include "change.h"
 
+namespace Evaluate {
+	class Evaluate;
+}
+
 namespace Shogi {
 	class Position {
 	private:
@@ -51,25 +55,30 @@ namespace Shogi {
 		template <bool black>
 		bool isLegalMove(const Move& move) const;
 
-		template <bool black, bool chNotNull>
-		void moveUnsafe(const Move& move, Change* change);
+		template <bool black, bool chNotNull, bool evNotNull>
+		void moveUnsafe(const Move& move, Change* change,
+				Evaluate::Evaluate* eval);
 
-		template <bool chNotNull>
-		void moveUnsafe(const Move& move, Change* change) {
+		template <bool chNotNull, bool evNotNull>
+		void moveUnsafe(const Move& move, Change* change,
+				Evaluate::Evaluate* eval) {
 			if (blackTurn) {
-				moveUnsafe<true, chNotNull>(move, change);
+				moveUnsafe<true, chNotNull, evNotNull>
+					(move, change, eval);
 			} else {
-				moveUnsafe<false, chNotNull>(move, change);
+				moveUnsafe<false, chNotNull, evNotNull>
+					(move, change, eval);
 			}
 		}
 
 		template <bool black>
 		void back(const Change& change);
 
-		template <bool chNotNull>
-		bool move(const Move& move, Change* change) {
+		template <bool chNotNull, bool evNotNull>
+		bool move(const Move& move, Change* change,
+				Evaluate::Evaluate* eval) {
 			if (isLegalMove(move)) {
-				moveUnsafe<chNotNull>(move, change);
+				moveUnsafe<chNotNull, evNotNull>(move, change, eval);
 				return true;
 			}
 			return false;
@@ -269,19 +278,29 @@ namespace Shogi {
 		}
 
 		bool move(const Move& move) {
-			return this->move<false>(move, NULL);
+			return this->move<false, false>(move, NULL, NULL);
 		}
 
 		bool move(const Move& move, Change& change) {
-			return this->move<true>(move, &change);
+			return this->move<true, false>(move, &change, NULL);
+		}
+
+		bool move(const Move& move, Change& change,
+				Evaluate::Evaluate& eval) {
+			return this->move<true, true>(move, &change, &eval);
 		}
 
 		void moveUnsafe(const Move& move) {
-			moveUnsafe<false>(move, NULL);
+			moveUnsafe<false, false>(move, NULL, NULL);
 		}
 
 		void moveUnsafe(const Move& move, Change& change) {
-			moveUnsafe<true>(move, &change);
+			moveUnsafe<true, false>(move, &change, NULL);
+		}
+
+		void moveUnsafe(const Move& move, Change& change,
+				Evaluate::Evaluate& eval) {
+			moveUnsafe<true, true>(move, &change, &eval);
 		}
 
 		void back(const Change& change) {

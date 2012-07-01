@@ -8,6 +8,7 @@
 #ifndef TREE_H_
 #define TREE_H_
 
+#include "../Evaluate/evaluate.h"
 #include "node.h"
 
 namespace Search {
@@ -15,16 +16,21 @@ namespace Search {
 	private:
 		static const int MAX_DEPTH = 64;
 		Shogi::Position pos;
+		Evaluate::Evaluate eval;
 		Node* nodes;
 		int depth;
 		int maxDepth;
 
 	public:
-		Tree() : nodes(NULL) {
+		Tree(const Evaluate::Param& param) :
+				eval(param), nodes(NULL) {
 		}
 
-		Tree(const Shogi::Position& pos, int maxDepth = MAX_DEPTH)
-				: pos(pos), nodes(NULL) {
+		Tree(const Evaluate::Param& param,
+				const Shogi::Position& pos,
+				int maxDepth = MAX_DEPTH) :
+				pos(pos), eval(param), nodes(NULL) {
+			eval.init(pos);
 			init(maxDepth);
 		}
 
@@ -60,6 +66,7 @@ namespace Search {
 
 		void init(const Shogi::Position& pos, int maxDepth = MAX_DEPTH) {
 			this->pos.copy(pos);
+			eval.init(pos);
 			init(maxDepth);
 		}
 
@@ -73,14 +80,14 @@ namespace Search {
 
 		bool makeMove() {
 			if (depth < maxDepth) {
-				nodes[depth++].makeMove(pos);
+				nodes[depth++].makeMove(pos, eval);
 				return true;
 			}
 			return false;
 		}
 
 		void unmakeMove() {
-			nodes[--depth].unmakeMove(pos);
+			nodes[--depth].unmakeMove(pos, eval);
 		}
 
 		const Shogi::Move* getPrevMove() const {
@@ -93,6 +100,10 @@ namespace Search {
 
 		const Shogi::Position& getPosition() const {
 			return pos;
+		}
+
+		Evaluate::Value evaluate() const {
+			return eval.getValue();
 		}
 
 		std::string toString() const {

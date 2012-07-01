@@ -117,8 +117,8 @@ namespace Shogi {
 		for (Square sq(Square::TOP_W); sq.valid(); sq.inc()) {
 			if ((unsigned)blackEffectBoard[sq.getIndex()] != (unsigned)effectBoard.blackEffectBoard[sq.getIndex()] ||
 					(unsigned)whiteEffectBoard[sq.getIndex()] != (unsigned)effectBoard.whiteEffectBoard[sq.getIndex()]) {
-#if 1
-				std::cout << sq.toString();
+#if 0
+				std::cout << sq.toString() << '\n';
 #endif
 				return false;
 			}

@@ -50,7 +50,7 @@ namespace Evaluate {
 		}
 
 		X& operator-=(const X& v) {
-			value += v.value;
+			value -= v.value;
 			return *this;
 		}
 
@@ -68,6 +68,30 @@ namespace Evaluate {
 
 		X operator-(const X& v) const {
 			return X(value - v.value);
+		}
+
+		bool operator==(const X& v) const {
+			return value == v.value;
+		}
+
+		bool operator!=(const X& v) const {
+			return value != v.value;
+		}
+
+		bool operator<(const X& v) const {
+			return value < v.value;
+		}
+
+		bool operator>(const X& v) const {
+			return value > v.value;
+		}
+
+		bool operator<=(const X& v) const {
+			return value <= v.value;
+		}
+
+		bool operator>=(const X& v) const {
+			return value >= v.value;
 		}
 	};
 

@@ -16,6 +16,7 @@ namespace Search {
 		Shogi::MoveGenerator<Shogi::Move>* pgen;
 		const Shogi::Move* pmove;
 		Shogi::Change change;
+		Evaluate::Value baseValue;
 
 	public:
 		Node() {
@@ -45,11 +46,15 @@ namespace Search {
 			return (pmove = pgen->next()) != NULL;
 		}
 
-		void makeMove(Shogi::Position& pos) {
-			pos.moveUnsafe(*pmove, change);
+		void makeMove(Shogi::Position& pos,
+				Evaluate::Evaluate& eval) {
+			baseValue = eval.getBaseValue();
+			pos.moveUnsafe(*pmove, change, eval);
 		}
 
-		void unmakeMove(Shogi::Position& pos) {
+		void unmakeMove(Shogi::Position& pos,
+				Evaluate::Evaluate& eval) {
+			eval.setBaseValue(baseValue);
 			pos.back(change);
 		}
 

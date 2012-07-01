@@ -21,6 +21,7 @@
 
 namespace Tools{
 	using namespace Shogi;
+	using namespace Evaluate;
 
 	void Debug::Print( const char* str, ... ){
 		std::ofstream file;
@@ -155,6 +156,13 @@ namespace Tools{
 	}
 
 	void Debug::TreeSearch(Search::Tree& tree) {
+		Value value = tree.evaluate();
+		if (value != Value(0)) {
+			std::cout << tree.toString();
+			std::cout << (int)value << '\n';
+			static char line[1024];
+			std::cin.getline(line, sizeof(line));
+		}
 #if 0
 		std::cout << tree.getDepth() << '/'
 			<< tree.getMaxDepth() << '\n';
@@ -189,15 +197,12 @@ namespace Tools{
 
 	bool Debug::TreeTest(const char* filename) {
 		Position pos(EVEN);
-		Evaluate::Param param;
-		Evaluate::Initializer::apply(param);
-		Evaluate::Evaluate eval(param);
-		eval.init(pos);
-		std::cout << eval.getValue() << '\n';
+		Param param;
+		Initializer::apply(param);
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
-		Search::Tree tree(pos, 4);
+		Search::Tree tree(param, pos, 4);
 		TreeSearch(tree);
 		return true;
 	}
