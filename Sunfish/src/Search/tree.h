@@ -8,14 +8,13 @@
 #ifndef TREE_H_
 #define TREE_H_
 
-#include "position.h"
 #include "node.h"
 
-namespace Shogi {
+namespace Search {
 	class Tree {
 	private:
 		static const int MAX_DEPTH = 64;
-		Position pos;
+		Shogi::Position pos;
 		Node* nodes;
 		int depth;
 		int maxDepth;
@@ -24,7 +23,7 @@ namespace Shogi {
 		Tree() : nodes(NULL) {
 		}
 
-		Tree(const Position& pos, int maxDepth = MAX_DEPTH)
+		Tree(const Shogi::Position& pos, int maxDepth = MAX_DEPTH)
 				: pos(pos), nodes(NULL) {
 			init(maxDepth);
 		}
@@ -59,7 +58,7 @@ namespace Shogi {
 			depth = 0;
 		}
 
-		void init(const Position& pos, int maxDepth = MAX_DEPTH) {
+		void init(const Shogi::Position& pos, int maxDepth = MAX_DEPTH) {
 			this->pos.copy(pos);
 			init(maxDepth);
 		}
@@ -84,15 +83,15 @@ namespace Shogi {
 			nodes[--depth].unmakeMove(pos);
 		}
 
-		const Move* getPrevMove() const {
+		const Shogi::Move* getPrevMove() const {
 			return depth > 0 ? nodes[depth-1].getMove() : NULL;
 		}
 
-		const Change* getChange() const {
+		const Shogi::Change* getChange() const {
 			return depth > 0 ? &nodes[depth-1].getChange() : NULL;
 		}
 
-		const Position& getPosition() const {
+		const Shogi::Position& getPosition() const {
 			return pos;
 		}
 

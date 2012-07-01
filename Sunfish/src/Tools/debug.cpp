@@ -16,8 +16,11 @@
 #include "debug.h"
 #include "../Csa/csaReader.h"
 #include "../Shogi/moveGenerator.h"
+#include "../Evaluate/initializer.h"
 
 namespace Tools{
+	using namespace Shogi;
+
 	void Debug::Print( const char* str, ... ){
 		std::ofstream file;
 		char buf[1024];
@@ -49,7 +52,7 @@ namespace Tools{
 		va_end( argx );
 	}
 
-	bool Debug::PositionOk(const Shogi::Position pos) {
+	bool Debug::PositionOk(const Position pos) {
 		// hash
 		if (pos.getHash() != pos.generateHash()) {
 			std::cout << "***** HASH CODE ERROR!!! *****\n";
@@ -59,7 +62,7 @@ namespace Tools{
 			return false;
 		}
 		// effect
-		Shogi::Position temp(pos);
+		Position temp(pos);
 		temp.update();
 		if (!temp.getEffectBoard().equals(pos.getEffectBoard())) {
 			std::cout << "***** EFFECT BOARD ERROR!!! *****\n";
@@ -72,7 +75,7 @@ namespace Tools{
 	}
 
 	bool Debug::GeneratorRandomTest(const char* filename) {
-		Shogi::Position pos(Shogi::EVEN);
+		Position pos(EVEN);
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
@@ -80,15 +83,15 @@ namespace Tools{
 		boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 		for (int i = 0; i < 10000; i++) {
 			std::cout << '[' << i << ']' << '\n';
-			Shogi::MoveGenerator<Shogi::Move> gen(pos);
+			MoveGenerator<Move> gen(pos);
 			gen.generate();
-			Shogi::MoveGenerator<Shogi::Move> gen2(pos);
+			MoveGenerator<Move> gen2(pos);
 			gen2.generateTardy();
 	
 			gen.sort();
 			gen2.sort();
 			if (!gen.equals(gen2)) {
-				const Shogi::Move* pmove;
+				const Move* pmove;
 				while ((pmove = gen.next()) != NULL) {
 					std::cout << pmove->toString() << ' ';
 				}
@@ -107,7 +110,7 @@ namespace Tools{
 	
 			boost::uniform_smallint<> dst(0, gen.getNumber()-1);
 			boost::variate_generator<boost::mt19937&, boost::uniform_smallint<> > r(rgen, dst);
-			const Shogi::Move& move = gen.get(r());
+			const Move& move = gen.get(r());
 			pos.moveUnsafe(move);
 			std::cout << move.toString() << '\n';
 			std::cout << pos.toStringCsa();
@@ -123,7 +126,7 @@ namespace Tools{
 	}
 
 	bool Debug::GeneratorTest(const char* filename) {
-		Shogi::Position pos(Shogi::EVEN);
+		Position pos(EVEN);
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
@@ -132,13 +135,13 @@ namespace Tools{
 		std::cout << pos.toStringBPawns() << '\n';
 		std::cout << pos.toStringWPawns() << '\n';
 
-		Shogi::MoveGenerator<Shogi::Move> gen(pos);
+		MoveGenerator<Move> gen(pos);
 		gen.generate();
 		gen.sort();
-		Shogi::MoveGenerator<Shogi::Move> gen2(pos);
+		MoveGenerator<Move> gen2(pos);
 		gen2.generateTardy();
 		gen2.sort();
-		const Shogi::Move* pmove;
+		const Move* pmove;
 		while ((pmove = gen.next()) != NULL) {
 			std::cout << pmove->toString() << ' ';
 		}
@@ -150,10 +153,12 @@ namespace Tools{
 		return true;
 	}
 
-	void Debug::TreeSearch(Shogi::Tree& tree) {
+	void Debug::TreeSearch(Search::Tree& tree) {
+#if 0
 		std::cout << tree.getDepth() << '/'
 			<< tree.getMaxDepth() << '\n';
 		std::cout << tree.toString();
+#endif
 #if 0
 		static char line[1024];
 		std::cin.getline(line, sizeof(line));
@@ -164,25 +169,34 @@ namespace Tools{
 		tree.generateMoves();
 		while (tree.next()) {
 			tree.makeMove();
+#if 0
 			std::cout << tree.getChange()->toString() << '\n';
 			std::cout << tree.getPrevMove()->toString() << '\n';
+#endif
 			if (!PositionOk(tree.getPosition())) {
+				std::cout << tree.toString();
 				abort();
 			}
 			TreeSearch(tree);
 			tree.unmakeMove();
 			if (!PositionOk(tree.getPosition())) {
+				std::cout << tree.toString();
 				abort();
 			}
 		}
 	}
 
 	bool Debug::TreeTest(const char* filename) {
-		Shogi::Position pos(Shogi::EVEN);
+		Evaluate::Param param;
+		Evaluate::Initializer::apply(param);
+		for (Piece p = Piece::PAWN; p <= Piece::DRAGON; p.toNext()) {
+			std::cout << p.toString() << ':' << param.getPiece(p) << '\n';
+		}
+		Position pos(EVEN);
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
-		Shogi::Tree tree(pos, 5);
+		Search::Tree tree(pos, 4);
 		TreeSearch(tree);
 		return true;
 	}

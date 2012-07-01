@@ -8,21 +8,21 @@
 #ifndef NODE_H_
 #define NODE_H_
 
-#include "moveGenerator.h"
+#include "../Shogi/moveGenerator.h"
 
-namespace Shogi {
+namespace Search {
 	class Node {
 	private:
-		MoveGenerator<Move>* pgen;
-		const Move* pmove;
-		Change change;
+		Shogi::MoveGenerator<Shogi::Move>* pgen;
+		const Shogi::Move* pmove;
+		Shogi::Change change;
 
 	public:
 		Node() {
 			pgen = NULL;
 		}
 
-		Node(Position& pos) {
+		Node(Shogi::Position& pos) {
 			init(pos);
 		}
 
@@ -32,8 +32,8 @@ namespace Shogi {
 			}
 		}
 
-		void init(Position& pos) {
-			pgen = new MoveGenerator<Move>(pos);
+		void init(Shogi::Position& pos) {
+			pgen = new Shogi::MoveGenerator<Shogi::Move>(pos);
 		}
 
 		int generateMoves() {
@@ -45,19 +45,19 @@ namespace Shogi {
 			return (pmove = pgen->next()) != NULL;
 		}
 
-		void makeMove(Position& pos) {
+		void makeMove(Shogi::Position& pos) {
 			pos.moveUnsafe(*pmove, change);
 		}
 
-		void unmakeMove(Position& pos) {
+		void unmakeMove(Shogi::Position& pos) {
 			pos.back(change);
 		}
 
-		const Move* getMove() const {
+		const Shogi::Move* getMove() const {
 			return pmove;
 		}
 
-		const Change& getChange() const {
+		const Shogi::Change& getChange() const {
 			return change;
 		}
 	};

@@ -296,6 +296,7 @@ namespace Shogi {
 		Piece handPiece;
 		Piece fromPiece;
 		Piece toPiece;
+		Piece toAfterPiece;
 		Square to;
 		Square from;
 		switch (change.getType()) {
@@ -317,6 +318,22 @@ namespace Shogi {
 			}
 			break;
 		case Change::CAPTURE:
+			from = change.getFromSquare();
+			to = change.getToSquare();
+			fromPiece = change.getFromPiece();
+			toPiece = change.getToPiece();
+			board.set(from, fromPiece);
+			if (black) { // 先手
+				effectBoard.change<true, true>(from, fromPiece.getMoveableDirection(), board); // effect
+			} else { // 後手
+				effectBoard.change<false, true>(from, fromPiece.getMoveableDirection(), board); // effect
+			}
+			toAfterPiece = board.set(to, toPiece);
+			if (black) {
+				effectBoard.change<true, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+			} else {
+				effectBoard.change<false, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+			}
 			handPiece = change.getHandPiece();
 			if (black) {
 				blackHand.set(handPiece, change.getHandNum());
@@ -325,7 +342,7 @@ namespace Shogi {
 				whiteHand.set(handPiece, change.getHandNum());
 				effectBoard.change<true, true>(to, toPiece.getMoveableDirection(), board); // effect
 			}
-			// fall threw
+			break;
 		case Change::NO_CAPTURE:
 			from = change.getFromSquare();
 			to = change.getToSquare();
@@ -337,7 +354,7 @@ namespace Shogi {
 			} else { // 後手
 				effectBoard.change<false, true>(from, fromPiece.getMoveableDirection(), board); // effect
 			}
-			Piece toAfterPiece = board.set(to, toPiece);
+			toAfterPiece = board.set(to, toPiece);
 			if (black) {
 				effectBoard.change<true, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
 			} else {

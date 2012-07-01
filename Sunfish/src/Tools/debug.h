@@ -9,7 +9,7 @@
 #define DEBUG_H_
 
 #include <iostream>
-#include "../Shogi/tree.h"
+#include "../Search/tree.h"
 
 #ifdef NDEBUG
 #define DEBUG_PRINT_LINE		do { } while (false)
@@ -32,7 +32,7 @@ namespace Tools{
 
 		static bool GeneratorTest(const char* filename);
 
-		static void TreeSearch(Shogi::Tree& tree);
+		static void TreeSearch(Search::Tree& tree);
 
 		static bool TreeTest(const char* filename);
 	};
