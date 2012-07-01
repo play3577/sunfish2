@@ -6,6 +6,8 @@
  */
 
 #include <sstream>
+#include <cstring>
+#include "../Csa/csa.h"
 #include "square.h"
 #include "piece.h"
 #include "move.h"

@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include "Tools/debug.h"
+#include "Cui/controller.h"
 #include "Shogi/position.h"
 #include "sunfish.h"
 
@@ -18,12 +18,17 @@ int main(int argc, char* argv[]) {
 	Shogi::PositionHash hash(Shogi::PositionHash::FILE_NAME);
 	Shogi::Position::setPositionHash(&hash);
 
+#if 0 // tree debug
 	const char* filename = NULL;
 	if (argc >= 2) {
 		filename = argv[1];
 	}
 
 	Tools::Debug::TreeTest(filename);
+#else
+	Cui::Controller controller;
+	controller.play();
+#endif
 
 	return 0;
 }

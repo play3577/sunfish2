@@ -15,6 +15,51 @@
 namespace Shogi {
 	PositionHash* Position::pPositionHash = NULL;
 
+	bool Position::inputCsa(const char* str, const Position& pos) {
+		if (strlen(str) < 7) {
+			return false;
+		}
+		bool black;
+		if (str[0] == Csa::CHAR_BLK) {
+			black = true;
+		} else if (str[0] == Csa::CHAR_WHT) {
+			black = false;
+		} else {
+			return false;
+		}
+		int fromFile = str[1] - '0';
+		int fromRank = str[2] - '0';
+		bool hand = (fromFile == 0 && fromRank == 0);
+		if ( !hand && !Square::isInside(fromFile, fromRank)) {
+			return false;
+		}
+		int toFile = str[3] - '0';
+		int toRank = str[4] - '0';
+		if (!Square::isInside(toFile, toRank)) {
+			return false;
+		}
+		Piece piece = Piece::parseCsa(&str[5]);
+		if (piece == Piece::EMPTY) {
+			return false;
+		}
+		if (!black) {
+			piece.turnWhite();
+		}
+		setFrom(Square(fromFile, fromRank));
+		setTo(Square(toFile, toRank));
+		Piece pieceB = pos.getBoard(Square(m.from));
+		if (piece == pieceB) {
+			setPromotion(false);
+		} else if (piece == pieceB.getPromoted()) {
+			setPromotion(true);
+		} else {
+			return false;
+		}
+		setHand(hand);
+		setPiece(pieceB);
+		return true;
+	}
+
 	void Position::copy(const Position& position) {
 		board.init(position.board);
 		blackHand.init(position.blackHand);
@@ -67,6 +112,9 @@ namespace Shogi {
 
 	template <bool black>
 	bool Position::isLegalMove(const Move& move) const {
+		// TODO: move.getPiece()の値チェック
+		// TODO: move.getFrom()の値範囲チェック
+		// TODO: move.getTo()の値範囲チェック
 		Piece piece = move.getPiece();
 		if (move.isHand()) { // 持ち駒を打つ場合
 			if (black && blackHand.get(piece) == 0) {

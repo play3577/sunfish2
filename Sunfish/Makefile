@@ -8,6 +8,8 @@ $(wildcard ./src/Shogi/*.cpp) \
 $(wildcard ./src/Evaluate/*.cpp) \
 $(wildcard ./src/Search/*.cpp) \
 $(wildcard ./src/Csa/*.cpp) \
+$(wildcard ./src/Record/*.cpp) \
+$(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
