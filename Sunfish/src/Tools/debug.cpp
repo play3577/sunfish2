@@ -17,6 +17,7 @@
 #include "../Csa/csaReader.h"
 #include "../Shogi/moveGenerator.h"
 #include "../Evaluate/initializer.h"
+#include "../Evaluate/evaluate.h"
 
 namespace Tools{
 	using namespace Shogi;
@@ -187,12 +188,12 @@ namespace Tools{
 	}
 
 	bool Debug::TreeTest(const char* filename) {
+		Position pos(EVEN);
 		Evaluate::Param param;
 		Evaluate::Initializer::apply(param);
-		for (Piece p = Piece::PAWN; p <= Piece::DRAGON; p.toNext()) {
-			std::cout << p.toString() << ':' << param.getPiece(p) << '\n';
-		}
-		Position pos(EVEN);
+		Evaluate::Evaluate eval(param);
+		eval.init(pos);
+		std::cout << eval.getValue() << '\n';
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}

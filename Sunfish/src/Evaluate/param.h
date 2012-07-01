@@ -34,7 +34,11 @@ namespace Evaluate {
 		}
 
 		T getPiece(const Shogi::Piece& p) const {
-			return piece[p.getTurnedBlack()];
+			if (!p.isWhite()) {
+				return  piece[p];
+			} else {
+				return -piece[p.getTurnedBlack()];
+			}
 		}
 	};
 
