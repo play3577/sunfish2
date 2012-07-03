@@ -15,6 +15,7 @@ namespace Cui {
 			UNKNOWN = 0,
 			PREV,
 			NEXT,
+			SEARCH,
 		};
 
 		Command inputCommand(const char* str);

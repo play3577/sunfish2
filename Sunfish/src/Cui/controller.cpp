@@ -7,9 +7,13 @@
 
 #include "../Record/record.h"
 #include "controller.h"
+#include "../Search/searcher.h"
+#include "../Evaluate/initializer.h"
 
 namespace Cui {
 	using namespace Shogi;
+	using namespace Search;
+	using namespace Evaluate;
 
 	Controller::Command Controller::inputCommand(const char* str) {
 		if (0 == strcmp(str, "prev") ||
@@ -18,6 +22,9 @@ namespace Cui {
 		} else if (0 == strcmp(str, "next") ||
 				0 == strcmp(str, "n")) {
 			return NEXT;
+		} else if (0 == strcmp(str, "search") ||
+				0 == strcmp(str, "s")) {
+			return SEARCH;
 		}
 		return UNKNOWN;
 	}
@@ -26,6 +33,14 @@ namespace Cui {
 		char line[1024];
 		Command prevCommand;
 		Record::Record record;
+		Param param;
+		Initializer::apply(param);
+		Searcher searcher(param);
+		SearchConfig config;
+		SearchResult result;
+
+		config.depth = 4;
+		searcher.setSearchConfig(config);
 
 		std::cout << record.toString();
 
@@ -52,6 +67,12 @@ namespace Cui {
 					printBoard = true;
 				} else {
 					std::cout << "There is no next move.\n";
+				}
+				break;
+			case SEARCH:
+				searcher.init(record.getPosition());
+				if (searcher.search(result)) {
+					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
 				}
 				break;
 			default:

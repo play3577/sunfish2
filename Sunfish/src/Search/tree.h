@@ -14,7 +14,6 @@
 namespace Search {
 	class Tree {
 	private:
-		static const int MAX_DEPTH = 64;
 		Shogi::Position pos;
 		Evaluate::Evaluate eval;
 		Node* nodes;
@@ -22,13 +21,17 @@ namespace Search {
 		int maxDepth;
 
 	public:
-		Tree(const Evaluate::Param& param) :
+		static const int DEF_MAX_DEPTH = 64;
+
+		Tree(const Evaluate::Param& param,
+				int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), nodes(NULL) {
+			init(maxDepth);
 		}
 
 		Tree(const Evaluate::Param& param,
 				const Shogi::Position& pos,
-				int maxDepth = MAX_DEPTH) :
+				int maxDepth = DEF_MAX_DEPTH) :
 				pos(pos), eval(param), nodes(NULL) {
 			eval.init(pos);
 			init(maxDepth);
@@ -52,7 +55,7 @@ namespace Search {
 			return depth == maxDepth;
 		}
 
-		void init(int maxDepth = MAX_DEPTH) {
+		void init(int maxDepth = DEF_MAX_DEPTH) {
 			if (nodes != NULL) {
 				delete[] nodes;
 			}
@@ -64,7 +67,7 @@ namespace Search {
 			depth = 0;
 		}
 
-		void init(const Shogi::Position& pos, int maxDepth = MAX_DEPTH) {
+		void init(const Shogi::Position& pos, int maxDepth = DEF_MAX_DEPTH) {
 			this->pos.copy(pos);
 			eval.init(pos);
 			init(maxDepth);
@@ -94,6 +97,10 @@ namespace Search {
 			return depth > 0 ? nodes[depth-1].getMove() : NULL;
 		}
 
+		const Shogi::Move* getCurrentMove() {
+			return nodes[depth].getMove();
+		}
+
 		const Shogi::Change* getChange() const {
 			return depth > 0 ? &nodes[depth-1].getChange() : NULL;
 		}
@@ -104,6 +111,14 @@ namespace Search {
 
 		Evaluate::Value evaluate() const {
 			return eval.getValue();
+		}
+
+		Evaluate::Value negaEvaluate() const {
+			if (pos.isBlackTurn()) {
+				return eval.getValue();
+			} else {
+				return -eval.getValue();
+			}
 		}
 
 		std::string toString() const {

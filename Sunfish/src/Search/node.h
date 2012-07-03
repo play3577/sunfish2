@@ -21,9 +21,11 @@ namespace Search {
 	public:
 		Node() {
 			pgen = NULL;
+			pmove = NULL;
 		}
 
 		Node(Shogi::Position& pos) {
+			pmove = NULL;
 			init(pos);
 		}
 
@@ -35,10 +37,12 @@ namespace Search {
 
 		void init(Shogi::Position& pos) {
 			pgen = new Shogi::MoveGenerator<Shogi::Move>(pos);
+			pmove = NULL;
 		}
 
 		int generateMoves() {
 			pgen->clear();
+			pmove = NULL;
 			return pgen->generate();
 		}
 
