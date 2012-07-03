@@ -15,7 +15,7 @@
 namespace Shogi {
 	PositionHash* Position::pPositionHash = NULL;
 
-	bool Position::inputCsa(const char* str, const Position& pos) {
+	bool Position::inputMoveCsa(const char* str, Move& move) const {
 		if (strlen(str) < 7) {
 			return false;
 		}
@@ -27,37 +27,61 @@ namespace Shogi {
 		} else {
 			return false;
 		}
-		int fromFile = str[1] - '0';
-		int fromRank = str[2] - '0';
-		bool hand = (fromFile == 0 && fromRank == 0);
-		if ( !hand && !Square::isInside(fromFile, fromRank)) {
+		Square from = Square::parse(&str[1]);
+		Square to = Square::parse(&str[3]);
+		if (!from.valid() || !to.valid()) {
 			return false;
 		}
-		int toFile = str[3] - '0';
-		int toRank = str[4] - '0';
-		if (!Square::isInside(toFile, toRank)) {
-			return false;
-		}
+		bool hand = (from == Square::NON);
 		Piece piece = Piece::parseCsa(&str[5]);
 		if (piece == Piece::EMPTY) {
 			return false;
 		}
-		if (!black) {
-			piece.turnWhite();
-		}
-		setFrom(Square(fromFile, fromRank));
-		setTo(Square(toFile, toRank));
-		Piece pieceB = pos.getBoard(Square(m.from));
+		black ? piece.turnBlack() : piece.turnWhite();
+		Piece pieceB = getBoard(Square(from));
 		if (piece == pieceB) {
-			setPromotion(false);
+			move.setPromotion(false);
 		} else if (piece == pieceB.getPromoted()) {
-			setPromotion(true);
+			move.setPromotion(true);
 		} else {
 			return false;
 		}
-		setHand(hand);
-		setPiece(pieceB);
+		move.setFrom(from);
+		move.setTo(to);
+		move.setHand(hand);
+		move.setPiece(pieceB);
 		return true;
+	}
+
+	bool Position::inputMove(const char* str, Move& move) const {
+		if (strlen(str) < 4) {
+			return false;
+		}
+		Square to = Square::parse(&str[2]);
+		if (!to.valid()) {
+			return false;
+		}
+		Square from = Square::parse(&str[0]);
+		if (from.valid()) {
+			Piece piece = getBoard(Square(from));
+			move.setPromotion(str[4] == 'n');
+			move.setFrom(from);
+			move.setTo(to);
+			move.setHand(false);
+			move.setPiece(piece);
+			return true;
+		} else {
+			Piece piece = Piece::parseCsa(&str[0]);
+			if (piece >= Piece::PAWN && piece <= Piece::ROOK) {
+				move.setPromotion(false);
+				move.setFrom(Square::NON);
+				move.setTo(to);
+				move.setHand(true);
+				move.setPiece(blackTurn ? piece : piece.getTurnedWhite());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void Position::copy(const Position& position) {
@@ -112,11 +136,19 @@ namespace Shogi {
 
 	template <bool black>
 	bool Position::isLegalMove(const Move& move) const {
-		// TODO: move.getPiece()の値チェック
-		// TODO: move.getFrom()の値範囲チェック
-		// TODO: move.getTo()の値範囲チェック
+		// TODO: キラームーブ時には簡易チェック版を使用
 		Piece piece = move.getPiece();
+		if (black && !piece.isBlack()) {
+			return false;
+		}
+		if (!black && !piece.isWhite()) {
+			return false;
+		}
 		if (move.isHand()) { // 持ち駒を打つ場合
+			if (piece.getTurnedBlack() < Piece::BPAWN ||
+					piece.getTurnedBlack() > Piece::BROOK){
+				return false; // 不正な駒番号
+			}
 			if (black && blackHand.get(piece) == 0) {
 				return false; // 持ち駒が無い。
 			}
@@ -156,7 +188,10 @@ namespace Shogi {
 				return false;
 			}
 			return true;
-		} else {
+		} else { // 盤上の駒を動かす場合
+			if (piece != getBoard(move.getFrom())) {
+				return false; // 不正な駒
+			}
 			if (move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
 				return false; // 成れない駒
 			}

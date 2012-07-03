@@ -15,6 +15,12 @@ namespace Shogi {
 			"TO", "NY", "NK", "NG", "??", "UM", "RY", "??",
 	};
 
+	const char Piece::pieceNameS[][4] = {
+			"* ",
+			"fu", "ky", "ke", "gi", "ki", "ka", "hi", "ou",
+			"to", "ny", "nk", "ng", "??", "um", "ry", "??",
+	};
+
 	const char Piece::UNKNOWN_NAME[] = "??";
 
 	const DirectionFlags Piece::direction[] = {
@@ -67,7 +73,8 @@ namespace Shogi {
 			str++;
 		}
 		for (unsigned i = PAWN; i <= DRAGON; i++) {
-			if (str[0] == pieceName[i][0] && str[1] == pieceName[i][1]) {
+			if ((str[0] == pieceName[i][0] && str[1] == pieceName[i][1]) ||
+					(str[0] == pieceNameS[i][0] && str[1] == pieceNameS[i][1])) {
 				piece.piece |= i;
 				return piece;
 			}

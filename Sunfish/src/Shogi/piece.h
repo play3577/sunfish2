@@ -16,6 +16,7 @@ namespace Shogi {
 	private:
 		unsigned piece;
 		static const char pieceName[][4];
+		static const char pieceNameS[][4];
 		static const char UNKNOWN_NAME[];
 		static const DirectionFlags direction[];
 		static const int _diff2dir[];

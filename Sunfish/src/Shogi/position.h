@@ -311,7 +311,9 @@ namespace Shogi {
 			}
 		}
 
-		bool inputCsa(const char* str, const Position& pos);
+		bool inputMoveCsa(const char* str, Move& move) const;
+
+		bool inputMove(const char* str, Move& move) const;
 
 		std::string toString() const;
 

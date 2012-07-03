@@ -180,6 +180,26 @@ namespace Shogi {
 			}
 		}
 
+		/*
+		 * 文字列をSquareに変換する。
+		 * 不正な入力に対してはSquare(Square::INVALID)を返す。
+		 * 但し"00"の場合にはSquare(Square::NON)を返す。
+		 */
+		static Square parse(const char* str) {
+			if (str[0] == '\0' || str[1] == '\0' ||
+					str[0] < '1' || str[0] > '9' ||
+					str[1] < '1' || str[1] > '9') {
+				if (str[0] == '0' && str[1] == '1') {
+					return Square(NON);
+				} else {
+					return Square(INVALID);
+				}
+			}
+			int file = str[0] - '0';
+			int rank = str[1] - '0';
+			return Square(file, rank);
+		}
+
 		std::string toString() const;
 	};
 }

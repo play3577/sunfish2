@@ -67,6 +67,10 @@ namespace Record {
 			return false;
 		}
 
+		const Shogi::Position& getPosition() const {
+			return pos;
+		}
+
 		int getNumberOfMoves() const {
 			return num;
 		}

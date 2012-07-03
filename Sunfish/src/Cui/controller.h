@@ -11,6 +11,13 @@
 namespace Cui {
 	class Controller {
 	private:
+		enum Command {
+			UNKNOWN = 0,
+			PREV,
+			NEXT,
+		};
+
+		Command inputCommand(const char* str);
 
 	public:
 		bool play();
