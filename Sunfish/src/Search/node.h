@@ -8,6 +8,7 @@
 #ifndef NODE_H_
 #define NODE_H_
 
+#include "pv.h"
 #include "../Shogi/moveGenerator.h"
 
 namespace Search {
@@ -17,6 +18,7 @@ namespace Search {
 		const Shogi::Move* pmove;
 		Shogi::Change change;
 		Evaluate::Value baseValue;
+		Pv pv;
 
 	public:
 		Node() {
@@ -38,6 +40,18 @@ namespace Search {
 		void init(Shogi::Position& pos) {
 			pgen = new Shogi::MoveGenerator<Shogi::Move>(pos);
 			pmove = NULL;
+		}
+
+		void initPv() {
+			pv.init();
+		}
+
+		int setPv(const Node& node) {
+			return pv.set(*pmove, node.pv);
+		}
+
+		const Pv& getPv() const {
+			return pv;
 		}
 
 		int generateMoves() {

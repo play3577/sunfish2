@@ -95,9 +95,10 @@ namespace Evaluate {
 		}
 	};
 
-	typedef TempValue<int, INT_MAX, INT_MIN> Value;
-	typedef TempValue<short, SHRT_MAX, SHRT_MIN> ValueS;
-	typedef TempValue<float, INT_MAX, INT_MIN> ValueF;
+	// INT_MINは-1倍できない。
+	typedef TempValue<int, INT_MAX, -INT_MAX> Value;
+	typedef TempValue<short, SHRT_MAX, -SHRT_MAX> ValueS;
+	typedef TempValue<float, INT_MAX, -INT_MAX> ValueF;
 }
 
 #endif // VALUE_H_

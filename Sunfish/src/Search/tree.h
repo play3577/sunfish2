@@ -73,6 +73,18 @@ namespace Search {
 			init(maxDepth);
 		}
 
+		void initPv() {
+			nodes[depth].initPv();
+		}
+
+		int updatePv() {
+			return nodes[depth].setPv(nodes[depth+1]);
+		}
+
+		const Pv& getPv() const {
+			return nodes[depth].getPv();
+		}
+
 		int generateMoves() {
 			return nodes[depth].generateMoves();
 		}

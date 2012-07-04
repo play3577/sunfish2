@@ -22,11 +22,24 @@ namespace Cui {
 		} else if (0 == strcmp(str, "next") ||
 				0 == strcmp(str, "n")) {
 			return NEXT;
+		} else if (0 == strcmp(str, "moves") ||
+				0 == strcmp(str, "m")) {
+			return MOVES;
 		} else if (0 == strcmp(str, "search") ||
 				0 == strcmp(str, "s")) {
 			return SEARCH;
 		}
 		return UNKNOWN;
+	}
+
+	void Controller::showLegalMoves(Position pos) {
+		MoveGenerator<Move> gen(pos);
+		gen.generate();
+		const Move* pmove;
+		while ((pmove = gen.next()) != NULL) {
+			std::cout << pmove->toString() << ' ';
+		}
+		std::cout << '\n';
 	}
 
 	bool Controller::play() {
@@ -69,10 +82,14 @@ namespace Cui {
 					std::cout << "There is no next move.\n";
 				}
 				break;
+			case MOVES:
+				showLegalMoves(record.getPosition());
+				break;
 			case SEARCH:
 				searcher.init(record.getPosition());
 				if (searcher.search(result)) {
 					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
+					std::cout << result.pv.toString() <<  '\n';
 				}
 				break;
 			default:

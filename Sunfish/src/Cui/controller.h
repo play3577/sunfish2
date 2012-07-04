@@ -8,6 +8,8 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include "../Shogi/position.h"
+
 namespace Cui {
 	class Controller {
 	private:
@@ -15,12 +17,15 @@ namespace Cui {
 			UNKNOWN = 0,
 			PREV,
 			NEXT,
+			MOVES,
 			SEARCH,
 		};
 
 		Command inputCommand(const char* str);
 
 	public:
+		void showLegalMoves(Shogi::Position pos);
+
 		bool play();
 	};
 }
