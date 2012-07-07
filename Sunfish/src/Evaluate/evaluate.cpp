@@ -4,7 +4,9 @@
  *  Created on: 2012/07/01
  *      Author: ryosuke
  */
+
 #include "evaluate.h"
+#include "feature.h"
 
 namespace Evaluate {
 	using namespace Shogi;
@@ -22,4 +24,9 @@ namespace Evaluate {
 			baseValue -= param.getPiece(piece) * wnum;
 		}
 	}
+
+	Value Evaluate::getAdditionalValue(const Position& pos) const {
+		return Feature::getValue<Value, ValueS>(pos, &param);
+	}
+
 }

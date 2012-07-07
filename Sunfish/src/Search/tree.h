@@ -122,14 +122,14 @@ namespace Search {
 		}
 
 		Evaluate::Value evaluate() const {
-			return eval.getValue();
+			return eval.getValue(pos);
 		}
 
 		Evaluate::Value negaEvaluate() const {
 			if (pos.isBlackTurn()) {
-				return eval.getValue();
+				return eval.getValue(pos);
 			} else {
-				return -eval.getValue();
+				return -eval.getValue(pos);
 			}
 		}
 

@@ -119,7 +119,7 @@ namespace Cui {
 				break;
 			case SEARCH:
 				searcher.init(record.getPosition());
-				if (searcher.search(result)) {
+				if (searcher.idSearch(result)) {
 					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
 					std::cout << result.pv.toString() <<  '\n';
 				} else {

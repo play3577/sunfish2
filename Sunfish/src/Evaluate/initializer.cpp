@@ -34,6 +34,7 @@ namespace Evaluate {
 		for (Piece p = Piece::PAWN; p <= Piece::DRAGON; p.toNext()) {
 			param.setPiece(p, pieceValues[p]);
 		}
+		param.cumulate();
 	}
 
 	void Initializer::apply(Gradient& gradient) {

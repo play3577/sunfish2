@@ -60,8 +60,10 @@ namespace Evaluate {
 			this->baseValue = baseValue;
 		}
 
-		Value getValue() const {
-			return baseValue + Value(0); // TODO
+		Value getAdditionalValue(const Shogi::Position& pos) const;
+
+		Value getValue(const Shogi::Position& pos) const {
+			return baseValue + getAdditionalValue(pos); // TODO
 		}
 	};
 }

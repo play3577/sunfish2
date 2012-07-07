@@ -90,7 +90,7 @@ namespace Search {
 		Value value;
 		before(result);
 		value = negaMax(tree, 0, Value::MIN, Value::MAX);
-		for (int depth = 1; depth < config.depth; depth++) {
+		for (int depth = 1; depth <= config.depth; depth++) {
 			value = negaMax(tree, depth * PLY1,
 					Value::MIN, Value::MAX);
 			std::cout << tree.getPv().toString() << ':' << value << '\n';
