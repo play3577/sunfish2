@@ -52,7 +52,7 @@ namespace Shogi {
 			return pPositionHash->getBlack();
 		}
 
-		template <bool black>
+		template <bool black, bool cuick>
 		bool isLegalMove(const Move& move) const;
 
 		template <bool black, bool chNotNull, bool evNotNull>
@@ -273,8 +273,12 @@ namespace Shogi {
 			blackTurn = !blackTurn;
 		}
 
-		bool isLegalMove(const Move& move) const {
-			return (blackTurn ? isLegalMove<true>(move) : isLegalMove<false>(move));
+		bool isLegalMove(const Move& move, bool cuick = false) const {
+			if (cuick) {
+				return (blackTurn ? isLegalMove<true, true>(move) : isLegalMove<false, true>(move));
+			} else {
+				return (blackTurn ? isLegalMove<true, false>(move) : isLegalMove<false, false>(move));
+			}
 		}
 
 		bool move(const Move& move) {

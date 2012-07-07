@@ -9,6 +9,7 @@
 #include "Cui/controller.h"
 #include "Shogi/position.h"
 #include "sunfish.h"
+#include "Tools/debug.h"
 
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]) {
 		filename = argv[1];
 	}
 
-	Tools::Debug::TreeTest(filename);
+	Tools::Debug::GeneratorRandomTest(filename);
 #else
 	Cui::Controller controller;
 	controller.play();

@@ -134,19 +134,21 @@ namespace Shogi {
 		return _hash;
 	}
 
-	template <bool black>
+	template <bool black, bool cuick>
 	bool Position::isLegalMove(const Move& move) const {
-		// TODO: キラームーブ時には簡易チェック版を使用
-		Piece piece = move.getPiece();
-		if (black && !piece.isBlack()) {
+		if (move.isEmpty()) {
 			return false;
 		}
-		if (!black && !piece.isWhite()) {
+		Piece piece = move.getPiece();
+		if (!cuick && black && !piece.isBlack()) {
+			return false;
+		}
+		if (!cuick && !black && !piece.isWhite()) {
 			return false;
 		}
 		if (move.isHand()) { // 持ち駒を打つ場合
-			if (piece.getTurnedBlack() < Piece::BPAWN ||
-					piece.getTurnedBlack() > Piece::BROOK){
+			if (!cuick && (piece.getTurnedBlack() < Piece::BPAWN ||
+					piece.getTurnedBlack() > Piece::BROOK)){
 				return false; // 不正な駒番号
 			}
 			if (black && blackHand.get(piece) == 0) {
@@ -162,7 +164,7 @@ namespace Shogi {
 			if (!black && piece == Piece::WPAWN && wpawns.exist(file)) {
 				return false; // 二歩
 			}
-			if (move.getTo().isCompulsoryPromotion(piece)) {
+			if (!cuick && move.getTo().isCompulsoryPromotion(piece)) {
 				return false; // 行きどころのない駒
 			}
 			Piece pieceTo = board.get(move.getTo());
@@ -192,10 +194,10 @@ namespace Shogi {
 			if (piece != getBoard(move.getFrom())) {
 				return false; // 不正な駒
 			}
-			if (move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
+			if (!cuick && move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
 				return false; // 成れない駒
 			}
-			if (!move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
+			if (!cuick && !move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
 				return false; // 行きどころのない駒
 			}
 			SquareDiff diff = SquareDiff(move.getFrom(), move.getTo());
@@ -262,8 +264,10 @@ namespace Shogi {
 			}
 		}
 	}
-	template bool Position::isLegalMove<true>(const Move& move) const;
-	template bool Position::isLegalMove<false>(const Move& move) const;
+	template bool Position::isLegalMove<true, true>(const Move& move) const;
+	template bool Position::isLegalMove<false, true>(const Move& move) const;
+	template bool Position::isLegalMove<true, false>(const Move& move) const;
+	template bool Position::isLegalMove<false, false>(const Move& move) const;
 
 	template <bool black, bool chNotNull, bool evNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change,

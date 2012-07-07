@@ -12,16 +12,16 @@
 #include <cfloat>
 
 namespace Evaluate {
-	template <class T, int max, int min>
+	template <class T, int vmax, int vmin>
 	class TempValue {
 	private:
 		T value;
 
 	public:
 		//typedef decltype(*this) X; // C++11
-		typedef TempValue<T, max, min> X;
-		static const T MAX = (T)max;
-		static const T MIN = (T)min;
+		typedef TempValue<T, vmax, vmin> X;
+		static const T MAX = (T)vmax;
+		static const T MIN = (T)vmin;
 
 		TempValue() {
 		}
@@ -92,6 +92,14 @@ namespace Evaluate {
 
 		bool operator>=(const X& v) const {
 			return value >= v.value;
+		}
+
+		static X max(X a, X b) {
+			return a >= b ? a : b;
+		}
+
+		static X min(X a, X b) {
+			return a < b ? a : b;
 		}
 	};
 

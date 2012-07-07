@@ -51,7 +51,15 @@ namespace Search {
 			return num;
 		}
 
-		const Shogi::Move& get(int depth) {
+		const Shogi::Move* getTop() const {
+			if (num > 0) {
+				return &moves[0];
+			} else {
+				return NULL;
+			}
+		}
+
+		const Shogi::Move& get(int depth) const {
 			return moves[depth];
 		}
 

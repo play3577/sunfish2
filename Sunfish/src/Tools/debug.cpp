@@ -85,9 +85,9 @@ namespace Tools{
 		boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 		for (int i = 0; i < 10000; i++) {
 			std::cout << '[' << i << ']' << '\n';
-			MoveGenerator<Move> gen(pos);
+			MoveGenerator gen(pos);
 			gen.generate();
-			MoveGenerator<Move> gen2(pos);
+			MoveGenerator gen2(pos);
 			gen2.generateTardy();
 	
 			gen.sort();
@@ -137,10 +137,10 @@ namespace Tools{
 		std::cout << pos.toStringBPawns() << '\n';
 		std::cout << pos.toStringWPawns() << '\n';
 
-		MoveGenerator<Move> gen(pos);
+		MoveGenerator gen(pos);
 		gen.generate();
 		gen.sort();
-		MoveGenerator<Move> gen2(pos);
+		MoveGenerator gen2(pos);
 		gen2.generateTardy();
 		gen2.sort();
 		const Move* pmove;

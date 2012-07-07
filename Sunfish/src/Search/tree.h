@@ -73,7 +73,7 @@ namespace Search {
 			init(maxDepth);
 		}
 
-		void initPv() {
+		void initNode() {
 			nodes[depth].initPv();
 		}
 
@@ -85,8 +85,8 @@ namespace Search {
 			return nodes[depth].getPv();
 		}
 
-		int generateMoves() {
-			return nodes[depth].generateMoves();
+		void generateMoves() {
+			nodes[depth].generateMoves();
 		}
 
 		bool next() {
@@ -131,6 +131,10 @@ namespace Search {
 			} else {
 				return -eval.getValue();
 			}
+		}
+
+		void setHashMove(const HashMove& hashMove) {
+			return nodes[depth].setHashMove(hashMove);
 		}
 
 		std::string toString() const {

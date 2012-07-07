@@ -9,6 +9,7 @@
 #define SEARCHER_H_
 
 #include "tree.h"
+#include "../Table/tt.h"
 
 namespace Search {
 	struct SearchConfig {
@@ -16,6 +17,7 @@ namespace Search {
 	};
 
 	struct SearchResult {
+		bool noMoves;
 		Shogi::Move move;
 		Evaluate::Value value;
 		Pv pv;
@@ -24,15 +26,33 @@ namespace Search {
 	class Searcher {
 	private:
 		Tree tree;
+		Table::TT tt;
 		SearchConfig config;
+		static const int PLY1 = 4;
 
-		template <bool root>
 		Evaluate::Value negaMax(Tree& tree,
 				int depth,
 				Evaluate::Value alpha,
-				Evaluate::Value beta,
-				Shogi::Move* pmove);
+				Evaluate::Value beta);
 
+		void before(SearchResult& result) {
+			memset(&result, 0, sizeof(SearchResult));
+			tt.init();
+		}
+
+		bool after(SearchResult& result, Evaluate::Value value) {
+			result.value = value;
+			const Shogi::Move* pmove = tree.getPv().getTop();
+			result.pv.copy(tree.getPv());
+			if (pmove != NULL) {
+				result.noMoves = false;
+				result.move = *pmove;
+				return true;
+			} else {
+				result.noMoves = true;
+				return false;
+			}
+		}
 	public:
 		Searcher(const Evaluate::Param& param) :
 			tree(param) {
@@ -56,6 +76,9 @@ namespace Search {
 		}
 
 		bool search(SearchResult& result);
+
+		// iterative-deepening search
+		bool idSearch(SearchResult& result);
 	};
 }
 

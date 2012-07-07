@@ -19,12 +19,18 @@ namespace Cui {
 			NEXT,
 			MOVES,
 			SEARCH,
+			CAPTURES,
+			NOCAPTURES,
 		};
 
 		Command inputCommand(const char* str);
 
 	public:
 		void showLegalMoves(Shogi::Position pos);
+
+		void showCaptures(Shogi::Position pos);
+
+		void showNoCaptures(Shogi::Position pos);
 
 		bool play();
 	};

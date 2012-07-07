@@ -10,18 +10,49 @@
 namespace Search {
 	using namespace Shogi;
 	using namespace Evaluate;
+	using namespace Table;
 
-	template <bool root>
-	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta, Move* pmove) {
+	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta) {
 		if (depth <= 0 || tree.isMaxDepth()) {
 			return tree.negaEvaluate();
 		}
 
-		tree.initPv();
+		// initialize
+		Util::uint64 hash = tree.getPosition().getHash();
+		tree.initNode();
+
+		const TTEntity& ttEntity = tt.getEntity(hash);
+		Move hash1;
+		Move hash2;
+		if (ttEntity.is(hash)) {
+			if (ttEntity.getDepth() >= depth) {
+				switch (ttEntity.getValueType()) {
+				case TTEntity::EXACT:
+					return ttEntity.getValue();
+					break;
+				case TTEntity::LOWER:
+					if (ttEntity.getValue() >= beta) {
+						return ttEntity.getValue();
+					}
+					break;
+				case TTEntity::UPPER:
+					if (ttEntity.getValue() <= alpha) {
+						return ttEntity.getValue();
+					}
+					break;
+				}
+			}
+			tree.setHashMove(ttEntity.getHashMove());
+		}
+
 		tree.generateMoves();
+
+		Value value = Value::MIN;
+		const Move* best = NULL;
 		while (tree.next()) {
+			Value newAlpha = Value::max(alpha, value);
 			tree.makeMove();
-			Value value = -negaMax<false>(tree, depth-1, -beta, -alpha, NULL);
+			Value newValue = -negaMax(tree, depth-PLY1, -beta, -newAlpha);
 			tree.unmakeMove();
 
 #if 0
@@ -33,26 +64,37 @@ namespace Search {
 			std::cout << '\n';
 #endif
 
-			if (value > alpha) {
-				alpha = value;
+			if (newValue > value) {
+				value = newValue;
 				tree.updatePv();
-				if (root) {
-					*pmove = *tree.getCurrentMove();
-				}
-				if (alpha >= beta) {
+				best = tree.getCurrentMove();
+				if (value >= beta) {
 					break;
 				}
 			}
 		}
 
-		return alpha;
+		tt.entry(hash, alpha, beta, value, depth, best);
+
+		return value;
 	}
 
 	bool Searcher::search(SearchResult& result) {
-		memset(&result, 0, sizeof(SearchResult));
-		result.value = negaMax<true>(tree, config.depth,
-				Value::MIN, Value::MAX, &result.move);
-		result.pv.copy(tree.getPv());
-		return true;
+		before(result);
+		Value value = negaMax(tree, config.depth * PLY1,
+				Value::MIN, Value::MAX);
+		return after(result, value);
+	}
+
+	bool Searcher::idSearch(SearchResult& result) {
+		Value value;
+		before(result);
+		value = negaMax(tree, 0, Value::MIN, Value::MAX);
+		for (int depth = 1; depth < config.depth; depth++) {
+			value = negaMax(tree, depth * PLY1,
+					Value::MIN, Value::MAX);
+			std::cout << tree.getPv().toString() << ':' << value << '\n';
+		}
+		return after(result, value);
 	}
 }

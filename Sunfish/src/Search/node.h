@@ -9,12 +9,12 @@
 #define NODE_H_
 
 #include "pv.h"
-#include "../Shogi/moveGenerator.h"
+#include "phasedMoveGenerator.h"
 
 namespace Search {
 	class Node {
 	private:
-		Shogi::MoveGenerator<Shogi::Move>* pgen;
+		PhasedMoveGenerator* pgen;
 		const Shogi::Move* pmove;
 		Shogi::Change change;
 		Evaluate::Value baseValue;
@@ -38,7 +38,7 @@ namespace Search {
 		}
 
 		void init(Shogi::Position& pos) {
-			pgen = new Shogi::MoveGenerator<Shogi::Move>(pos);
+			pgen = new PhasedMoveGenerator(pos);
 			pmove = NULL;
 		}
 
@@ -54,10 +54,13 @@ namespace Search {
 			return pv;
 		}
 
-		int generateMoves() {
-			pgen->clear();
+		void generateMoves() {
+			pgen->init();
 			pmove = NULL;
-			return pgen->generate();
+		}
+
+		void setHashMove(const HashMove& hashMove) {
+			pgen->setHashMove(hashMove);
 		}
 
 		bool next() {

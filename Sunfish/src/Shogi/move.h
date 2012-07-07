@@ -24,6 +24,7 @@ namespace Shogi {
 
 	public:
 		Move() {
+			setEmpty();
 		}
 
 		Move(const Move& move) {
@@ -37,6 +38,14 @@ namespace Shogi {
 			setPromotion(promote);
 			setHand(hand);
 			setPiece(piece);
+		}
+
+		void setEmpty() {
+			m.to = 0;
+		}
+
+		bool isEmpty() const {
+			return m.to == 0;
 		}
 
 		Square getFrom() const {
