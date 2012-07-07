@@ -72,9 +72,9 @@ namespace Cui {
 		char line[1024];
 		Command prevCommand;
 		Record::Record record;
-		Param param;
-		Initializer::apply(param);
-		Searcher searcher(param);
+		Param* pparam = new Param();
+		Initializer::apply(*pparam);
+		Searcher searcher(*pparam);
 		SearchConfig config;
 		SearchResult result;
 

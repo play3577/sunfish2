@@ -197,12 +197,12 @@ namespace Tools{
 
 	bool Debug::TreeTest(const char* filename) {
 		Position pos(EVEN);
-		Param param;
-		Initializer::apply(param);
+		Param* pparam = new Param();
+		Initializer::apply(*pparam);
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
-		Search::Tree tree(param, pos, 4);
+		Search::Tree tree(*pparam, pos, 4);
 		TreeSearch(tree);
 		return true;
 	}
