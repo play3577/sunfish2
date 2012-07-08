@@ -159,10 +159,7 @@ namespace Evaluate {
 		virtual ~TempParam() {
 		}
 
-		void init() {
-			memset(this, 0, sizeof(*this));
-			//cumulate(); // 全要素0なら不要なはず。
-		}
+		void init();
 
 		bool read(const char* filename);
 

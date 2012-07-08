@@ -26,6 +26,16 @@ namespace Evaluate {
 	};
 
 	template <class T, class U>
+	void TempParam<T, U>::init() {
+		memset((char*)piece, 0, sizeof(piece));
+		memset((char*)kpp, 0, sizeof(kpp));
+		memset((char*)kkp, 0, sizeof(kkp));
+		cumulate();
+	}
+	template void TempParam<ValueS, ValueS>::init();
+	template void TempParam<ValueD, ValueF>::init();
+
+	template <class T, class U>
 	bool TempParam<T, U>::read(const char* filename) {
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {

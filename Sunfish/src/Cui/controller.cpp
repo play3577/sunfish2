@@ -84,37 +84,37 @@ namespace Cui {
 			bool printBoard = false;
 			Move move;
 
-			// user input
+			// ユーザからのコマンド入力
 			std::cin.getline(line, sizeof(line));
 			if (std::cin.eof()) {
 				break;
 			}
 			Command command = line[0] != '\0' ? inputCommand(line) : prevCommand;
 			switch(prevCommand = command) {
-			case PREV:
+			case PREV: // 1手進む。
 				if (record.prev()) {
 					printBoard = true;
 				} else {
 					std::cout << "There is no previous move.\n";
 				}
 				break;
-			case NEXT:
+			case NEXT: // 1手戻る。
 				if (record.next()) {
 					printBoard = true;
 				} else {
 					std::cout << "There is no next move.\n";
 				}
 				break;
-			case MOVES:
+			case MOVES: // 指し手列挙
 				showLegalMoves(record.getPosition());
 				break;
-			case CAPTURES:
+			case CAPTURES: // 駒を取る手列挙
 				showCaptures(record.getPosition());
 				break;
-			case NOCAPTURES:
+			case NOCAPTURES: // 駒を取らない手列挙
 				showNoCaptures(record.getPosition());
 				break;
-			case SEARCH:
+			case SEARCH: // 探索
 				searcher.init(record.getPosition());
 				if (searcher.idSearch(result)) {
 					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
@@ -123,9 +123,10 @@ namespace Cui {
 					std::cout << "lose.\n";
 				}
 				break;
-			default:
+			default: // 指し手入力
 				if ((record.getPosition().inputMoveCsa(line, move)) ||
 						(record.getPosition().inputMove(line, move))) {
+					// 合法手チェック
 					if (record.move(move)) {
 						std::cout << move.toString() << '\n';
 						printBoard = true;
@@ -137,10 +138,13 @@ namespace Cui {
 				}
 			}
 
+			// 盤面の表示
 			if (printBoard) {
 				std::cout << record.toString();
+#ifndef NDEBUG
 				Evaluate::Evaluate eval(*pparam, record.getPosition());
 				std::cout << (int)eval.getValue(record.getPosition()) << '\n';
+#endif
 			}
 		}
 
