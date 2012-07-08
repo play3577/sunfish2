@@ -60,8 +60,6 @@ namespace Evaluate {
 	private:
 		typedef TempParam<T, U> Type;
 
-		static const double EV_SCALE = 32.0;
-
 		T piece[Shogi::Piece::DRAGON+1];
 		T pieceEx[Shogi::Piece::DRAGON+1];
 		T piecePr[Shogi::Piece::DRAGON+1];
@@ -149,8 +147,13 @@ namespace Evaluate {
 		}
 
 	public:
-		TempParam() {
+		static const int SCALE = 32;
+
+		TempParam(const char* filename = NULL) {
 			init();
+			if (filename != NULL) {
+				read(filename);
+			}
 		}
 
 		virtual ~TempParam() {
@@ -255,8 +258,8 @@ namespace Evaluate {
 		}
 	};
 
-	typedef TempParam<Value, ValueS> Param;
-	typedef TempParam<ValueF, ValueF> Gradient;
+	typedef TempParam<ValueS, ValueS> Param;
+	typedef TempParam<ValueD, ValueF> Gradient;
 };
 
 #endif // PARAM_H_

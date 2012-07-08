@@ -93,6 +93,7 @@ namespace Search {
 		for (int depth = 1; depth <= config.depth; depth++) {
 			value = negaMax(tree, depth * PLY1,
 					Value::MIN, Value::MAX);
+			// TODO: PVを受け取るハンドラを用意する。
 			std::cout << tree.getPv().toString() << ':' << value << '\n';
 		}
 		return after(result, value);

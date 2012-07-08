@@ -14,17 +14,20 @@
 namespace Evaluate {
 	class Feature {
 	private:
-		template<class T, class U, bool get, bool cum>
+		static const int blackPiece[];
+		static const int whitePiece[];
+
+		template<class X, class T, class U, bool get, bool cum>
 		static void Extract(const Shogi::Position& pos,
-				const TempParam<T, U>* iparam, const T* ivalue,
-				TempParam<T, U>* oparam, T* ovalue);
+				const TempParam<T, U>* iparam, const X* ivalue,
+				TempParam<T, U>* oparam, X* ovalue);
 
 	public:
-		template<class T, class U>
-		static T getValue(const Shogi::Position& pos,
+		template<class R, class T, class U>
+		static R getValue(const Shogi::Position& pos,
 				const TempParam<T, U>* pparam) {
-			T value(0);
-			Extract<T, U, true, false>(pos, pparam, NULL, NULL, &value);
+			R value(0);
+			Extract<R, T, U, true, false>(pos, pparam, NULL, NULL, &value);
 			return value;
 		}
 	};

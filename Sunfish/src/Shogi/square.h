@@ -24,6 +24,7 @@ namespace Shogi {
 		static const unsigned OFFSET = 0x10;
 		static const unsigned WIDTH = 0x10;
 		static const unsigned nextTable[];
+		static const unsigned shortIndex[];
 		unsigned square;
 
 	public:
@@ -51,6 +52,10 @@ namespace Shogi {
 
 		Square(const Square& sq) {
 			square = sq.square;
+		}
+
+		unsigned getShortIndex() {
+			return shortIndex[square];
 		}
 
 		void next() {

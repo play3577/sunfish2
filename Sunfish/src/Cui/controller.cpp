@@ -8,7 +8,6 @@
 #include "../Record/record.h"
 #include "controller.h"
 #include "../Search/searcher.h"
-#include "../Evaluate/initializer.h"
 
 namespace Cui {
 	using namespace Shogi;
@@ -72,8 +71,6 @@ namespace Cui {
 		char line[1024];
 		Command prevCommand;
 		Record::Record record;
-		Param* pparam = new Param();
-		Initializer::apply(*pparam);
 		Searcher searcher(*pparam);
 		SearchConfig config;
 		SearchResult result;
@@ -142,6 +139,8 @@ namespace Cui {
 
 			if (printBoard) {
 				std::cout << record.toString();
+				Evaluate::Evaluate eval(*pparam, record.getPosition());
+				std::cout << (int)eval.getValue(record.getPosition()) << '\n';
 			}
 		}
 

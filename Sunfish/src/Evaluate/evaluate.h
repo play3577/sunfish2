@@ -9,6 +9,7 @@
 #define EVALUATE_H_
 
 #include "param.h"
+#include "feature.h"
 
 namespace Evaluate {
 	class Evaluate {
@@ -60,10 +61,13 @@ namespace Evaluate {
 			this->baseValue = baseValue;
 		}
 
-		Value getAdditionalValue(const Shogi::Position& pos) const;
+
+		Value getAdditionalValue(const Shogi::Position& pos) const {
+			return Feature::getValue<Value, ValueS, ValueS>(pos, &param);
+		}
 
 		Value getValue(const Shogi::Position& pos) const {
-			return baseValue + getAdditionalValue(pos); // TODO
+			return baseValue + getAdditionalValue(pos) / Param::SCALE; // TODO
 		}
 	};
 }

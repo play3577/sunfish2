@@ -9,6 +9,8 @@
 #define CONTROLLER_H_
 
 #include "../Shogi/position.h"
+#include "../Evaluate/param.h"
+#include "../Evaluate/initializer.h"
 
 namespace Cui {
 	class Controller {
@@ -25,7 +27,19 @@ namespace Cui {
 
 		Command inputCommand(const char* str);
 
+		Evaluate::Param* pparam;
+
 	public:
+		Controller() {
+			pparam = new Evaluate::Param();
+			Evaluate::Initializer::apply(*pparam);
+			pparam->read("evdata");
+		}
+
+		virtual ~Controller() {
+			delete pparam;
+		}
+
 		void showLegalMoves(Shogi::Position pos);
 
 		void showCaptures(Shogi::Position pos);

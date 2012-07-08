@@ -39,8 +39,13 @@ namespace Evaluate {
 			return *this;
 		}
 
-		X& operator=(const X& v) {
-			value = v.value;
+		X& operator+=(T v) {
+			value += v;
+			return *this;
+		}
+
+		X& operator-=(T v) {
+			value -= v;
 			return *this;
 		}
 
@@ -54,12 +59,30 @@ namespace Evaluate {
 			return *this;
 		}
 
+		X& operator*=(const X& v) {
+			value *= v.value;
+			return *this;
+		}
+
+		X& operator/=(const X& v) {
+			value /= v.value;
+			return *this;
+		}
+
 		X operator+() const {
 			return X(value);
 		}
 
 		X operator-() const {
 			return X(-value);
+		}
+
+		X operator+(T v) const {
+			return X(value + v);
+		}
+
+		X operator-(T v) const {
+			return X(value - v);
 		}
 
 		X operator+(const X& v) const {
@@ -69,6 +92,26 @@ namespace Evaluate {
 		X operator-(const X& v) const {
 			return X(value - v.value);
 		}
+
+		/*
+		X operator*(T v) const {
+			return X(value * v);
+		}
+
+		X operator/(T v) const {
+			return X(value / v);
+		}
+		*/
+
+		/*
+		X operator*(const X& v) const {
+			return X(value * v.value);
+		}
+
+		X operator/(const X& v) const {
+			return X(value / v.value);
+		}
+		*/
 
 		bool operator==(const X& v) const {
 			return value == v.value;
@@ -107,6 +150,7 @@ namespace Evaluate {
 	typedef TempValue<int, INT_MAX, -INT_MAX> Value;
 	typedef TempValue<short, SHRT_MAX, -SHRT_MAX> ValueS;
 	typedef TempValue<float, INT_MAX, -INT_MAX> ValueF;
+	typedef TempValue<double, INT_MAX, -INT_MAX> ValueD;
 }
 
 #endif // VALUE_H_

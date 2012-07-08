@@ -6,6 +6,7 @@
  */
 
 #include <fstream>
+#include <cassert>
 #include "param.h"
 
 namespace Evaluate {
@@ -27,6 +28,9 @@ namespace Evaluate {
 	template <class T, class U>
 	bool TempParam<T, U>::read(const char* filename) {
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
+		if (!fin) {
+			return false;
+		}
 		fin.read((char*)&piece[1], sizeof(piece[0])*Piece::DRAGON);
 		fin.read((char*)kpp, sizeof(kpp));
 		fin.read((char*)kkp, sizeof(kkp));
@@ -34,12 +38,18 @@ namespace Evaluate {
 			return false;
 		}
 		fin.close();
+		cumulate();
 		return true;
 	}
+	template bool TempParam<ValueS, ValueS>::read(const char* filename);
+	template bool TempParam<ValueD, ValueF>::read(const char* filename);
 
 	template <class T, class U>
 	bool TempParam<T, U>::write(const char* filename) {
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
+		if (!fout) {
+			return false;
+		}
 		fout.write((char*)&piece[1], sizeof(piece[0])*Piece::DRAGON);
 		fout.write((char*)kpp, sizeof(kpp));
 		fout.write((char*)kkp, sizeof(kkp));
@@ -49,6 +59,8 @@ namespace Evaluate {
 		fout.close();
 		return true;
 	}
+	template bool TempParam<ValueS, ValueS>::write(const char* filename);
+	template bool TempParam<ValueD, ValueF>::write(const char* filename);
 
 	/*
 	 * パラメータの内容が変更された時に呼び出す。
@@ -63,8 +75,8 @@ namespace Evaluate {
 			piecePr[p] = piecePr[pp] = piece[pp] - piece[p];
 		}
 	}
-	template void TempParam<Value, ValueS>::cumulate();
-	template void TempParam<ValueF, ValueF>::cumulate();
+	template void TempParam<ValueS, ValueS>::cumulate();
+	template void TempParam<ValueD, ValueF>::cumulate();
 
 	/*
 	 * cumulateの逆変換を行う。
@@ -73,6 +85,6 @@ namespace Evaluate {
 	template <class T, class U>
 	void TempParam<T, U>::decumulate() {
 	}
-	template void TempParam<Value, ValueS>::decumulate();
-	template void TempParam<ValueF, ValueF>::decumulate();
+	template void TempParam<ValueS, ValueS>::decumulate();
+	template void TempParam<ValueD, ValueF>::decumulate();
 }

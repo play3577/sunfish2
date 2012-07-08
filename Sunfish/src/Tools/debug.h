@@ -13,8 +13,10 @@
 
 #ifdef NDEBUG
 #define DEBUG_PRINT_LINE		do { } while (false)
+#define DEBUG_PRINT(v)			do { } while (false)
 #else
 #define DEBUG_PRINT_LINE		do { std::cout << __FILE__ << "(" << __LINE__ << ")\n"; } while (false)
+#define DEBUG_PRINT(v)			do { std::cout << __FILE__ << "(" << __LINE__ << ") " << #v << "=" << (v) << '\n'; } while (false)
 #endif
 
 namespace Tools{

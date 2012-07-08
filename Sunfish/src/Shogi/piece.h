@@ -160,10 +160,6 @@ namespace Shogi {
 			return piece;
 		}
 
-		unsigned getPieceNumber() const {
-			return piece;
-		}
-
 		bool isPromoted() const {
 			return piece & PROMOTE;
 		}

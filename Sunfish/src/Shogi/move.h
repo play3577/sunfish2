@@ -87,7 +87,7 @@ namespace Shogi {
 
 		void setPiece(const Piece& piece)
 		{
-			m.piece = piece.getPieceNumber();
+			m.piece = piece.getInteger();
 		}
 
 		Move& operator=(const Move& move) {
