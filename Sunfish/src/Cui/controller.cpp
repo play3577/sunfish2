@@ -69,13 +69,14 @@ namespace Cui {
 
 	bool Controller::play() {
 		char line[1024];
-		Command prevCommand;
+		Command prevCommand = UNKNOWN;
 		Record::Record record;
 		Searcher searcher(*pparam);
 		SearchConfig config;
 		SearchResult result;
 
 		config.depth = 5;
+		config.pvHandler = this;
 		searcher.setSearchConfig(config);
 
 		std::cout << record.toString();
@@ -118,7 +119,6 @@ namespace Cui {
 				searcher.init(record.getPosition());
 				if (searcher.idSearch(result)) {
 					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
-					std::cout << result.pv.toString() <<  '\n';
 				} else {
 					std::cout << "lose.\n";
 				}
@@ -141,8 +141,8 @@ namespace Cui {
 			// 盤面の表示
 			if (printBoard) {
 				std::cout << record.toString();
-#ifndef NDEBUG
-				Evaluate::Evaluate eval(*pparam, record.getPosition());
+#if 0
+				Evaluate eval(*pparam, record.getPosition());
 				std::cout << (int)eval.getValue(record.getPosition()) << '\n';
 #endif
 			}

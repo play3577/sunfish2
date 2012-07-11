@@ -401,6 +401,21 @@ namespace Shogi {
 			(const Move& move, Change* change,
 			Evaluate::Evaluate* eval);
 
+	template <bool chNotNull>
+	bool Position::nullMove(Change* change) {
+		if (isCheck()) {
+			return false;
+		}
+		if (chNotNull) {
+			change->setType(Change::NO_CAPTURE); // type of change
+		}
+		turn();
+		hash ^= hashBlack();
+		return true;
+	}
+	template bool Position::nullMove<true>(Change* change);
+	template bool Position::nullMove<false>(Change* change);
+
 	template <bool black>
 	void Position::back(const Change& change) {
 		Piece handPiece;
@@ -411,7 +426,9 @@ namespace Shogi {
 		Square from;
 		switch (change.getType()) {
 		case Change::NULL_MOVE:
-			break;
+			turn();
+			hash ^= hashBlack();
+			return;
 		case Change::DROP:
 			handPiece = change.getHandPiece();
 			to = change.getToSquare();

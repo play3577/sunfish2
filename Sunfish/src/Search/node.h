@@ -26,9 +26,9 @@ namespace Search {
 			pmove = NULL;
 		}
 
-		Node(Shogi::Position& pos) {
+		Node(Shogi::Position& pos, Evaluate::Param& param) {
 			pmove = NULL;
-			init(pos);
+			init(pos, param);
 		}
 
 		virtual ~Node() {
@@ -37,8 +37,8 @@ namespace Search {
 			}
 		}
 
-		void init(Shogi::Position& pos) {
-			pgen = new PhasedMoveGenerator(pos);
+		void init(const Shogi::Position& pos, const Evaluate::Param& param) {
+			pgen = new PhasedMoveGenerator(pos, param);
 			pmove = NULL;
 		}
 
@@ -71,6 +71,12 @@ namespace Search {
 				Evaluate::Evaluate& eval) {
 			baseValue = eval.getBaseValue();
 			pos.moveUnsafe(*pmove, change, eval);
+		}
+
+		bool nullMove(Shogi::Position& pos,
+				Evaluate::Evaluate& eval) {
+			baseValue = eval.getBaseValue();
+			return pos.nullMove(change);
 		}
 
 		void unmakeMove(Shogi::Position& pos,

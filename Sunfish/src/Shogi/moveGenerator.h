@@ -109,7 +109,27 @@ namespace Shogi {
 
 		void sort(unsigned begin, unsigned size);
 
-		bool swapTop(Move move);
+		void insertBefore(int from, int to) {
+			Move move = moves[from];
+			for (int i = from; i > to; i--) {
+				moves[i] = moves[i-1];
+			}
+			moves[to] = move;
+		}
+
+		bool swapTop(Move move) {
+			if (num > 0 && moves[0] == move) {
+				return true;
+			}
+			for (int i = 1; (unsigned)i < num; i++) {
+				if (moves[i] == move) {
+					moves[i] = moves[0];
+					moves[0] = move;
+					return true;
+				}
+			}
+			return false;
+		}
 
 		bool equals(const MoveGenerator gen) const;
 

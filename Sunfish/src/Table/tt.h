@@ -13,14 +13,19 @@
 namespace Table {
 	class TT {
 	private:
-		static const unsigned DEF_BITS = 16;
+		static const unsigned DEF_BITS = 20;
 		unsigned size;
 		unsigned mask;
 		TTEntity* table;
 
 	public:
-		TT(unsigned bits = DEF_BITS) {
+		TT(unsigned bits = DEF_BITS) : 
+				size(0), table(NULL) {
 			init(bits);
+		}
+
+		virtual ~TT() {
+			delete table;
 		}
 
 		void init(unsigned bits = 0) {
@@ -28,7 +33,7 @@ namespace Table {
 			if (bits != 0 && size != newSize) {
 				size = newSize;
 				mask = size - 1;
-				delete[] table;
+				if (table != NULL) { delete[] table; }
 				table = new TTEntity[size];
 			} else {
 				for (unsigned i = 0; i < size; i++) {

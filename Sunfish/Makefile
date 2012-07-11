@@ -20,6 +20,7 @@ override CFLAGS+=-W
 #override CFLAGS+=-O2
 #override CFLAGS+=-NDEBUG
 override CFLAGS+=-g
+#override CFLAGS+=-pg
 
 .PHONY: all
 all: $(PROGRAM)

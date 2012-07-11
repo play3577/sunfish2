@@ -71,6 +71,9 @@ namespace Shogi {
 			}
 		}
 
+		template <bool chNotNull>
+		bool nullMove(Change* change);
+
 		template <bool black>
 		void back(const Change& change);
 
@@ -305,6 +308,14 @@ namespace Shogi {
 		void moveUnsafe(const Move& move, Change& change,
 				Evaluate::Evaluate& eval) {
 			moveUnsafe<true, true>(move, &change, &eval);
+		}
+
+		bool nullMove() {
+			return nullMove<false>(NULL);
+		}
+
+		bool nullMove(Change& change) {
+			return nullMove<true>(&change);
 		}
 
 		void back(const Change& change) {

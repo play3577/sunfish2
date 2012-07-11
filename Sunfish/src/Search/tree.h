@@ -62,7 +62,7 @@ namespace Search {
 			this->maxDepth = maxDepth;
 			nodes = new Node[maxDepth+1];
 			for (int i = 0; i < maxDepth; i++) {
-				nodes[i].init(pos);
+				nodes[i].init(pos, eval.getParam());
 			}
 			depth = 0;
 		}
@@ -101,6 +101,13 @@ namespace Search {
 			return false;
 		}
 
+		bool nullMove() {
+			if (depth < maxDepth) {
+				return nodes[depth++].nullMove(pos, eval);
+			}
+			return false;
+		}
+
 		void unmakeMove() {
 			nodes[--depth].unmakeMove(pos, eval);
 		}
@@ -121,11 +128,11 @@ namespace Search {
 			return pos;
 		}
 
-		Evaluate::Value evaluate() const {
+		Evaluate::Value evaluate() {
 			return eval.getValue(pos);
 		}
 
-		Evaluate::Value negaEvaluate() const {
+		Evaluate::Value negaEvaluate() {
 			if (pos.isBlackTurn()) {
 				return eval.getValue(pos);
 			} else {

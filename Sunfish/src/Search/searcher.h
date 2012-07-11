@@ -9,11 +9,13 @@
 #define SEARCHER_H_
 
 #include "tree.h"
+#include "pvHandler.h"
 #include "../Table/tt.h"
 
 namespace Search {
 	struct SearchConfig {
 		int depth;
+		PvHandler* pvHandler;
 	};
 
 	struct SearchResult {
@@ -30,6 +32,7 @@ namespace Search {
 		SearchConfig config;
 		static const int PLY1 = 4;
 
+		template <bool pvNode, bool nullMoveNode>
 		Evaluate::Value negaMax(Tree& tree,
 				int depth,
 				Evaluate::Value alpha,

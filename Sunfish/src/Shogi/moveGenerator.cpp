@@ -459,20 +459,6 @@ namespace Shogi {
 		}
 	}
 
-	bool MoveGenerator::swapTop(Move move) {
-		if (num > 0 && moves[0] == move) {
-			return true;
-		}
-		for (int i = 1; (unsigned)i < num; i++) {
-			if (moves[i] == move) {
-				moves[i] = moves[0];
-				moves[0] = move;
-				return true;
-			}
-		}
-		return false;
-	}
-
 	bool MoveGenerator::equals(const MoveGenerator gen) const {
 		if (num != gen.num) {
 			return false;

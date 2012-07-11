@@ -11,9 +11,10 @@
 #include "../Shogi/position.h"
 #include "../Evaluate/param.h"
 #include "../Evaluate/initializer.h"
+#include "../Search/pvHandler.h"
 
 namespace Cui {
-	class Controller {
+	class Controller : public Search::PvHandler {
 	private:
 		enum Command {
 			UNKNOWN = 0,
@@ -38,6 +39,10 @@ namespace Cui {
 
 		virtual ~Controller() {
 			delete pparam;
+		}
+
+		void pvHandler(const Search::Pv& pv, Evaluate::Value value) {
+			std::cout << pv.toString() << ':' << value << '\n';
 		}
 
 		void showLegalMoves(Shogi::Position pos);

@@ -6,9 +6,28 @@
  */
 
 #include "phasedMoveGenerator.h"
+#include "attackers.h"
 
 namespace Search {
 	using namespace Shogi;
+	using namespace Evaluate;
+
+	void PhasedMoveGenerator::sortSee(int begin, int num) {
+		Value values[num];
+		for (int i = 0; i < num; i++) {
+			Attackers attackers(param, getPosition(), get(begin + i));
+			Value value = attackers.see(); // TODO
+			int j;
+			for (j = i; j > 0; j--) {
+				if (values[j-1] >= value) {
+					break;
+				}
+				values[j] = values[j-1];
+			}
+			values[j] = value;
+			insertBefore(begin + i, begin + j);
+		}
+	}
 
 	const Move* PhasedMoveGenerator::next() {
 		while (true) {
@@ -16,6 +35,7 @@ namespace Search {
 			if (pmove != NULL) {
 				return pmove;
 			}
+			int prevNum = getNumber();
 			switch (phase) {
 			case PHASE_BEGIN:
 				if (getPosition().isLegalMove(hashMove.getHash1(), true)) {
@@ -28,6 +48,7 @@ namespace Search {
 				break;
 			case PHASE_CAPTURE:
 				generateCapture();
+				sortSee(prevNum, getNumber()-prevNum);
 				phase = PHASE_NOCAPTURE;
 				break;
 			case PHASE_NOCAPTURE:

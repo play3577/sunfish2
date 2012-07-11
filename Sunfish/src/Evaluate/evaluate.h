@@ -8,7 +8,7 @@
 #ifndef EVALUATE_H_
 #define EVALUATE_H_
 
-#include "param.h"
+#include "evaluateTable.h"
 #include "feature.h"
 
 namespace Evaluate {
@@ -16,6 +16,7 @@ namespace Evaluate {
 	private:
 		const Param& param;
 		Value baseValue;
+		EvaluateTable table;
 
 	public:
 		Evaluate(const Param& param, Value baseValue = Value(0)) :
@@ -62,12 +63,22 @@ namespace Evaluate {
 		}
 
 
-		Value getAdditionalValue(const Shogi::Position& pos) const {
-			return Feature::getValue<Value, ValueS, ValueS>(pos, &param);
+		Value getAdditionalValue(const Shogi::Position& pos) {
+			Util::uint64 hash = pos.getHash();
+			Value value;
+			if (!table.get(hash, value)) {
+				value = Feature::getValue<Value, ValueS, ValueS>(pos, &param);
+				table.set(hash, value);
+			}
+			return value;
 		}
 
-		Value getValue(const Shogi::Position& pos) const {
+		Value getValue(const Shogi::Position& pos) {
 			return baseValue + getAdditionalValue(pos) / Param::SCALE; // TODO
+		}
+
+		const Param& getParam() const {
+			return param;
 		}
 	};
 }
