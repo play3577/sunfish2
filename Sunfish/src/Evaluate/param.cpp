@@ -78,6 +78,8 @@ namespace Evaluate {
 	 */
 	template <class T, class U>
 	void TempParam<T, U>::cumulate() {
+		piece[Piece::EMPTY] = pieceEx[Piece::EMPTY]
+				= piecePr[Piece::EMPTY] = Value(0);
 		for (Piece p = Piece::PAWN; p <= Piece::ROOK; p.toNext()) {
 			Shogi::Piece pp = p.getPromoted();
 			pieceEx[p] = piece[p] * 2;

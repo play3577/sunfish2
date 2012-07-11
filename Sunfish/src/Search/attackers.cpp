@@ -15,14 +15,14 @@ namespace Search {
 	Value Attackers::see(int b, int w, Value v) const {
 		if (black) {
 			if (b < blackNum) {
-				Value value = v + see<false>(b+1, w, blackAttackers[b]);
+				Value value = -v + see<false>(b+1, w, blackAttackers[b]);
 				if (value > Value(0)) {
 					return value;
 				}
 			}
 		} else {
 			if (w < whiteNum) {
-				Value value = v + see<true>(b, w+1, whiteAttackers[w]);
+				Value value = -v + see<true>(b, w+1, whiteAttackers[w]);
 				if (value < Value(0)) {
 					return value;
 				}
