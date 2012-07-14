@@ -190,6 +190,14 @@ namespace Evaluate {
 			}
 		}
 
+		T getPieceAbs(const Shogi::Piece& p) const {
+			if (!p.isWhite()) {
+				return piece[p];
+			} else {
+				return piece[p.getTurnedBlack()];
+			}
+		}
+
 		T getPieceExchange(const Shogi::Piece& p) const {
 			if (!p.isWhite()) {
 				return  pieceEx[p];
@@ -198,11 +206,27 @@ namespace Evaluate {
 			}
 		}
 
+		T getPieceExchangeAbs(const Shogi::Piece& p) const {
+			if (!p.isWhite()) {
+				return pieceEx[p];
+			} else {
+				return pieceEx[p.getTurnedBlack()];
+			}
+		}
+
 		T getPiecePromote(const Shogi::Piece& p) const {
 			if (!p.isWhite()) {
 				return  piecePr[p];
 			} else {
 				return -piecePr[p.getTurnedBlack()];
+			}
+		}
+
+		T getPiecePromoteAbs(const Shogi::Piece& p) const {
+			if (!p.isWhite()) {
+				return piecePr[p];
+			} else {
+				return piecePr[p.getTurnedBlack()];
 			}
 		}
 

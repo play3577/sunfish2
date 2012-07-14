@@ -5,9 +5,9 @@
  *      Author: ryosuke
  */
 
-#include "../Record/record.h"
 #include "controller.h"
 #include "../Search/searcher.h"
+#include "../Search/attackers.h"
 
 namespace Cui {
 	using namespace Shogi;
@@ -33,11 +33,15 @@ namespace Cui {
 		} else if (0 == strcmp(str, "search") ||
 				0 == strcmp(str, "s")) {
 			return SEARCH;
+#ifndef NDEBUG
+		} else if (0 == strcmp(str, "see")) {
+			return SEE;
+#endif // ifndef NDEBUG
 		}
 		return UNKNOWN;
 	}
 
-	void Controller::showLegalMoves(Position pos) {
+	void Controller::showLegalMoves(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generate();
 		const Move* pmove;
@@ -47,7 +51,7 @@ namespace Cui {
 		std::cout << '\n';
 	}
 
-	void Controller::showCaptures(Position pos) {
+	void Controller::showCaptures(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generateCapture();
 		const Move* pmove;
@@ -57,7 +61,7 @@ namespace Cui {
 		std::cout << '\n';
 	}
 
-	void Controller::showNoCaptures(Position pos) {
+	void Controller::showNoCaptures(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generateNocapture();
 		const Move* pmove;
@@ -65,6 +69,16 @@ namespace Cui {
 			std::cout << pmove->toString() << ' ';
 		}
 		std::cout << '\n';
+	}
+
+	void Controller::SeeTest(const Position& pos, const Param& param) {
+		MoveGenerator gen(pos);
+		gen.generateCapture();
+		const Move* pmove;
+		while ((pmove = gen.next()) != NULL) {
+			Attackers attackers(param, pos, *pmove);
+			std::cout << pmove->toString() << ':' << (int)attackers.see() << '\n';
+		}
 	}
 
 	bool Controller::play() {
@@ -123,6 +137,11 @@ namespace Cui {
 					std::cout << "lose.\n";
 				}
 				break;
+#ifndef NDEBUG
+			case SEE:
+				SeeTest(record.getPosition(), *pparam);
+				break;
+#endif // ifndef NDEBUG
 			default: // 指し手入力
 				if ((record.getPosition().inputMoveCsa(line, move)) ||
 						(record.getPosition().inputMove(line, move))) {

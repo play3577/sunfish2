@@ -102,8 +102,9 @@ namespace Search {
 		}
 
 		bool nullMove() {
-			if (depth < maxDepth) {
-				return nodes[depth++].nullMove(pos, eval);
+			if (depth < maxDepth && nodes[depth].nullMove(pos, eval)) {
+				depth++;
+				return true;
 			}
 			return false;
 		}

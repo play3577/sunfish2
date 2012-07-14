@@ -18,10 +18,12 @@
 #include "../Shogi/moveGenerator.h"
 #include "../Evaluate/initializer.h"
 #include "../Evaluate/evaluate.h"
+#include "../Search/attackers.h"
 
 namespace Tools{
 	using namespace Shogi;
 	using namespace Evaluate;
+	using namespace Search;
 
 	void Debug::Print( const char* str, ... ){
 		std::ofstream file;

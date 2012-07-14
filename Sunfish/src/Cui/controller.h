@@ -8,10 +8,10 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include "../Shogi/position.h"
 #include "../Evaluate/param.h"
 #include "../Evaluate/initializer.h"
 #include "../Search/pvHandler.h"
+#include "../Record/record.h"
 
 namespace Cui {
 	class Controller : public Search::PvHandler {
@@ -24,6 +24,9 @@ namespace Cui {
 			SEARCH,
 			CAPTURES,
 			NOCAPTURES,
+#ifndef NDEBUG
+			SEE,
+#endif // ifndef NDEBUG
 		};
 
 		Command inputCommand(const char* str);
@@ -45,11 +48,13 @@ namespace Cui {
 			std::cout << pv.toString() << ':' << value << '\n';
 		}
 
-		void showLegalMoves(Shogi::Position pos);
+		void showLegalMoves(const Shogi::Position& pos);
 
-		void showCaptures(Shogi::Position pos);
+		void showCaptures(const Shogi::Position& pos);
 
-		void showNoCaptures(Shogi::Position pos);
+		void showNoCaptures(const Shogi::Position& pos);
+
+		void SeeTest(const Shogi::Position& pos, const Evaluate::Param& param);
 
 		bool play();
 	};

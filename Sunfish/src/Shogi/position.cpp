@@ -407,7 +407,7 @@ namespace Shogi {
 			return false;
 		}
 		if (chNotNull) {
-			change->setType(Change::NO_CAPTURE); // type of change
+			change->setType(Change::NULL_MOVE); // type of change
 		}
 		turn();
 		hash ^= hashBlack();

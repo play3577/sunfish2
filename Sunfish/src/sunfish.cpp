@@ -9,7 +9,6 @@
 #include "Cui/controller.h"
 #include "Shogi/position.h"
 #include "sunfish.h"
-#include "Tools/debug.h"
 
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';

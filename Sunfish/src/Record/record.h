@@ -79,6 +79,22 @@ namespace Record {
 			return cur;
 		}
 
+		bool getNextMove(Shogi::Move& move) const {
+			if (cur < num) {
+				move = moveStack[cur];
+				return true;
+			}
+			return false;
+		}
+
+		bool getPrevMove(Shogi::Move& move) const {
+			if (cur > 0) {
+				move = moveStack[cur-1];
+				return true;
+			}
+			return false;
+		}
+
 		std::string toString() const {
 			return pos.toString();
 		}

@@ -6,6 +6,7 @@
  */
 
 #include "attackers.h"
+#include "../Tools/debug.h"
 
 namespace Search {
 	using namespace Shogi;
@@ -15,15 +16,15 @@ namespace Search {
 	Value Attackers::see(int b, int w, Value v) const {
 		if (black) {
 			if (b < blackNum) {
-				Value value = -v + see<false>(b+1, w, blackAttackers[b]);
+				Value value = v - see<false>(b+1, w, blackAttackers[b]);
 				if (value > Value(0)) {
 					return value;
 				}
 			}
 		} else {
 			if (w < whiteNum) {
-				Value value = -v + see<true>(b, w+1, whiteAttackers[w]);
-				if (value < Value(0)) {
+				Value value = v - see<true>(b, w+1, whiteAttackers[w]);
+				if (value > Value(0)) {
 					return value;
 				}
 			}
@@ -57,24 +58,32 @@ namespace Search {
 
 		DirectionFlags flags = pos.getEffect(move.getTo(), black).getExcludeKing();
 		while (flags.isNonZero()) {
-			Direction dir = flags.pop().toDirection().reverse();
+			Direction rdir = flags.pop().toDirection();
+			Direction dir = rdir.reverse();
 			Square from = move.getTo();
-			for (from += dir; pos.getBoard(from) == Piece::EMPTY; from += dir)
-				;
-			if (from == move.getFrom()) {
-				continue; // TODO
-			}
-			Piece piece = pos.getBoard(from);
-			if (black) {
-				blackAttackers[blackNum] = (piece != Piece::BKING ?
-						(Value)param.getPieceExchange(piece) :
-						(Value)Value::MAX);
-				blackNum++;
-			} else {
-				whiteAttackers[whiteNum] = (piece != Piece::WKING ?
-						(Value)param.getPieceExchange(piece) :
-						(Value)Value::MAX);
-				whiteNum++;
+			while (true) {
+				for (from += dir; pos.getBoard(from) == Piece::EMPTY; from += dir)
+					;
+
+				if (from != move.getFrom()) {
+					Piece piece = pos.getBoard(from);
+					if (black) {
+						blackAttackers[blackNum] = (piece != Piece::BKING ?
+								(Value)param.getPieceExchangeAbs(piece) :
+								(Value)Value::MAX);
+						blackNum++;
+					} else {
+						whiteAttackers[whiteNum] = (piece != Piece::WKING ?
+								(Value)param.getPieceExchangeAbs(piece) :
+								(Value)Value::MAX);
+						whiteNum++;
+					}
+				}
+
+				DirectionFlags flags2 = pos.getEffect(from, black);
+				if (!flags2.check(rdir, true)) {
+					break;
+				}
 			}
 		}
 		if (black) {

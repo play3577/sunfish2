@@ -45,7 +45,8 @@ namespace Table {
 				const Shogi::Move* pmove) {
 			if (this->valueType == UNKNOWN) {
 				hashMove.init();
-			} else if (depth > this->depth || (this->valueType != EXACT && valueType == EXACT)) {
+			} else if (hash != this->hash || depth > this->depth ||
+					(this->valueType != EXACT && valueType == EXACT)) {
 			} else {
 				return false;
 			}

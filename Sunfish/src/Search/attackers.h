@@ -20,7 +20,7 @@ namespace Search {
 		Evaluate::Value blackAttackers[SIZE];
 		int whiteNum;
 		Evaluate::Value whiteAttackers[SIZE];
-		bool black;
+		bool blackTurn;
 		Evaluate::Value firstValue;
 		Evaluate::Value defaultValue;
 
@@ -44,20 +44,23 @@ namespace Search {
 		}
 
 		void create(const Shogi::Position& pos, Shogi::Move move) {
-			black = pos.isBlackTurn();
-			firstValue = param.getPieceExchange(move.getPiece());
+			blackTurn = pos.isBlackTurn();
+			firstValue = param.getPieceExchangeAbs(move.getPiece());
 			Shogi::Piece piece = pos.getBoard(move.getTo());
-			defaultValue = (piece.isEmpty() ? Evaluate::Value(0) :
-					param.getPieceExchange(piece));
+			if (piece.isEmpty()) {
+				defaultValue = Evaluate::Value(0);
+			} else {
+				defaultValue = param.getPieceExchangeAbs(piece);
+			}
 			create<true>(pos, move);
 			create<false>(pos, move);
 		}
 
 		Evaluate::Value see() const {
-			if (black) {
-				return -defaultValue + see<true>(0, 0, firstValue);
+			if (blackTurn) {
+				return defaultValue - see<false>(0, 0, firstValue);
 			} else {
-				return -defaultValue - see<false>(0, 0, firstValue);
+				return defaultValue - see<true>(0, 0, firstValue);
 			}
 		}
 	};

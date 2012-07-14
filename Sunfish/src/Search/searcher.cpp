@@ -52,7 +52,7 @@ namespace Search {
 		}
 
 		// null move pruning
-		int nullDepth = depth - (depth >= PLY1*8 ? PLY1*4 : (depth >= 6 ? PLY1*2 : PLY1*1));
+		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
 				nullDepth > PLY1*tree.getDepth() &&
@@ -96,7 +96,9 @@ namespace Search {
 				best = tree.getCurrentMove();
 
 				// beta cut
-				if (value >= beta) { break; }
+				if (value >= beta) {
+					break;
+				}
 			}
 		}
 

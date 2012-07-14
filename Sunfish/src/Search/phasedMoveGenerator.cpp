@@ -16,7 +16,7 @@ namespace Search {
 		Value values[num];
 		for (int i = 0; i < num; i++) {
 			Attackers attackers(param, getPosition(), get(begin + i));
-			Value value = attackers.see(); // TODO
+			Value value = attackers.see();
 			int j;
 			for (j = i; j > 0; j--) {
 				if (values[j-1] >= value) {
