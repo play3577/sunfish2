@@ -11,6 +11,7 @@
 #include "../Shogi/moveGenerator.h"
 #include "../Evaluate/param.h"
 #include "hashMove.h"
+#include "history.h"
 
 namespace Search {
 	enum PHASE {
