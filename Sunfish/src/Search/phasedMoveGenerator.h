@@ -27,16 +27,20 @@ namespace Search {
 		PHASE phase;
 		HashMove hashMove;
 		const Evaluate::Param& param;
+		const History& history;
 
 		void sortSee(int begin, int num);
+
+		void sortHistory(int begin, int num);
 
 	public:
 		typedef Shogi::MoveGenerator Super;
 
 		PhasedMoveGenerator(const Shogi::Position& pos,
-				const Evaluate::Param& param) :
+				const Evaluate::Param& param,
+				const History& history) :
 				Shogi::MoveGenerator(pos),
-				param(param) {
+				param(param), history(history) {
 			init();
 		}
 

@@ -62,7 +62,7 @@ namespace Search {
 
 		unsigned get(const Shogi::Move& move) const {
 			unsigned index = from(move);
-			return good[index][move.getTo()] * SCALE / all[index][move.getTo()];
+			return good[index][move.getTo()] * SCALE / (all[index][move.getTo()] + 1);
 		}
 	};
 }

@@ -75,6 +75,9 @@ namespace Search {
 		while (tree.next()) {
 			moveCount++;
 
+			assert(tree.getCurrentMove() != NULL);
+			history.addAppear(*tree.getCurrentMove(), depth);
+
 			// recurcive search
 			Value newAlpha = Value::max(alpha, value);
 			Value newValue;
@@ -94,6 +97,7 @@ namespace Search {
 				value = newValue;
 				tree.updatePv();
 				best = tree.getCurrentMove();
+				history.addGood(*tree.getCurrentMove(), depth);
 
 				// beta cut
 				if (value >= beta) {

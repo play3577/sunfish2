@@ -29,6 +29,7 @@ namespace Search {
 	private:
 		Tree tree;
 		Table::TT tt;
+		History history;
 		SearchConfig config;
 		static const int PLY1 = 4;
 
@@ -58,12 +59,12 @@ namespace Search {
 		}
 	public:
 		Searcher(const Evaluate::Param& param) :
-			tree(param) {
+			tree(param, history) {
 		}
 
 		Searcher(const Evaluate::Param& param,
 				const Shogi::Position& pos) :
-			tree(param, pos) {
+			tree(param, pos, history) {
 		}
 
 		void init(const Shogi::Position& pos) {

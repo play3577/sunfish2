@@ -26,9 +26,10 @@ namespace Search {
 			pmove = NULL;
 		}
 
-		Node(Shogi::Position& pos, Evaluate::Param& param) {
+		Node(Shogi::Position& pos, const Evaluate::Param& param,
+				const History& history) {
 			pmove = NULL;
-			init(pos, param);
+			init(pos, param, history);
 		}
 
 		virtual ~Node() {
@@ -37,8 +38,10 @@ namespace Search {
 			}
 		}
 
-		void init(const Shogi::Position& pos, const Evaluate::Param& param) {
-			pgen = new PhasedMoveGenerator(pos, param);
+		void init(const Shogi::Position& pos,
+				const Evaluate::Param& param,
+				const History& history) {
+			pgen = new PhasedMoveGenerator(pos, param, history);
 			pmove = NULL;
 		}
 

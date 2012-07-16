@@ -29,6 +29,22 @@ namespace Search {
 		}
 	}
 
+	void PhasedMoveGenerator::sortHistory(int begin, int num) {
+		Value values[num];
+		for (int i = 0; i < num; i++) {
+			Value value = history.get(get(begin+i));
+			int j;
+			for (j = i; j > 0; j--) {
+				if (values[j-1] >= value) {
+					break;
+				}
+				values[j] = values[j-1];
+			}
+			values[j] = value;
+			insertBefore(begin + i, begin + j);
+		}
+	}
+
 	const Move* PhasedMoveGenerator::next() {
 		while (true) {
 			const Move* pmove = Super::next();
@@ -53,6 +69,7 @@ namespace Search {
 				break;
 			case PHASE_NOCAPTURE:
 				generateNocapture();
+				sortHistory(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;
 			case PHASE_END:

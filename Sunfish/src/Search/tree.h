@@ -16,6 +16,7 @@ namespace Search {
 	private:
 		Shogi::Position pos;
 		Evaluate::Evaluate eval;
+		const History& history;
 		Node* nodes;
 		int depth;
 		int maxDepth;
@@ -24,15 +25,19 @@ namespace Search {
 		static const int DEF_MAX_DEPTH = 64;
 
 		Tree(const Evaluate::Param& param,
+				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
-				eval(param), nodes(NULL) {
+				eval(param), history(history),
+				nodes(NULL) {
 			init(maxDepth);
 		}
 
 		Tree(const Evaluate::Param& param,
 				const Shogi::Position& pos,
+				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
-				pos(pos), eval(param), nodes(NULL) {
+				pos(pos), eval(param),
+				history(history), nodes(NULL) {
 			eval.init(pos);
 			init(maxDepth);
 		}
@@ -62,7 +67,7 @@ namespace Search {
 			this->maxDepth = maxDepth;
 			nodes = new Node[maxDepth+1];
 			for (int i = 0; i < maxDepth; i++) {
-				nodes[i].init(pos, eval.getParam());
+				nodes[i].init(pos, eval.getParam(), history);
 			}
 			depth = 0;
 		}
