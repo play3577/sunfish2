@@ -61,6 +61,7 @@ namespace Search {
 				Evaluate::Value beta);
 
 		void before(SearchResult& result) {
+			cntNodes = 0;
 			memset(&result, 0, sizeof(SearchResult));
 			tt.init();
 			timer.restart();

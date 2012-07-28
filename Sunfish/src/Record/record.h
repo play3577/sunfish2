@@ -38,6 +38,11 @@ namespace Record {
 			cur = 0;
 		}
 
+		void init(const Shogi::Position& pos) {
+			initStack();
+			this->pos.copy(pos);
+		}
+
 		bool move(const Shogi::Move& move) {
 			Shogi::Change change;
 			if (cur < STACK_SIZE && pos.move(move, change)) {

@@ -89,7 +89,7 @@ namespace Cui {
 		SearchConfig config;
 		SearchResult result;
 
-		config.depth = 4;
+		config.depth = 5;
 		config.pvHandler = this;
 		searcher.setSearchConfig(config);
 
