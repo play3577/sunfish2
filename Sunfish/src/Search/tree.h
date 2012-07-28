@@ -74,7 +74,7 @@ namespace Search {
 
 		void init(const Shogi::Position& pos, int maxDepth = DEF_MAX_DEPTH) {
 			this->pos.copy(pos);
-			eval.init(pos);
+			eval.init(this->pos);
 			init(maxDepth);
 		}
 
@@ -92,6 +92,14 @@ namespace Search {
 
 		void generateMoves() {
 			nodes[depth].generateMoves();
+		}
+
+		void generateTacticalMoves() {
+			nodes[depth].generateTacticalMoves();
+		}
+
+		void generateCaptures() {
+			nodes[depth].generateTacticalMoves();
 		}
 
 		bool next() {

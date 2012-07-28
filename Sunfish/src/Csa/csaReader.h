@@ -9,7 +9,7 @@
 #define CSA_READER_H_
 
 #include "csa.h"
-#include "../Shogi/position.h"
+#include "../Record/record.h"
 
 namespace Csa {
 	class CsaReader {
@@ -23,6 +23,7 @@ namespace Csa {
 
 		public:
 			static bool read(const char* filename, Shogi::Position& pos);
+			static bool read(const char* filename, Record::Record& record);
 	};
 }
 

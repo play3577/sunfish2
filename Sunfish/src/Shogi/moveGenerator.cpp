@@ -24,11 +24,11 @@ namespace Shogi {
 			}
 		} else {
 			if (pos.isBlackTurn()) {
-				generateOnBoard<true, genCap, genNocap>();
+				generateOnBoard<true, genCap, genNocap, false>();
 				generateKing<true, false, genCap, genNocap>();
 				if (genNocap) { generateDrop<true>(); }
 			} else {
-				generateOnBoard<false, genCap, genNocap>();
+				generateOnBoard<false, genCap, genNocap, false>();
 				generateKing<false, false, genCap, genNocap>();
 				if (genNocap) { generateDrop<false>(); }
 			}
@@ -39,7 +39,28 @@ namespace Shogi {
 	template unsigned MoveGenerator::generate<true, false>();
 	template unsigned MoveGenerator::generate<false, true>();
 
-	template <bool black, bool genCap, bool genNocap>
+	unsigned MoveGenerator::generateTactical() {
+		if (pos.isCheck()) {
+			if (pos.isBlackTurn()) {
+				generateEvasion<true, true, true>();
+				generateKing<true, true, true, true>();
+			} else {
+				generateEvasion<false, true, true>();
+				generateKing<false, true, true, true>();
+			}
+		} else {
+			if (pos.isBlackTurn()) {
+				generateOnBoard<true, true, false, true>();
+				generateKing<true, false, true, false>();
+			} else {
+				generateOnBoard<false, true, false, true>();
+				generateKing<false, false, true, false>();
+			}
+		}
+		return num;
+	}
+
+	template <bool black, bool genCap, bool genNocap, bool genPro>
 	void MoveGenerator::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
@@ -47,192 +68,192 @@ namespace Shogi {
 			if (black && piece.isBlack()) {
 				switch (piece.getInteger()) {
 				case Piece::BPAWN:
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BPAWN, sq, Direction::UP, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BPAWN, sq, Direction::UP, pin);
 					break;
 				case Piece::BLANCE:
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BLANCE, sq, Direction::UP, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BLANCE, sq, Direction::UP, pin);
 					break;
 				case Piece::BKNIGHT:
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BKNIGHT, sq, Direction::LEFT_UP2, pin);
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BKNIGHT, sq, Direction::RIGHT_UP2, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BKNIGHT, sq, Direction::LEFT_UP2, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BKNIGHT, sq, Direction::RIGHT_UP2, pin);
 					break;
 				case Piece::BSILVER:
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BSILVER, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BSILVER, sq, Direction::UP, pin);
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BSILVER, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BSILVER, sq, Direction::LEFT_DOWN, pin);
-					generateStraight<true, true, true, genCap, genNocap>(Piece::BSILVER, sq, Direction::RIGHT_DOWN, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BSILVER, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BSILVER, sq, Direction::UP, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BSILVER, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BSILVER, sq, Direction::LEFT_DOWN, pin);
+					generateStraight<true, true, true, genCap, genNocap, genPro>(Piece::BSILVER, sq, Direction::RIGHT_DOWN, pin);
 					break;
 				case Piece::BGOLD:
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BGOLD, sq, Direction::DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BGOLD, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BBISHOP:
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BBISHOP, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BBISHOP, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BBISHOP, sq, Direction::LEFT_DOWN, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BBISHOP, sq, Direction::RIGHT_DOWN, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BBISHOP, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BBISHOP, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BBISHOP, sq, Direction::LEFT_DOWN, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BBISHOP, sq, Direction::RIGHT_DOWN, pin);
 					break;
 				case Piece::BROOK:
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BROOK, sq, Direction::UP, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BROOK, sq, Direction::DOWN, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BROOK, sq, Direction::LEFT, pin);
-					generateStraight<true, false, true, genCap, genNocap>(Piece::BROOK, sq, Direction::RIGHT, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BROOK, sq, Direction::UP, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BROOK, sq, Direction::DOWN, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BROOK, sq, Direction::LEFT, pin);
+					generateStraight<true, false, true, genCap, genNocap, genPro>(Piece::BROOK, sq, Direction::RIGHT, pin);
 					break;
 				case Piece::BTOKIN:
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BTOKIN, sq, Direction::DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BTOKIN, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BPLANCE:
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPLANCE, sq, Direction::DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPLANCE, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BPKNIGHT:
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPKNIGHT, sq, Direction::DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPKNIGHT, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BPSILVER:
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BPSILVER, sq, Direction::DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BPSILVER, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BHORSE:
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::LEFT_DOWN, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::RIGHT_DOWN, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::LEFT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BHORSE, sq, Direction::DOWN, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::LEFT_DOWN, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::RIGHT_DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::LEFT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BHORSE, sq, Direction::DOWN, pin);
 					break;
 				case Piece::BDRAGON:
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::UP, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::DOWN, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::LEFT, pin);
-					generateStraight<true, false, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::RIGHT, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::LEFT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::RIGHT_UP, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::LEFT_DOWN, pin);
-					generateStraight<true, true, false, genCap, genNocap>(Piece::BDRAGON, sq, Direction::RIGHT_DOWN, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::UP, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::DOWN, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::LEFT, pin);
+					generateStraight<true, false, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::RIGHT, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::LEFT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::RIGHT_UP, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::LEFT_DOWN, pin);
+					generateStraight<true, true, false, genCap, genNocap, genPro>(Piece::BDRAGON, sq, Direction::RIGHT_DOWN, pin);
 					break;
 				}
 			} else if (!black && piece.isWhite()) {
 				switch (piece.getInteger()) {
 				case Piece::WPAWN:
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WPAWN, sq, Direction::UP_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WPAWN, sq, Direction::UP_R, pin);
 					break;
 				case Piece::WLANCE:
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WLANCE, sq, Direction::UP_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WLANCE, sq, Direction::UP_R, pin);
 					break;
 				case Piece::WKNIGHT:
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WKNIGHT, sq, Direction::LEFT_UP2_R, pin);
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WKNIGHT, sq, Direction::RIGHT_UP2_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WKNIGHT, sq, Direction::LEFT_UP2_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WKNIGHT, sq, Direction::RIGHT_UP2_R, pin);
 					break;
 				case Piece::WSILVER:
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WSILVER, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WSILVER, sq, Direction::UP_R, pin);
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WSILVER, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WSILVER, sq, Direction::LEFT_DOWN_R, pin);
-					generateStraight<false, true, true, genCap, genNocap>(Piece::WSILVER, sq, Direction::RIGHT_DOWN_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WSILVER, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WSILVER, sq, Direction::UP_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WSILVER, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WSILVER, sq, Direction::LEFT_DOWN_R, pin);
+					generateStraight<false, true, true, genCap, genNocap, genPro>(Piece::WSILVER, sq, Direction::RIGHT_DOWN_R, pin);
 					break;
 				case Piece::WGOLD:
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WGOLD, sq, Direction::DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WGOLD, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WBISHOP:
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WBISHOP, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WBISHOP, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WBISHOP, sq, Direction::LEFT_DOWN_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WBISHOP, sq, Direction::RIGHT_DOWN_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WBISHOP, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WBISHOP, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WBISHOP, sq, Direction::LEFT_DOWN_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WBISHOP, sq, Direction::RIGHT_DOWN_R, pin);
 					break;
 				case Piece::WROOK:
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WROOK, sq, Direction::UP_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WROOK, sq, Direction::DOWN_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WROOK, sq, Direction::LEFT_R, pin);
-					generateStraight<false, false, true, genCap, genNocap>(Piece::WROOK, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WROOK, sq, Direction::UP_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WROOK, sq, Direction::DOWN_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WROOK, sq, Direction::LEFT_R, pin);
+					generateStraight<false, false, true, genCap, genNocap, genPro>(Piece::WROOK, sq, Direction::RIGHT_R, pin);
 					break;
 				case Piece::WTOKIN:
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WTOKIN, sq, Direction::DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WTOKIN, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WPLANCE:
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPLANCE, sq, Direction::DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPLANCE, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WPKNIGHT:
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPKNIGHT, sq, Direction::DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPKNIGHT, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WPSILVER:
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WPSILVER, sq, Direction::DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WPSILVER, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WHORSE:
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::LEFT_DOWN_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::RIGHT_DOWN_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::LEFT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WHORSE, sq, Direction::DOWN_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::LEFT_DOWN_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::RIGHT_DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::LEFT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WHORSE, sq, Direction::DOWN_R, pin);
 					break;
 				case Piece::WDRAGON:
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::UP_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::DOWN_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::LEFT_R, pin);
-					generateStraight<false, false, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::RIGHT_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::LEFT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::RIGHT_UP_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::LEFT_DOWN_R, pin);
-					generateStraight<false, true, false, genCap, genNocap>(Piece::WDRAGON, sq, Direction::RIGHT_DOWN_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::UP_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::DOWN_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::LEFT_R, pin);
+					generateStraight<false, false, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::RIGHT_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::LEFT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::RIGHT_UP_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::LEFT_DOWN_R, pin);
+					generateStraight<false, true, false, genCap, genNocap, genPro>(Piece::WDRAGON, sq, Direction::RIGHT_DOWN_R, pin);
 					break;
 				}
 			}
 		}
 	}
 
-	template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap>
+	template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap, bool genPro>
 	void MoveGenerator::generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin) {
 		if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
 			return;
@@ -244,7 +265,12 @@ namespace Shogi {
 				break;
 			}
 			if ((genCap && !piece2.isEmpty()) || (genNocap && piece2.isEmpty())) {
-				generateMoveOneMove<black, promotable>(piece, from, to);
+				if (promotable) {
+					generateMoveOneMovePro<black>(piece, from, to);
+				}
+				generateMoveOneMove<black>(piece, from, to);
+			} else if (promotable && genPro) {
+				generateMoveOneMovePro<black>(piece, from, to);
 			}
 			if(oneStep) {
 				break;
@@ -253,16 +279,6 @@ namespace Shogi {
 				break;
 			}
 			to += dir;
-		}
-	}
-
-	template <bool black, bool promotable>
-	void MoveGenerator::generateMoveOneMove(const Piece piece, const Square from, const Square to) {
-		if (promotable && to.isPromotableRank(black)) {
-			moves[num++] = Move(from, to, true, false, piece);
-		}
-		if (!to.isCompulsoryPromotion(piece)) {
-			moves[num++] = Move(from, to, false, false, piece);
 		}
 	}
 
@@ -383,10 +399,9 @@ namespace Shogi {
 			Piece piece = pos.getBoard(from);
 			if (!piece.isKing<black>() && pos.pin(from, black).isZero()) {
 				if (piece.isPromotable()) {
-					generateMoveOneMove<black, true>(piece, from, to);
-				} else {
-					generateMoveOneMove<black, false>(piece, from, to);
+					generateMoveOneMovePro<black>(piece, from, to);
 				}
+				generateMoveOneMove<black>(piece, from, to);
 			}
 		}
 	}

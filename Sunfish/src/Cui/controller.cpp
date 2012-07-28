@@ -89,7 +89,7 @@ namespace Cui {
 		SearchConfig config;
 		SearchResult result;
 
-		config.depth = 5;
+		config.depth = 4;
 		config.pvHandler = this;
 		searcher.setSearchConfig(config);
 
@@ -131,9 +131,9 @@ namespace Cui {
 				break;
 			case SEARCH: // 探索
 				searcher.init(record.getPosition());
-				if (searcher.idSearch(result)) {
-					std::cout << result.move.toString() << '(' << (int)result.value << ")\n";
-				} else {
+				searcher.idSearch(result);
+				std::cout << result.toString();
+				if (result.noMoves) {
 					std::cout << "lose.\n";
 				}
 				break;

@@ -9,7 +9,7 @@
 #define DEBUG_H_
 
 #include <iostream>
-#include "../Search/tree.h"
+#include "../Shogi/position.h"
 
 #ifdef NDEBUG
 #define DEBUG_PRINT_LINE		do { } while (false)
@@ -34,9 +34,7 @@ namespace Tools{
 
 		static bool GeneratorTest(const char* filename);
 
-		static void TreeSearch(Search::Tree& tree);
-
-		static bool TreeTest(const char* filename);
+		static bool PositionError(const Shogi::Position& pos);
 	};
 }
 

@@ -12,17 +12,58 @@ namespace Search {
 	using namespace Evaluate;
 	using namespace Table;
 
+	Value Searcher::quies(Tree& tree, int ply, Value alpha, Value beta) {
+		cntNodes++;
+
+		tree.initNode();
+
+		Value value = tree.negaEvaluate();
+
+		if (value >= beta) {
+			// return stand-pat
+			return value;
+		}
+
+		// initialize move generator
+		if (ply < 7) {
+			tree.generateTacticalMoves();
+		} else {
+			tree.generateCaptures();
+		}
+
+		while (tree.next()) {
+			Value newAlpha = Value::max(alpha, value);
+			tree.makeMove();
+			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
+			tree.unmakeMove();
+			if (newValue > value) {
+				value = newValue;
+				tree.updatePv();
+
+				// beta cut
+				if (value >= beta) {
+					break;
+				}
+			}
+		}
+
+		return value;
+	}
+
 	template <bool pvNode, bool nullMoveNode>
 	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta) {
+		cntNodes++;
+
+		tree.initNode();
+
 		// leaf node
 		if (depth <= 0 || tree.isMaxDepth()) {
-			// return static evaluation value
-			return tree.negaEvaluate();
+			// quiesence search
+			return quies(tree, 0, alpha, beta);
 		}
 
 		// initialize
 		Util::uint64 hash = tree.getPosition().getHash();
-		tree.initNode();
 
 		// transposition table
 		const TTEntity& ttEntity = tt.getEntity(hash);
@@ -125,6 +166,7 @@ namespace Search {
 		before(result);
 		Value value = negaMax<true, true>(tree, config.depth * PLY1,
 				Value::MIN, Value::MAX);
+
 		return after(result, value);
 	}
 

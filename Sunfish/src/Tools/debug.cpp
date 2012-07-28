@@ -157,57 +157,14 @@ namespace Tools{
 		return true;
 	}
 
-	void Debug::TreeSearch(Search::Tree& tree) {
-		Value value = tree.evaluate();
-		if (value != Value(0)) {
-			std::cout << tree.toString();
-			std::cout << (int)value << '\n';
-			static char line[1024];
-			std::cin.getline(line, sizeof(line));
-		}
-#if 0
-		std::cout << tree.getDepth() << '/'
-			<< tree.getMaxDepth() << '\n';
-		std::cout << tree.toString();
-#endif
-#if 0
-		static char line[1024];
-		std::cin.getline(line, sizeof(line));
-#endif
-		if (tree.isMaxDepth()) {
-			return;
-		}
-		tree.generateMoves();
-		while (tree.next()) {
-			tree.makeMove();
-#if 0
-			std::cout << tree.getChange()->toString() << '\n';
-			std::cout << tree.getPrevMove()->toString() << '\n';
-#endif
-			if (!PositionOk(tree.getPosition())) {
-				std::cout << tree.toString();
-				abort();
-			}
-			TreeSearch(tree);
-			tree.unmakeMove();
-			if (!PositionOk(tree.getPosition())) {
-				std::cout << tree.toString();
-				abort();
+	bool Debug::PositionError(const Position& pos) {
+		for (Square square = Square::TOP; square.valid(); square.next()) {
+			Piece piece = pos.getBoard(square);
+			if (piece.isWall()) {
+				return true;
 			}
 		}
-	}
-
-	bool Debug::TreeTest(const char* filename) {
-		Position pos(EVEN);
-		Param* pparam = new Param();
-		History history;
-		Initializer::apply(*pparam);
-		if (filename) {
-			Csa::CsaReader::read(filename, pos);
-		}
-		Search::Tree tree(*pparam, pos, history, 4);
-		TreeSearch(tree);
-		return true;
+		return false;
 	}
 }
 

@@ -24,14 +24,40 @@ namespace Shogi {
 		template <bool genCap, bool genNocap>
 		unsigned generate();
 
-		template <bool black, bool genCap, bool genNocap>
+		template <bool black, bool genCap, bool genNocap, bool genPro>
 		void generateOnBoard();
 
-		template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap>
+		template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap, bool genPro>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
-		template <bool black, bool promotable>
-		void generateMoveOneMove(const Piece piece, const Square from, const Square to);
+		template <bool black>
+		void generateMoveOneMove(const Piece piece, const Square from, const Square to) {
+			if (!to.isCompulsoryPromotion(piece)) {
+				if (from.is(3, 0)) { // TODO: remove debugging code
+					std::cout << "********** Error **********\n";
+					std::cout << __LINE__ << '\n';
+					std::cout << pos.toString();
+					std::cout << std::hex << (unsigned)pos.getEffect(to, black).getExcludeKing() << '\n';
+					std::cout.flush();
+					abort();
+				}
+				moves[num++] = Move(from, to, false, false, piece);
+			}
+		}
+
+		template <bool black>
+		void generateMoveOneMovePro(const Piece piece, const Square from, const Square to) {
+			if (to.isPromotableRank(black)) {
+				if (from.is(3, 0)) { // TODO: remove debugging code
+					std::cout << "********** Error **********\n";
+					std::cout << __LINE__ << '\n';
+					std::cout << pos.toString();
+					std::cout.flush();
+					abort();
+				}
+				moves[num++] = Move(from, to, true, false, piece);
+			}
+		}
 
 		template <bool black, bool check, bool genCap, bool genNocap>
 		void generateKing();
@@ -81,6 +107,8 @@ namespace Shogi {
 		unsigned generateNocapture() {
 			return generate<false, true>();
 		}
+
+		unsigned generateTactical();
 
 		unsigned add(const Move& move) {
 			moves[num++] = move;

@@ -21,14 +21,11 @@ namespace Search {
 		Pv pv;
 
 	public:
-		Node() {
-			pgen = NULL;
-			pmove = NULL;
+		Node() : pgen(NULL), pmove(NULL) {
 		}
 
-		Node(Shogi::Position& pos, const Evaluate::Param& param,
-				const History& history) {
-			pmove = NULL;
+		Node(const Shogi::Position& pos, const Evaluate::Param& param,
+				const History& history) : pgen(NULL), pmove(NULL) {
 			init(pos, param, history);
 		}
 
@@ -41,6 +38,7 @@ namespace Search {
 		void init(const Shogi::Position& pos,
 				const Evaluate::Param& param,
 				const History& history) {
+			if (pgen != NULL) { delete pgen; }
 			pgen = new PhasedMoveGenerator(pos, param, history);
 			pmove = NULL;
 		}
@@ -59,6 +57,16 @@ namespace Search {
 
 		void generateMoves() {
 			pgen->init();
+			pmove = NULL;
+		}
+
+		void generateTacticalMoves() {
+			pgen->initTac();
+			pmove = NULL;
+		}
+
+		void generateCaptures() {
+			pgen->initCap();
 			pmove = NULL;
 		}
 

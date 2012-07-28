@@ -86,4 +86,8 @@ namespace Csa {
 		fin.close();
 		return true;
 	}
+
+	bool CsaReader::read(const char* filename, Record::Record& record) {
+		return true;
+	}
 }

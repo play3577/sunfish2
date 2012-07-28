@@ -55,8 +55,15 @@ namespace Shogi {
 		void init(const Board& board);
 
 		void init(const EffectBoard& effectBoard) {
+#if 0
+			for (unsigned i = 0; i < Square::SIZE; i++) {
+				blackEffectBoard[i] = effectBoard.blackEffectBoard[i];
+				whiteEffectBoard[i] = effectBoard.whiteEffectBoard[i];
+			}
+#else
 			memcpy(blackEffectBoard, effectBoard.blackEffectBoard, sizeof(blackEffectBoard));
 			memcpy(whiteEffectBoard, effectBoard.whiteEffectBoard, sizeof(whiteEffectBoard));
+#endif
 		}
 
 		template <bool black>

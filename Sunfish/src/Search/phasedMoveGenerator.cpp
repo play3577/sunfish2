@@ -72,6 +72,16 @@ namespace Search {
 				sortHistory(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;
+			case PHASE_TACTICAL:
+				generateTactical();
+				sortSee(prevNum, getNumber()-prevNum);
+				phase = PHASE_END;
+				break;
+			case PHASE_CAPTURE_ONLY:
+				generateCapture();
+				sortSee(prevNum, getNumber()-prevNum);
+				phase = PHASE_END;
+				break;
 			case PHASE_END:
 				return NULL;
 			}
