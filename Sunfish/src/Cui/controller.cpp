@@ -123,6 +123,17 @@ namespace Cui {
 			bool printBoard = false;
 			Move move;
 
+			// コンピュータによる着手
+			if ((record.getPosition().isBlackTurn() && config.autoBlack) ||
+					(record.getPosition().isWhiteTurn() && config.autoWhite)) {
+				searcher.init(record.getPosition());
+				searcher.idSearch(result);
+				std::cout << result.toString();
+				record.move(result.move);
+				std::cout << record.toString();
+				continue;
+			}
+
 			// ユーザからのコマンド入力
 			std::cin.getline(line, sizeof(line));
 			if (std::cin.eof()) {
@@ -184,10 +195,6 @@ namespace Cui {
 			// 盤面の表示
 			if (printBoard) {
 				std::cout << record.toString();
-#if 0
-				Evaluate eval(*pparam, record.getPosition());
-				std::cout << (int)eval.getValue(record.getPosition()) << '\n';
-#endif
 			}
 		}
 
