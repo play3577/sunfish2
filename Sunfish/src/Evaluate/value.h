@@ -111,7 +111,6 @@ namespace Evaluate {
 		X operator/(const X& v) const {
 			return X(value / v.value);
 		}
-		*/
 
 		bool operator==(const X& v) const {
 			return value == v.value;
@@ -120,6 +119,7 @@ namespace Evaluate {
 		bool operator!=(const X& v) const {
 			return value != v.value;
 		}
+		*/
 
 		bool operator<(const X& v) const {
 			return value < v.value;

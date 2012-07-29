@@ -180,6 +180,9 @@ namespace Search {
 			if (config.pvHandler != NULL) {
 				config.pvHandler->pvHandler(tree.getPv(), value);
 			}
+			if (value == Value::MIN) {
+				break;
+			}
 		}
 		return after(result, value);
 	}
