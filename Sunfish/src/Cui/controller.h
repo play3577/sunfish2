@@ -29,20 +29,36 @@ namespace Cui {
 #endif // ifndef NDEBUG
 		};
 
-		Command inputCommand(const char* str);
-
 		Evaluate::Param* pparam;
+
+		// settings
+		struct {
+			const char* filename;
+			bool autoBlack;
+			bool autoWhite;
+		} config;
+
+		Command inputCommand(const char* str);
 
 	public:
 		Controller() {
 			pparam = new Evaluate::Param();
 			Evaluate::Initializer::apply(*pparam);
 			pparam->read("evdata");
+			initSettings();
 		}
 
 		virtual ~Controller() {
 			delete pparam;
 		}
+
+		void initSettings() {
+			config.filename = NULL;
+			config.autoBlack = false;
+			config.autoWhite = false;
+		}
+
+		void init(int argc, char* argv[]);
 
 		void pvHandler(const Search::Pv& pv, Evaluate::Value value) {
 			std::cout << pv.toString() << ':' << value << '\n';

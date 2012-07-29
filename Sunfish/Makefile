@@ -11,13 +11,14 @@ $(wildcard ./src/Csa/*.cpp) \
 $(wildcard ./src/Record/*.cpp) \
 $(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
-$(wildcard ./src/Tools/*.cpp)
+$(wildcard ./src/Tools/*.cpp) \
+$(wildcard ./src/Log/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-override CFLAGS+=-O2
+#override CFLAGS+=-O2
 #override CFLAGS+=-NDEBUG
 override CFLAGS+=-g
 #override CFLAGS+=-pg

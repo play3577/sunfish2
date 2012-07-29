@@ -194,7 +194,7 @@ namespace Shogi {
 			if (str[0] == '\0' || str[1] == '\0' ||
 					str[0] < '1' || str[0] > '9' ||
 					str[1] < '1' || str[1] > '9') {
-				if (str[0] == '0' && str[1] == '1') {
+				if (str[0] == '0' && str[1] == '0') {
 					return Square(NON);
 				} else {
 					return Square(INVALID);

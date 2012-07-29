@@ -22,6 +22,10 @@ namespace Csa {
 				LINE_BOARD,
 				LINE_HAND,
 				LINE_MOVE,
+				LINE_VAR,
+				LINE_INFO,
+				LINE_TIME,
+				LINE_STAT,
 			};
 
 			static const int LINE_BUFFER_SIZE = 1024;
@@ -29,8 +33,9 @@ namespace Csa {
 			}
 			static bool parseLineBoard(const char* line, unsigned rank, Shogi::Position& pos);
 			static bool parseLineHand(const char* line, Shogi::Position& pos, bool black);
+			static bool parseLineMove(const char* line, Record::Record& record);
 			static LineStat parseLine(const char* line, Shogi::Position& pos);
-			static LineStat parseLine(const char* line, Record::Record& pos);
+			static LineStat parseLine(const char* line, Record::Record& record);
 			static bool read(std::istream& in, Shogi::Position& pos);
 
 		public:

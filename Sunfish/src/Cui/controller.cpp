@@ -8,11 +8,27 @@
 #include "controller.h"
 #include "../Search/searcher.h"
 #include "../Search/attackers.h"
+#include "../Csa/csaReader.h"
 
 namespace Cui {
 	using namespace Shogi;
 	using namespace Search;
 	using namespace Evaluate;
+	using namespace Csa;
+
+	void Controller::init(int argc, char* argv[]) {
+		for (int i = 0; i < argc; i++) {
+			if (0 == strcmp(argv[i], "-f")) {
+				if (argc > i + 1) {
+					config.filename = argv[++i];
+				}
+			} else if (0 == strcmp(argv[i], "-b")) {
+				config.autoBlack = true;
+			} else if (0 == strcmp(argv[i], "-w")) {
+				config.autoWhite = true;
+			}
+		}
+	}
 
 	Controller::Command Controller::inputCommand(const char* str) {
 		if (0 == strcmp(str, "prev") ||
@@ -86,12 +102,20 @@ namespace Cui {
 		Command prevCommand = UNKNOWN;
 		Record::Record record;
 		Searcher searcher(*pparam);
-		SearchConfig config;
+		SearchConfig searchConfig;
 		SearchResult result;
 
-		config.depth = 5;
-		config.pvHandler = this;
-		searcher.setSearchConfig(config);
+		// 棋譜読み込み
+		if (config.filename != NULL) {
+			if (!CsaReader::read(config.filename, record)) {
+				std::cout << "ERROR: can't read a file :" << config.filename << '\n';
+			}
+		}
+
+		// 探索設定
+		searchConfig.depth = 5;
+		searchConfig.pvHandler = this;
+		searcher.setSearchConfig(searchConfig);
 
 		std::cout << record.toString();
 

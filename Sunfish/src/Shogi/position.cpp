@@ -39,18 +39,26 @@ namespace Shogi {
 			return false;
 		}
 		black ? piece.turnBlack() : piece.turnWhite();
-		Piece pieceB = getBoard(Square(from));
-		if (piece == pieceB) {
+		if (hand) {
+			if (!(getHand(piece) > 0)) {
+				return false;
+			}
 			move.setPromotion(false);
-		} else if (piece == pieceB.getPromoted()) {
-			move.setPromotion(true);
 		} else {
-			return false;
+			Piece pieceB = getBoard(Square(from));
+			if (piece == pieceB) {
+				move.setPromotion(false);
+			} else if (piece == pieceB.getPromoted()) {
+				piece = pieceB;
+				move.setPromotion(true);
+			} else {
+				return false;
+			}
 		}
 		move.setFrom(from);
 		move.setTo(to);
 		move.setHand(hand);
-		move.setPiece(pieceB);
+		move.setPiece(piece);
 		return true;
 	}
 

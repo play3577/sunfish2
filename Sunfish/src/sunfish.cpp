@@ -18,17 +18,9 @@ int main(int argc, char* argv[]) {
 	Shogi::PositionHash hash(Shogi::PositionHash::FILE_NAME);
 	Shogi::Position::setPositionHash(&hash);
 
-#if 0 // tree debug
-	const char* filename = NULL;
-	if (argc >= 2) {
-		filename = argv[1];
-	}
-
-	Tools::Debug::GeneratorRandomTest(filename);
-#else
 	Cui::Controller controller;
+	controller.init(argc, argv);
 	controller.play();
-#endif
 
 	return 0;
 }
