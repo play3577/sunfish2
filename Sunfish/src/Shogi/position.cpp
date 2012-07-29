@@ -281,12 +281,6 @@ namespace Shogi {
 	template <bool black, bool chNotNull, bool evNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change,
 			Evaluate::Evaluate* eval) {
-		if (Tools::Debug::PositionError(*this)) { // debug
-			std::cout << "********** Error **********\n";
-			std::cout << toString();
-			std::cout.flush();
-			abort();
-		}
 		if (chNotNull) {
 			change->setHash(hash); // hash
 			change->setBlackKing(bking); // black king's square
@@ -334,13 +328,6 @@ namespace Shogi {
 			} else { // 後手
 				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board); // effect
 			}
-if (Tools::Debug::PositionError(*this)) { // debug
-	std::cout << "********** Error **********\n";
-	std::cout << __LINE__ << '\n';
-	std::cout << toString();
-	std::cout.flush();
-	abort();
-}
 			if (move.isPromotion()) { // 成
 				if (black && piece == Piece::BPAWN) { // 先手の歩
 					bpawns.unset(move.getFrom().getFile());
@@ -354,34 +341,12 @@ if (Tools::Debug::PositionError(*this)) { // debug
 			} else if (!black && piece.isKing<false>()) { // 後手玉
 				wking = move.getTo();
 			}
-if (Tools::Debug::PositionError(*this)) { // debug
-	std::cout << "********** Error **********\n";
-	std::cout << __LINE__ << '\n';
-	std::cout << toString();
-	std::cout.flush();
-	abort();
-}
 			Piece capture = board.set(move.getTo(), piece); // board
-if (Tools::Debug::PositionError(*this)) { // debug
-	std::cout << "********** Error **********\n";
-	std::cout << __LINE__ << '\n';
-	std::cout << move.toString() << '\n';
-	std::cout << toString();
-	std::cout.flush();
-	abort();
-}
 			hash ^= hashBoard(piece, move.getTo()); // hash
 			if (chNotNull) { change->setToSquare(move.getTo()); } // move to
 			if (chNotNull) { change->setToPiece(capture); } // captured piece
 			assert(capture != Piece::BKING);
 			assert(capture != Piece::WKING);
-if (Tools::Debug::PositionError(*this)) { // debug
-	std::cout << "********** Error **********\n";
-	std::cout << __LINE__ << '\n';
-	std::cout << toString();
-	std::cout.flush();
-	abort();
-}
 			if (!capture.isEmpty()) {
 				assert(capture != Piece::BKING);
 				assert(capture != Piece::WKING);
@@ -403,13 +368,6 @@ if (Tools::Debug::PositionError(*this)) { // debug
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
 					hash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hash
 					whiteHand.inc(capture.getUnPromoted()); // hand
-if (Tools::Debug::PositionError(*this)) { // debug
-	std::cout << "********** Error **********\n";
-	std::cout << __LINE__ << '\n';
-	std::cout << toString();
-	std::cout.flush();
-	abort();
-}
 					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board); // effect
 					if (capture == Piece::BPAWN) { // 先手の歩
 						bpawns.unset(move.getTo().getFile());
