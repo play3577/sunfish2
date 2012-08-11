@@ -9,12 +9,26 @@
 #include "../Search/searcher.h"
 #include "../Search/attackers.h"
 #include "../Csa/csaReader.h"
+#include "../Csa/csaWriter.h"
 
 namespace Cui {
 	using namespace Shogi;
 	using namespace Search;
 	using namespace Evaluate;
 	using namespace Csa;
+
+	const Controller::CommandSet Controller::commandSet[CMD_NUM] = {
+		{ "q", "quit", QUIT },
+		{ "p", "prev", PREV },
+		{ "n", "next", NEXT },
+		{ "m", "moves", MOVES },
+		{ "s", "search", SEARCH },
+		{ "c", "cap", CAPTURES },
+		{ "nc", "ncap", NOCAPTURES },
+#ifndef NDEBUG
+		{ NULL, "see", SEE },
+#endif // ifndef NDEBUG
+	};
 
 	void Controller::init(int argc, char* argv[]) {
 		for (int i = 0; i < argc; i++) {
@@ -31,28 +45,13 @@ namespace Cui {
 	}
 
 	Controller::Command Controller::inputCommand(const char* str) {
-		if (0 == strcmp(str, "prev") ||
-				0 == strcmp(str, "p")) {
-			return PREV;
-		} else if (0 == strcmp(str, "next") ||
-				0 == strcmp(str, "n")) {
-			return NEXT;
-		} else if (0 == strcmp(str, "moves") ||
-				0 == strcmp(str, "m")) {
-			return MOVES;
-		} else if (0 == strcmp(str, "captures") ||
-				0 == strcmp(str, "cap")) {
-			return CAPTURES;
-		} else if (0 == strcmp(str, "nocaptures") ||
-				0 == strcmp(str, "ncap")) {
-			return NOCAPTURES;
-		} else if (0 == strcmp(str, "search") ||
-				0 == strcmp(str, "s")) {
-			return SEARCH;
-#ifndef NDEBUG
-		} else if (0 == strcmp(str, "see")) {
-			return SEE;
-#endif // ifndef NDEBUG
+		for (int i = 0; i < CMD_NUM; i++) {
+			const char* s = commandSet[i].shortStr;
+			const char* l = commandSet[i].longStr;
+			if ((s != NULL && 0 == strcmp(str, s)) ||
+					(l != NULL && 0 == strcmp(str, l))) {
+				return commandSet[i].command;
+			}
 		}
 		return UNKNOWN;
 	}
@@ -123,23 +122,35 @@ namespace Cui {
 			bool printBoard = false;
 			Move move;
 
+#ifndef NDEBUG
+			CsaWriter::write("debug.csa", record);
+#endif
+
 			// コンピュータによる着手
 			if ((record.getPosition().isBlackTurn() && config.autoBlack) ||
 					(record.getPosition().isWhiteTurn() && config.autoWhite)) {
 				searcher.init(record.getPosition());
 				searcher.idSearch(result);
 				std::cout << result.toString();
-				record.move(result.move);
+				if (!record.move(result.move)) {
+					if (config.autoBlack) {
+						std::cout << "black :auto => manual\n";
+						config.autoBlack = false;
+					}
+					if (config.autoWhite) {
+						std::cout << "white :auto => manual\n";
+						config.autoWhite = false;
+					}
+				}
 				std::cout << record.toString();
 				continue;
 			}
 
 			// ユーザからのコマンド入力
 			std::cin.getline(line, sizeof(line));
-			if (std::cin.eof()) {
-				break;
-			}
+			if (std::cin.eof()) { break; }
 			Command command = line[0] != '\0' ? inputCommand(line) : prevCommand;
+			if (command == QUIT) { break; }
 			switch(prevCommand = command) {
 			case PREV: // 1手進む。
 				if (record.prev()) {

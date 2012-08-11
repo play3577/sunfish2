@@ -12,6 +12,8 @@
 #include "node.h"
 
 namespace Search {
+	using namespace Evaluate;
+
 	class Tree {
 	private:
 		Shogi::Position pos;
@@ -24,7 +26,7 @@ namespace Search {
 	public:
 		static const int DEF_MAX_DEPTH = 64;
 
-		Tree(const Evaluate::Param& param,
+		Tree(const Param& param,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), history(history),
@@ -32,7 +34,7 @@ namespace Search {
 			init(maxDepth);
 		}
 
-		Tree(const Evaluate::Param& param,
+		Tree(const Param& param,
 				const Shogi::Position& pos,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
@@ -130,7 +132,7 @@ namespace Search {
 			return depth > 0 ? nodes[depth-1].getMove() : NULL;
 		}
 
-		const Shogi::Move* getCurrentMove() {
+		const Shogi::Move* getCurrentMove() const {
 			return nodes[depth].getMove();
 		}
 
@@ -142,11 +144,43 @@ namespace Search {
 			return pos;
 		}
 
-		Evaluate::Value evaluate() {
+		bool isCheck() const {
+			return pos.isCheck();
+		}
+
+		bool isCheckMove() const {
+			const Shogi::Move* pmove = getCurrentMove();
+			if (pmove != NULL) {
+				return pos.isCheckMove(*pmove);
+			}
+			return false;
+		}
+
+		bool isTacticalMove() const {
+			const Shogi::Move* pmove = getCurrentMove();
+			if (pmove != NULL) {
+				return pmove->isPromotion() || pos.isCapturingMove(*pmove);
+			}
+			return false;
+		}
+
+		Value evaluate() {
 			return eval.getValue(pos);
 		}
 
-		Evaluate::Value negaEvaluate() {
+		Estimate<Value> estimate() const {
+			const Shogi::Move* pmove = getCurrentMove();
+			if (pmove != NULL) {
+				return eval.estimate(pos, *pmove);
+			}
+			return Estimate<Value>();
+		}
+
+		Estimate<Value> negaEstimate() const {
+			return pos.isBlackTurn() ? estimate() : -estimate();
+		}
+
+		Value negaEvaluate() {
 			if (pos.isBlackTurn()) {
 				return eval.getValue(pos);
 			} else {

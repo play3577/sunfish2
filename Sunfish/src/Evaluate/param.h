@@ -14,6 +14,31 @@
 namespace Evaluate {
 	extern const int sym[];
 
+	extern const int blackPiece[];
+	extern const int whitePiece[];
+
+	class Kings {
+	private:
+		int bking;
+		int wking;
+		int bking2;
+		int wking2;
+
+	public:
+		Kings(const Shogi::Position& pos) {
+			bking = pos.getBKing().getShortIndex();
+			wking = pos.getWKing().getShortIndex();
+			bking2 = 80 - wking;
+			wking2 = 80 - bking;
+		}
+
+		int getBlack() const { return bking; }
+		int getWhite() const { return wking; }
+		int getBlackR() const { return bking2; }
+		int getWhiteR() const { return wking2; }
+	};
+
+
 	enum{
 		// King Piece Piece
 		KPP_KNUM    = 18,
@@ -238,6 +263,16 @@ namespace Evaluate {
 			kpp[0][index] = value;
 		}
 
+		// index1 >= index2
+		static int getKPPIndex(int index1, int index2) {
+			return index1 * (index1 + 1) / 2 + index2;
+		}
+
+		// index1 >= index2
+		U getKPP(int kingIndex, int index1, int index2) const {
+			return kpp[kingIndex][getKPPIndex(index1, index2)];
+		}
+
 		U getKPP(int kingIndex, int pieceIndex) const {
 			return kpp[kingIndex][pieceIndex];
 		}
@@ -260,6 +295,25 @@ namespace Evaluate {
 
 		U getKKP(int index) const {
 			return kkp[0][0][index];
+		}
+
+		U getKKP(const Kings& kings, int pieceIndex,
+				int squareIndex, bool black) const {
+			return black ? kkp[kings.getBlack()][kings.getWhite()]
+				[pieceIndex+KKP_KNUM*squareIndex] :
+				-kkp[kings.getBlackR()][kings.getWhiteR()]
+				[pieceIndex+KKP_KNUM*squareIndex];
+		}
+
+		U getKKP(const Kings& kings, const Shogi::Piece& piece,
+				const Shogi::Square& sq) const {
+			if (piece.isBlack()) {
+				return getKKP(kings, blackPiece[piece.getInteger()],
+					sq.getShortIndex(), true);
+			} else {
+				return -getKKP(kings, whitePiece[piece.getInteger()],
+					80-sq.getShortIndex(), false);
+			}
 		}
 
 		Type& operator+=(Type& param) {

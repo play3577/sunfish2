@@ -11,7 +11,6 @@
 #include "../Log/logger.h"
 #include <cstring>
 #include <fstream>
-#include <iostream>
 
 namespace Csa {
 	using namespace Shogi;

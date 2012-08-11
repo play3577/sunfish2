@@ -72,15 +72,33 @@ namespace Record {
 			return false;
 		}
 
+		void begin() {
+			while (prev())
+				;
+		}
+
+		void end() {
+			while (next())
+				;
+		}
+
+		bool to(int index) {
+			while (cur > index && prev())
+				;
+			while (cur < index && next())
+				;
+			return cur == index;
+		}
+
 		const Shogi::Position& getPosition() const {
 			return pos;
 		}
 
-		int getNumberOfMoves() const {
+		int getSize() const {
 			return num;
 		}
 
-		int getNumberOfCurrent() const {
+		int getCurrent() const {
 			return cur;
 		}
 

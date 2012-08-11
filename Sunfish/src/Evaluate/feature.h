@@ -8,27 +8,47 @@
 #ifndef FEATURE_H_
 #define FEATURE_H_
 
-#include "param.h"
+#include "estimate.h"
 #include "../Shogi/position.h"
 
 namespace Evaluate {
 	class Feature {
 	private:
-		static const int blackPiece[];
-		static const int whitePiece[];
+		static const int KING_ERROR  = 100 * 16;
+		static const int PIECE_ERROR = 100 *  8;
 
 		template<class X, class T, class U, bool get, bool cum>
-		static void Extract(const Shogi::Position& pos,
+		static void extract(const Shogi::Position& pos,
 				const TempParam<T, U>* iparam, const X* ivalue,
 				TempParam<T, U>* oparam, X* ovalue);
 
+		Feature();
+
 	public:
-		template<class R, class T, class U>
-		static R getValue(const Shogi::Position& pos,
+		template<class X, class T, class U>
+		static X getValue(const Shogi::Position& pos,
 				const TempParam<T, U>* pparam) {
-			R value(0);
-			Extract<R, T, U, true, false>(pos, pparam, NULL, NULL, &value);
+			X value(0);
+			extract<X, T, U, true, false>(pos, pparam, NULL, NULL, &value);
 			return value;
+		}
+
+		template<class X, class T, class U>
+		static Estimate<X> estimate(const Shogi::Position& pos,
+				const TempParam<T, U>* pparam,
+				const Shogi::Move& move) {
+			if (move.getPiece().isKing()) {
+				return Estimate<X>(X(0), X(KING_ERROR));
+			} else {
+				Kings kings(pos);
+				X value(0);
+				value -= pparam->getKKP(kings,
+					move.getPiece(), move.getFrom());
+				Shogi::Piece piece = move.isPromotion() ?
+					move.getPiece().getPromoted() : move.getPiece();
+				value += pparam->getKKP(kings, piece, move.getTo());
+				return Estimate<X>(value, X(PIECE_ERROR));
+			}
 		}
 	};
 }

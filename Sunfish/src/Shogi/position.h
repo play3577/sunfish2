@@ -248,6 +248,19 @@ namespace Shogi {
 			}
 		}
 
+		bool isCheckMove(const Move& move) const {
+			DirectionFlags king = effectBoard.get(move.getTo(), !blackTurn).getKingOnly();
+			Square ksq = blackTurn ? bking : wking;
+			Piece piece = move.getPiece();
+			if (move.isPromotion()) { piece.promote(); }
+			return king.pin(piece.getMoveableDirection()) || // 長い利き
+				(move.getFrom() == ksq + king.toDirection());
+		}
+
+		bool isCapturingMove(const Move& move) const {
+			return !getBoard(move.getTo()).isEmpty();
+		}
+
 		bool isPawnDropMate(const Square& sq, bool blackTurn) const {
 			if (blackTurn) {
 				return sq == wking + Direction::DOWN && !canPawnDropCheck<true>();

@@ -125,6 +125,8 @@ namespace Shogi {
 
 		std::string toString() const;
 
+		std::string toStringCsa() const;
+
 		std::string toString4Debug() const;
 	};
 }

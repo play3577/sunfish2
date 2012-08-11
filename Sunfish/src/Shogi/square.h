@@ -54,7 +54,7 @@ namespace Shogi {
 			square = sq.square;
 		}
 
-		unsigned getShortIndex() {
+		unsigned getShortIndex() const {
 			return shortIndex[square];
 		}
 

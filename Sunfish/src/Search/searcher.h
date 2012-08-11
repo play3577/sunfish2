@@ -83,6 +83,11 @@ namespace Search {
 				return false;
 			}
 		}
+
+		static Value getFutMgn(int depth, int count) {
+			return 600 / PLY1 * depth + 10 * count;
+		}
+
 	public:
 		Searcher(const Evaluate::Param& param) :
 			tree(param, history) {

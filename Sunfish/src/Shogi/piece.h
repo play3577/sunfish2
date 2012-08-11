@@ -165,7 +165,7 @@ namespace Shogi {
 		}
 
 		bool isPromotable() const {
-			return !isPromoted() && (piece&PIECE)!=KING && (piece&PIECE)!=GOLD;
+			return !isPromoted() && !isKing() && (piece&PIECE)!=GOLD;
 		}
 
 		bool isEmpty() const {
@@ -199,6 +199,10 @@ namespace Shogi {
 			} else {
 				return piece == WKING;
 			}
+		}
+
+		bool isKing() const {
+			return (piece&PIECE) == KING;
 		}
 
 		DirectionFlags getMoveableDirection() const {

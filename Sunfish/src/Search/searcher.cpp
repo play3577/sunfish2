@@ -17,7 +17,8 @@ namespace Search {
 
 		tree.initNode();
 
-		Value value = tree.negaEvaluate();
+		const Value standPat = tree.negaEvaluate();
+		Value value = standPat;
 
 		if (value >= beta) {
 			// return stand-pat
@@ -33,6 +34,15 @@ namespace Search {
 
 		while (tree.next()) {
 			Value newAlpha = Value::max(alpha, value);
+
+			// futility pruning
+			if (!tree.isCheck() && !tree.isCheckMove()) {
+				Estimate<Value> estimate = tree.negaEstimate();
+				if (estimate.getValue() + estimate.getError() <= newAlpha) {
+					continue;
+				}
+			}
+
 			tree.makeMove();
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
 			tree.unmakeMove();
@@ -88,8 +98,13 @@ namespace Search {
 				}
 			}
 			tree.setHashMove(ttEntity.getHashMove());
-		} else {
-			// TODO: recursive iterative-deepening search
+		} else if (depth >= PLY1 * 3) {
+			// recursive iterative-deepening search
+			if (pvNode) {
+				negaMax<true, true>(tree, depth - PLY1 * 2, alpha, beta);
+			} else {
+				negaMax<false, true>(tree, depth - PLY1 / 2, alpha, beta);
+			}
 		}
 
 		// null move pruning
@@ -119,17 +134,31 @@ namespace Search {
 			assert(tree.getCurrentMove() != NULL);
 			history.addAppear(*tree.getCurrentMove(), depth);
 
-			// recurcive search
 			Value newAlpha = Value::max(alpha, value);
+
+			// late move reduction(LMR)
+
+			int newDepth = depth - PLY1;
+
+			// futility pruning
+			if (!tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
+				Estimate<Value> estimate = tree.negaEstimate();
+				if (estimate.getValue() + estimate.getError()
+						+ getFutMgn(newDepth, moveCount) <= newAlpha) {
+					continue;
+				}
+			}
+
+			// recurcive search
 			Value newValue;
 			tree.makeMove();
 			if (moveCount == 1) {
-				newValue = -negaMax<pvNode, true>(tree, depth-PLY1, -beta, -newAlpha);
+				newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
 			} else {
 				// nega-scout
-				newValue = -negaMax<false, true>(tree, depth-PLY1, -newAlpha-1, -newAlpha);
+				newValue = -negaMax<false, true>(tree, newDepth, -newAlpha-1, -newAlpha);
 				if (newValue >= newAlpha) {
-					newValue = -negaMax<pvNode, true>(tree, depth-PLY1, -beta, -newAlpha);
+					newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
 				}
 			}
 			tree.unmakeMove();

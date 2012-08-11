@@ -17,7 +17,7 @@ namespace Cui {
 	class Controller : public Search::PvHandler {
 	private:
 		enum Command {
-			UNKNOWN = 0,
+			QUIT = 0,
 			PREV,
 			NEXT,
 			MOVES,
@@ -27,7 +27,17 @@ namespace Cui {
 #ifndef NDEBUG
 			SEE,
 #endif // ifndef NDEBUG
+			CMD_NUM,
+
+			UNKNOWN,
 		};
+
+		struct CommandSet {
+			const char* shortStr;
+			const char* longStr;
+			Command command;
+		};
+		static const CommandSet commandSet[CMD_NUM];
 
 		Evaluate::Param* pparam;
 

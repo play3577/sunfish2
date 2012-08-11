@@ -74,11 +74,15 @@ namespace Evaluate {
 		}
 
 		Value getValue(const Shogi::Position& pos) {
-			return baseValue + getAdditionalValue(pos) / Param::SCALE; // TODO
+			return baseValue + getAdditionalValue(pos) / Param::SCALE;
 		}
 
 		const Param& getParam() const {
 			return param;
+		}
+
+		Estimate<Value> estimate(const Shogi::Position& pos, const Shogi::Move move) const {
+			return Feature::estimate<Value, ValueS, ValueS>(pos, &param, move);
 		}
 	};
 }
