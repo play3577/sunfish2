@@ -12,16 +12,17 @@
 #include <cfloat>
 
 namespace Evaluate {
-	template <class T, int vmax, int vmin>
+	template <class T, int vmax>
 	class TempValue {
 	private:
 		T value;
 
 	public:
 		//typedef decltype(*this) X; // C++11
-		typedef TempValue<T, vmax, vmin> X;
+		typedef TempValue<T, vmax> X;
 		static const T MAX = (T)vmax;
-		static const T MIN = (T)vmin;
+		static const T MIN = -MAX;
+		static const T MATE = (T)vmax / 2;
 
 		TempValue() {
 		}
@@ -119,7 +120,6 @@ namespace Evaluate {
 		bool operator!=(const X& v) const {
 			return value != v.value;
 		}
-		*/
 
 		bool operator<(const X& v) const {
 			return value < v.value;
@@ -136,6 +136,7 @@ namespace Evaluate {
 		bool operator>=(const X& v) const {
 			return value >= v.value;
 		}
+		*/
 
 		static X max(X a, X b) {
 			return a >= b ? a : b;
@@ -146,11 +147,10 @@ namespace Evaluate {
 		}
 	};
 
-	// INT_MINは-1倍できない。
-	typedef TempValue<int, INT_MAX, -INT_MAX> Value;
-	typedef TempValue<short, SHRT_MAX, -SHRT_MAX> ValueS;
-	typedef TempValue<float, INT_MAX, -INT_MAX> ValueF;
-	typedef TempValue<double, INT_MAX, -INT_MAX> ValueD;
+	typedef TempValue<int, INT_MAX> Value;
+	typedef TempValue<short, SHRT_MAX> ValueS;
+	typedef TempValue<float, INT_MAX> ValueF;
+	typedef TempValue<double, INT_MAX> ValueD;
 }
 
 #endif // VALUE_H_

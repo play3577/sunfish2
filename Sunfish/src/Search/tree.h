@@ -12,8 +12,6 @@
 #include "node.h"
 
 namespace Search {
-	using namespace Evaluate;
-
 	class Tree {
 	private:
 		Shogi::Position pos;
@@ -26,7 +24,7 @@ namespace Search {
 	public:
 		static const int DEF_MAX_DEPTH = 64;
 
-		Tree(const Param& param,
+		Tree(const Evaluate::Param& param,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), history(history),
@@ -34,7 +32,7 @@ namespace Search {
 			init(maxDepth);
 		}
 
-		Tree(const Param& param,
+		Tree(const Evaluate::Param& param,
 				const Shogi::Position& pos,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
@@ -81,7 +79,7 @@ namespace Search {
 		}
 
 		void initNode() {
-			nodes[depth].initPv();
+			nodes[depth].arrive();
 		}
 
 		int updatePv() {
@@ -164,23 +162,23 @@ namespace Search {
 			return false;
 		}
 
-		Value evaluate() {
+		Evaluate::Value evaluate() {
 			return eval.getValue(pos);
 		}
 
-		Estimate<Value> estimate() const {
+		Evaluate::Estimate<Evaluate::Value> estimate() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
 				return eval.estimate(pos, *pmove);
 			}
-			return Estimate<Value>();
+			return Evaluate::Estimate<Evaluate::Value>();
 		}
 
-		Estimate<Value> negaEstimate() const {
+		Evaluate::Estimate<Evaluate::Value> negaEstimate() const {
 			return pos.isBlackTurn() ? estimate() : -estimate();
 		}
 
-		Value negaEvaluate() {
+		Evaluate::Value negaEvaluate() {
 			if (pos.isBlackTurn()) {
 				return eval.getValue(pos);
 			} else {
@@ -190,6 +188,26 @@ namespace Search {
 
 		void setHashMove(const HashMove& hashMove) {
 			return nodes[depth].setHashMove(hashMove);
+		}
+
+		bool isHashMove() const {
+			return nodes[depth].isHashMove();
+		}
+
+		void setMoveIndex(int index) {
+			nodes[depth].setMoveIndex(index);
+		}
+
+		int getMoveIndex() const {
+			return nodes[depth].getMoveIndex();
+		}
+
+		void getHistory(History& history, int depth) const {
+			nodes[this->depth].getHistory(history, depth);
+		}
+
+		void sort(Evaluate::Value values[]) {
+			nodes[0].sort(values);
 		}
 
 		std::string toString() const {

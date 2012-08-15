@@ -34,6 +34,8 @@ namespace Search {
 		History() {
 			all = new unsigned[FROM][TO];
 			good = new unsigned[FROM][TO];
+			assert(all != NULL);
+			assert(good != NULL);
 		}
 
 		virtual ~History() {
@@ -57,12 +59,16 @@ namespace Search {
 
 		void addGood(const Shogi::Move& move, int depth) {
 			unsigned index = from(move);
+			assert(index < FROM);
+			assert(move.getTo() < TO);
 			good[index][move.getTo()] += depth;
 		}
 
 		unsigned get(const Shogi::Move& move) const {
 			unsigned index = from(move);
-			return good[index][move.getTo()] * SCALE / (all[index][move.getTo()] + 1);
+			assert(index < FROM);
+			assert(move.getTo() < TO);
+			return (good[index][move.getTo()] + 1) * SCALE / (all[index][move.getTo()] + 1);
 		}
 	};
 }

@@ -12,6 +12,21 @@ namespace Search {
 	using namespace Shogi;
 	using namespace Evaluate;
 
+	void PhasedMoveGenerator::sort(Value values[]) {
+		for (unsigned i = 0; i < getNumber(); i++) {
+			unsigned j;
+			Value value = values[i];
+			for (j = i; j > 0; j--) {
+				if (values[j-1] >= value) {
+					break;
+				}
+				values[j] = values[j-1];
+			}
+			values[j] = value;
+			insertBefore(i, j);
+		}
+	}
+
 	void PhasedMoveGenerator::sortSee(int begin, int num) {
 		Value values[num];
 		for (int i = 0; i < num; i++) {
@@ -56,9 +71,11 @@ namespace Search {
 			case PHASE_BEGIN:
 				if (getPosition().isLegalMove(hashMove.getHash1(), true)) {
 					add(hashMove.getHash1());
+					hashNum++;
 				}
 				if (getPosition().isLegalMove(hashMove.getHash2(), true)) {
 					add(hashMove.getHash2());
+					hashNum++;
 				}
 				phase = PHASE_CAPTURE;
 				break;

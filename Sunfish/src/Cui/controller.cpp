@@ -158,12 +158,18 @@ namespace Cui {
 				} else {
 					std::cout << "There is no previous move.\n";
 				}
+				if (config.autoBlack || config.autoWhite) {
+					record.prev();
+				}
 				break;
 			case NEXT: // 1手戻る。
 				if (record.next()) {
 					printBoard = true;
 				} else {
 					std::cout << "There is no next move.\n";
+				}
+				if (config.autoBlack || config.autoWhite) {
+					record.next();
 				}
 				break;
 			case MOVES: // 指し手列挙

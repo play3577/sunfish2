@@ -15,7 +15,7 @@
 
 namespace Search {
 	struct SearchConfig {
-		int depth;
+		unsigned depth;
 		PvHandler* pvHandler;
 	};
 
@@ -84,7 +84,7 @@ namespace Search {
 			}
 		}
 
-		static Value getFutMgn(int depth, int count) {
+		static Evaluate::Value getFutMgn(int depth, int count) {
 			return 600 / PLY1 * depth + 10 * count;
 		}
 

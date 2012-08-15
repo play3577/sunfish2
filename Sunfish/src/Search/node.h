@@ -10,6 +10,7 @@
 
 #include "pv.h"
 #include "phasedMoveGenerator.h"
+#include "history.h"
 
 namespace Search {
 	class Node {
@@ -43,7 +44,7 @@ namespace Search {
 			pmove = NULL;
 		}
 
-		void initPv() {
+		void arrive() {
 			pv.init();
 		}
 
@@ -74,6 +75,18 @@ namespace Search {
 			pgen->setHashMove(hashMove);
 		}
 
+		bool isHashMove() const {
+			return pgen->isHashMove();
+		}
+
+		void setMoveIndex(int index) {
+			pgen->setCurrent(index);
+		}
+
+		int getMoveIndex() const {
+			return pgen->getCurrent();
+		}
+
 		bool next() {
 			return (pmove = pgen->next()) != NULL;
 		}
@@ -102,6 +115,18 @@ namespace Search {
 
 		const Shogi::Change& getChange() const {
 			return change;
+		}
+
+		void getHistory(History& history, int depth) const {
+			assert(pmove != NULL);
+			for (unsigned i = 0; i < pgen->getCurrent(); i++) {
+				history.addAppear(pgen->get(i), depth);
+			}
+			history.addGood(*pmove, depth);
+		}
+
+		void sort(Evaluate::Value values[]) {
+			pgen->sort(values);
 		}
 	};
 }

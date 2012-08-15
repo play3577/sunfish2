@@ -32,6 +32,7 @@ namespace Search {
 		HashMove hashMove;
 		const Evaluate::Param& param;
 		const History& history;
+		unsigned hashNum;
 
 		void sortSee(int begin, int num);
 
@@ -52,6 +53,7 @@ namespace Search {
 			clear();
 			phase = firstPhase;
 			hashMove.init();
+			hashNum = 0;
 		}
 
 		void initTac() {
@@ -67,6 +69,12 @@ namespace Search {
 		void setHashMove(const HashMove& hashMove) {
 			this->hashMove = hashMove;
 		}
+
+		bool isHashMove() const {
+			return getCurrent() <= hashNum;
+		}
+
+		void sort(Evaluate::Value values[]);
 	};
 }
 

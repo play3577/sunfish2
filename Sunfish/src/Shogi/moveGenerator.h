@@ -14,8 +14,10 @@
 
 namespace Shogi {
 	class MoveGenerator {
-	private:
+	public:
 		static const unsigned MAX_MOVES_NUM = 1024;
+
+	private:
 		const Position& pos;
 		unsigned num;
 		unsigned curr;

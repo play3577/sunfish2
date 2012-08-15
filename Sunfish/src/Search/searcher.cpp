@@ -108,6 +108,7 @@ namespace Search {
 		}
 
 		// null move pruning
+		bool mate = false;
 		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
@@ -118,6 +119,8 @@ namespace Search {
 				tree.unmakeMove();
 				if (newValue >= beta) {
 					return beta;
+				} else if (newValue <= -Value::MATE) {
+					mate = true;
 				}
 			}
 		}
@@ -127,47 +130,76 @@ namespace Search {
 
 		Value value = Value::MIN;
 		const Move* best = NULL;
-		int moveCount = 0;
 		while (tree.next()) {
-			moveCount++;
+			unsigned moveCount = tree.getMoveIndex();
+			bool isHash = tree.isHashMove();
 
 			assert(tree.getCurrentMove() != NULL);
-			history.addAppear(*tree.getCurrentMove(), depth);
 
 			Value newAlpha = Value::max(alpha, value);
 
-			// late move reduction(LMR)
-
 			int newDepth = depth - PLY1;
+			int reduction = 0;
+			if (!isHash && !mate && !tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
+				// late move reduction
+				unsigned hist = history.get(*tree.getCurrentMove());
+				if        (hist * 16U < History::SCALE) {
+					reduction = PLY1 * 2;
+				} else if (hist * 12U < History::SCALE) {
+					reduction = PLY1 * 3 / 2;
+				} else if (hist *  8U < History::SCALE) {
+					reduction = PLY1;
+				} else if (hist *  6U < History::SCALE) {
+					reduction = PLY1 * 3 / 4;
+				} else if (hist *  4U < History::SCALE) {
+					reduction = PLY1 / 2;
+				} else if (hist *  2U < History::SCALE) {
+					reduction = PLY1 / 4;
+				}
+				newDepth -= reduction;
 
-			// futility pruning
-			if (!tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
+				// futility pruning
 				Estimate<Value> estimate = tree.negaEstimate();
-				if (estimate.getValue() + estimate.getError()
+				if (tree.negaEvaluate() + estimate.getValue() + estimate.getError()
 						+ getFutMgn(newDepth, moveCount) <= newAlpha) {
+					value = newAlpha; // fail soft
+					continue;
+				}
+			}
+
+			// make move
+			Value newValue;
+			tree.makeMove();
+
+			// extended futility pruning
+			if (!isHash && !mate && !tree.isCheck() && !tree.isTacticalMove()) {
+				if (tree.negaEvaluate() - getFutMgn(newDepth, moveCount) >= -newAlpha) {
+					tree.unmakeMove();
+					value = newAlpha; // fail soft
 					continue;
 				}
 			}
 
 			// recurcive search
-			Value newValue;
-			tree.makeMove();
-			if (moveCount == 1) {
+			if (moveCount == 1 && reduction == 0) {
 				newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
 			} else {
 				// nega-scout
 				newValue = -negaMax<false, true>(tree, newDepth, -newAlpha-1, -newAlpha);
-				if (newValue >= newAlpha) {
+				if (newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
+					newDepth += reduction;
 					newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
 				}
 			}
+
+			// unmake move
 			tree.unmakeMove();
 
 			if (newValue > value) {
 				value = newValue;
 				tree.updatePv();
 				best = tree.getCurrentMove();
-				history.addGood(*tree.getCurrentMove(), depth);
+				tree.getHistory(history, depth);
 
 				// beta cut
 				if (value >= beta) {
@@ -177,8 +209,8 @@ namespace Search {
 		}
 
 		// there is no legal moves
-		if (moveCount == 0) {
-			return Value::MIN;
+		if (tree.getMoveIndex() == 0) {
+			return Value::MIN + tree.getDepth();
 		}
 
 		// TT entry
@@ -200,19 +232,41 @@ namespace Search {
 	}
 
 	bool Searcher::idSearch(SearchResult& result) {
-		Value value;
+		Value values[MoveGenerator::MAX_MOVES_NUM];
+		Value value = Value::MIN;
+
 		before(result);
-		value = negaMax<true, true>(tree, 0, Value::MIN, Value::MAX);
-		for (int depth = 1; depth <= config.depth; depth++) {
-			value = negaMax<true, true>(tree, depth * PLY1,
-					Value::MIN, Value::MAX);
+
+		tree.initNode();
+		tree.generateMoves();
+		for (unsigned depth = 0; depth < config.depth; depth++) {
+			if (depth != 0) { tree.sort(values); }
+			tree.setMoveIndex(0);
+			Value alpha = Value::MIN - 1;
+			while (tree.next()) {
+				tree.makeMove();
+				Value vtemp = -negaMax<true, true>(tree,
+						depth * PLY1, -alpha + 1, -alpha);
+				if (vtemp >= alpha) {
+					vtemp = -negaMax<true, true>(tree,
+							depth * PLY1, -alpha + 1, Value::MAX);
+				}
+				tree.unmakeMove();
+				if (vtemp > alpha) {
+					value = alpha = vtemp;
+					tree.updatePv();
+				}
+				values[tree.getMoveIndex()-1] = vtemp;
+			}
+
 			if (config.pvHandler != NULL) {
 				config.pvHandler->pvHandler(tree.getPv(), value);
 			}
-			if (value == Value::MIN) {
+			if (value >= Value::MATE || value <= -Value::MATE) {
 				break;
 			}
 		}
+
 		return after(result, value);
 	}
 }
