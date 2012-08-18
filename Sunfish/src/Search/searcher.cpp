@@ -244,19 +244,26 @@ namespace Search {
 			tree.setMoveIndex(0);
 			Value alpha = Value::MIN - 1;
 			while (tree.next()) {
+				unsigned moveCount = tree.getMoveIndex();
 				tree.makeMove();
-				Value vtemp = -negaMax<true, true>(tree,
-						depth * PLY1, -alpha + 1, -alpha);
-				if (vtemp >= alpha) {
+				Value vtemp;
+				if (moveCount == 0) {
 					vtemp = -negaMax<true, true>(tree,
-							depth * PLY1, -alpha + 1, Value::MAX);
+							depth * PLY1, -alpha, Value::MIN);
+				} else {
+					vtemp = -negaMax<false, true>(tree,
+							depth * PLY1, -alpha + 1, -alpha);
+					if (vtemp >= alpha) {
+						vtemp = -negaMax<true, true>(tree,
+								depth * PLY1, -alpha, Value::MIN);
+					}
 				}
 				tree.unmakeMove();
-				if (vtemp > alpha) {
+				if (moveCount == 0 || vtemp > alpha) {
 					value = alpha = vtemp;
 					tree.updatePv();
 				}
-				values[tree.getMoveIndex()-1] = vtemp;
+				values[moveCount-1] = vtemp;
 			}
 
 			if (config.pvHandler != NULL) {
