@@ -5,6 +5,7 @@
  *      Author: ryosuke
  */
 
+#include "aspWindow.h"
 #include "searcher.h"
 
 namespace Search {
@@ -240,25 +241,41 @@ namespace Search {
 		tree.initNode();
 		tree.generateMoves();
 		for (unsigned depth = 0; depth < config.depth; depth++) {
-			if (depth != 0) { tree.sort(values); }
+			AspWindow<-1> aspAlpha;
+			AspWindow<1> aspBeta;
+			if (depth != 0) {
+				tree.sort(values);
+				aspAlpha = AspWindow<-1>(values[0]);
+				aspBeta = AspWindow<1>(values[0]);
+			}
 			tree.setMoveIndex(0);
-			Value alpha = Value::MIN - 1;
+			Value alpha = (int)aspAlpha;
 			while (tree.next()) {
+revaluation:
 				unsigned moveCount = tree.getMoveIndex();
 				tree.makeMove();
 				Value vtemp;
 				if (moveCount == 0) {
 					vtemp = -negaMax<true, true>(tree,
-							depth * PLY1, -alpha, Value::MIN);
+							depth * PLY1, -aspBeta, -alpha);
 				} else {
 					vtemp = -negaMax<false, true>(tree,
-							depth * PLY1, -alpha + 1, -alpha);
+							depth * PLY1, -alpha - 1, -alpha);
 					if (vtemp >= alpha) {
 						vtemp = -negaMax<true, true>(tree,
-								depth * PLY1, -alpha, Value::MIN);
+								depth * PLY1, -aspBeta, -alpha);
 					}
 				}
 				tree.unmakeMove();
+
+				if (vtemp >= aspBeta && aspBeta.next()) {
+					goto revaluation;
+				}
+				if (moveCount == 0 && vtemp <= aspAlpha && aspAlpha.next()) {
+					alpha = (int)aspAlpha;
+					goto revaluation;
+				}
+
 				if (moveCount == 0 || vtemp > alpha) {
 					value = alpha = vtemp;
 					tree.updatePv();
