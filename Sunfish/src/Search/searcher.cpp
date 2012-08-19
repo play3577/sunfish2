@@ -13,27 +13,37 @@ namespace Search {
 	using namespace Evaluate;
 	using namespace Table;
 
+	/***************************************************************
+	 * quiesence search                                            *
+	 * ply   : 静止探索を開始した地点からの手数                    *
+	 * alpha : alpha値                                             *
+	 * beta  : beta値                                              *
+	 ***************************************************************/
 	Value Searcher::quies(Tree& tree, int ply, Value alpha, Value beta) {
 		cntNodes++;
 
 		tree.initNode();
 
+		// stand-pat
 		const Value standPat = tree.negaEvaluate();
-		Value value = standPat;
-
-		if (value >= beta) {
-			// return stand-pat
-			return value;
+		// 静的評価値がbeta値を越えた場合
+		if (standPat >= beta) {
+			return standPat;
 		}
 
-		// initialize move generator
+		Value value = standPat;
+
+		// 合法手の列挙
 		if (ply < 7) {
+			// 取る手と成る手を生成
 			tree.generateTacticalMoves();
 		} else {
+			// 取る手のみを生成
 			tree.generateCaptures();
 		}
 
 		while (tree.next()) {
+			// alpha値
 			Value newAlpha = Value::max(alpha, value);
 
 			// futility pruning
@@ -44,9 +54,11 @@ namespace Search {
 				}
 			}
 
+			// 子ノードを展開
 			tree.makeMove();
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
 			tree.unmakeMove();
+
 			if (newValue > value) {
 				value = newValue;
 				tree.updatePv();
@@ -61,6 +73,12 @@ namespace Search {
 		return value;
 	}
 
+	/***************************************************************
+	 * nega-max search                                             *
+	 * depth : 残り深さ(PLY1倍)                                    *
+	 * alpha : alpha値                                             *
+	 * beta  : beta値                                              *
+	 ***************************************************************/
 	template <bool pvNode, bool nullMoveNode>
 	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta) {
 		cntNodes++;
@@ -121,6 +139,7 @@ namespace Search {
 				if (newValue >= beta) {
 					return beta;
 				} else if (newValue <= -Value::MATE) {
+					// パスして詰まされたら自玉は詰めろ
 					mate = true;
 				}
 			}
@@ -224,73 +243,110 @@ namespace Search {
 	template Value Searcher::negaMax<false, true>(Tree& tree, int depth, Value alpha, Value beta);
 	template Value Searcher::negaMax<false, false>(Tree& tree, int depth, Value alpha, Value beta);
 
+	/***************************************************************
+	 * 探索(反復深化を行わない。)                                  *
+	 * result : 結果取得用構造体                                   *
+	 * pvHandlerは呼ばれない。                                     *
+	 ***************************************************************/
 	bool Searcher::search(SearchResult& result) {
+		// 前処理
 		before(result);
+		// 探索
 		Value value = negaMax<true, true>(tree, config.depth * PLY1,
 				Value::MIN, Value::MAX);
-
+		// 後処理
 		return after(result, value);
 	}
 
+	/***************************************************************
+	 * 反復深化探索                                                *
+	 * result : 結果取得用構造体                                   *
+	 * 深さ毎にresult.pvHandler()を呼び出す。                      *
+	 ***************************************************************/
 	bool Searcher::idSearch(SearchResult& result) {
+		// 各指し手毎の評価値
 		Value values[MoveGenerator::MAX_MOVES_NUM];
+		// 最善手の評価値
 		Value value = Value::MIN;
 
+		// 前処理
 		before(result);
 
+		// ノード初期化
 		tree.initNode();
+		// 合法手生成
 		tree.generateMoves();
+		// 反復進化探索
 		for (unsigned depth = 0; depth < config.depth; depth++) {
+			// 段階的に広がる探索窓 (aspiration search)
 			AspWindow<-1> aspAlpha;
 			AspWindow<1> aspBeta;
+			// 初回ではない場合のみ前回の評価値を元にウィンドウを決定
 			if (depth != 0) {
-				tree.sort(values);
+				tree.sort(values); // 前回深さの結果で並べ替え
 				aspAlpha = AspWindow<-1>(values[0]);
 				aspBeta = AspWindow<1>(values[0]);
 			}
-			tree.setMoveIndex(0);
+			// alpha値
 			Value alpha = (int)aspAlpha;
+			// 合法手を順に調べる。
+			tree.setMoveIndex(0);
 			while (tree.next()) {
-revaluation:
 				unsigned moveCount = tree.getMoveIndex();
+				// 手を進める。
 				tree.makeMove();
 				Value vtemp;
-				if (moveCount == 0) {
+revaluation:
+				if (moveCount == 1) {
 					vtemp = -negaMax<true, true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
 				} else {
+					// null window searchを試みる。
 					vtemp = -negaMax<false, true>(tree,
 							depth * PLY1, -alpha - 1, -alpha);
 					if (vtemp >= alpha) {
+						// 再探索
 						vtemp = -negaMax<true, true>(tree,
 								depth * PLY1, -aspBeta, -alpha);
 					}
 				}
-				tree.unmakeMove();
-
+				// fail-high
 				if (vtemp >= aspBeta && aspBeta.next()) {
+					// ウィンドウを広げたら再探索 (aspiration search)
+					alpha = vtemp;
 					goto revaluation;
 				}
-				if (moveCount == 0 && vtemp <= aspAlpha && aspAlpha.next()) {
+				// fail-low
+				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
+					// ウィンドウを広げたら再探索 (aspiration search)
 					alpha = (int)aspAlpha;
 					goto revaluation;
 				}
+				// 手を戻す。
+				tree.unmakeMove();
 
-				if (moveCount == 0 || vtemp > alpha) {
+				// 最初の手かalphaを越えた場合
+				if (moveCount == 1 || vtemp > alpha) {
+					// 最善手の評価値とalpha値を更新
 					value = alpha = vtemp;
+					// PVを更新
 					tree.updatePv();
 				}
+				// 評価値を記憶する。
 				values[moveCount-1] = vtemp;
 			}
 
 			if (config.pvHandler != NULL) {
 				config.pvHandler->pvHandler(tree.getPv(), value);
 			}
+
+			// 詰み
 			if (value >= Value::MATE || value <= -Value::MATE) {
 				break;
 			}
 		}
 
+		// 後処理
 		return after(result, value);
 	}
 }
