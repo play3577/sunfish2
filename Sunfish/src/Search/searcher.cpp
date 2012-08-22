@@ -91,25 +91,25 @@ namespace Search {
 			return quies(tree, 0, alpha, beta);
 		}
 
-		// initialize
+		// 局面ハッシュ
 		Util::uint64 hash = tree.getPosition().getHash();
 
 		// transposition table
 		const TTEntity& ttEntity = tt.getEntity(hash);
 		Move hash1;
 		Move hash2;
-		if (ttEntity.is(hash)) {
-			if (ttEntity.getDepth() >= depth) {
+		if (ttEntity.is(hash)) { // 局面が一致したら
+			if (ttEntity.getDepth() >= depth) { // 深さ
 				switch (ttEntity.getValueType()) {
-				case TTEntity::EXACT:
+				case TTEntity::EXACT: // 確定
 					return ttEntity.getValue();
 					break;
-				case TTEntity::LOWER:
+				case TTEntity::LOWER: // 下界値
 					if (ttEntity.getValue() >= beta) {
 						return ttEntity.getValue();
 					}
 					break;
-				case TTEntity::UPPER:
+				case TTEntity::UPPER: // 上界値
 					if (ttEntity.getValue() <= alpha) {
 						return ttEntity.getValue();
 					}
@@ -284,8 +284,8 @@ namespace Search {
 			// 初回ではない場合のみ前回の評価値を元にウィンドウを決定
 			if (depth != 0) {
 				tree.sort(values); // 前回深さの結果で並べ替え
-				aspAlpha = AspWindow<-1>(values[0]);
-				aspBeta = AspWindow<1>(values[0]);
+				aspAlpha.init(values[0]);
+				aspBeta.init(values[0]);
 			}
 			// alpha値
 			Value alpha = (int)aspAlpha;

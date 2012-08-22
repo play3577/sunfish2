@@ -11,16 +11,15 @@
 #include "../Evaluate/value.h"
 
 namespace Search {
-	using namespace Evaluate;
-
 	extern const int aspWind[2];
 	extern const int ASP_MAX;
 
+	// ÃÊ³¬Åª¤Ë¹­¤¬¤ëÃµº÷Áë
 	template<int sign>
 	class AspWindow {
 	private:
 		int aspPhase;
-		Value aspValue;
+		Evaluate::Value aspValue;
 
 	public:
 		AspWindow(int value) {
@@ -37,6 +36,7 @@ namespace Search {
 		}
 
 		void init() {
+			aspValue = 0; // ÉÔÍ×
 			aspPhase = ASP_MAX;
 		}
 
@@ -49,9 +49,9 @@ namespace Search {
 			}
 		}
 
-		Value getValue() const {
+		Evaluate::Value getValue() const {
 			if (aspPhase == ASP_MAX) {
-				return Value::MAX * sign;
+				return Evaluate::Value::MAX * sign;
 			} else {
 				return aspValue + aspWind[aspPhase] * sign;
 			}
