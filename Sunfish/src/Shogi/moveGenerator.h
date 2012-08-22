@@ -49,7 +49,7 @@ namespace Shogi {
 
 		template <bool black>
 		void generateMoveOneMovePro(const Piece piece, const Square from, const Square to) {
-			if (to.isPromotableRank(black)) {
+			if (to.isPromotableRank(black) || from.isPromotableRank(black)) {
 				if (from.is(3, 0)) { // TODO: remove debugging code
 					std::cout << "********** Error **********\n";
 					std::cout << __LINE__ << '\n';

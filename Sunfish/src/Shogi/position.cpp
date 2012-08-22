@@ -203,7 +203,8 @@ namespace Shogi {
 			if (piece != getBoard(move.getFrom())) {
 				return false; // 不正な駒
 			}
-			if (!cuick && move.isPromotion() && (!piece.isPromotable() || !move.getTo().isPromotableRank(black))) {
+			if (!cuick && move.isPromotion() && (!piece.isPromotable() || 
+					(!move.getTo().isPromotableRank(black) && !move.getFrom().isPromotableRank(black)))) {
 				return false; // 成れない駒
 			}
 			if (!cuick && !move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
