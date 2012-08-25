@@ -10,6 +10,7 @@ $(wildcard ./src/Search/*.cpp) \
 $(wildcard ./src/Csa/*.cpp) \
 $(wildcard ./src/Record/*.cpp) \
 $(wildcard ./src/Cui/*.cpp) \
+$(wildcard ./src/Network/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp) \
 $(wildcard ./src/Log/*.cpp)
