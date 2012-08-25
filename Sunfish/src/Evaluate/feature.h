@@ -8,6 +8,7 @@
 #ifndef FEATURE_H_
 #define FEATURE_H_
 
+#include <cassert>
 #include "estimate.h"
 #include "../Shogi/position.h"
 
@@ -30,25 +31,32 @@ namespace Evaluate {
 				const TempParam<T, U>* pparam) {
 			X value(0);
 			extract<X, T, U, true, false>(pos, pparam, NULL, NULL, &value);
-			return value;
+			return value / Param::SCALE;
 		}
 
 		template<class X, class T, class U>
 		static Estimate<X> estimate(const Shogi::Position& pos,
 				const TempParam<T, U>* pparam,
 				const Shogi::Move& move) {
+			X value0(0);
+			X value1(0);
+			X error(0);
+			Shogi::Piece cap = pos.getBoard(move.getTo());
+			if (!cap.isEmpty()) {
+				value0 -= pparam->getPieceExchange(cap);
+			}
 			if (move.getPiece().isKing()) {
-				return Estimate<X>(X(0), X(KING_ERROR));
+				error = KING_ERROR;
 			} else {
 				Kings kings(pos);
-				X value(0);
-				value -= pparam->getKKP(kings,
+				value1 -= pparam->getKKP(kings,
 					move.getPiece(), move.getFrom());
 				Shogi::Piece piece = move.isPromotion() ?
 					move.getPiece().getPromoted() : move.getPiece();
-				value += pparam->getKKP(kings, piece, move.getTo());
-				return Estimate<X>(value, X(PIECE_ERROR));
+				value1 += pparam->getKKP(kings, piece, move.getTo());
+				error = PIECE_ERROR;
 			}
+			return Estimate<X>(value0 + value1 / Param::SCALE, error);
 		}
 	};
 }

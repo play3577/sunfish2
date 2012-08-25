@@ -216,11 +216,7 @@ namespace Evaluate {
 		}
 
 		T getPieceAbs(const Shogi::Piece& p) const {
-			if (!p.isWhite()) {
-				return piece[p];
-			} else {
-				return piece[p.getTurnedBlack()];
-			}
+			return piece[p.getTurnedBlack()];
 		}
 
 		T getPieceExchange(const Shogi::Piece& p) const {
@@ -232,11 +228,7 @@ namespace Evaluate {
 		}
 
 		T getPieceExchangeAbs(const Shogi::Piece& p) const {
-			if (!p.isWhite()) {
-				return pieceEx[p];
-			} else {
-				return pieceEx[p.getTurnedBlack()];
-			}
+			return pieceEx[p.getTurnedBlack()];
 		}
 
 		T getPiecePromote(const Shogi::Piece& p) const {
@@ -248,11 +240,7 @@ namespace Evaluate {
 		}
 
 		T getPiecePromoteAbs(const Shogi::Piece& p) const {
-			if (!p.isWhite()) {
-				return piecePr[p];
-			} else {
-				return piecePr[p.getTurnedBlack()];
-			}
+			return piecePr[p.getTurnedBlack()];
 		}
 
 		void setKPP(int kingIndex, int pieceIndex, U value) {

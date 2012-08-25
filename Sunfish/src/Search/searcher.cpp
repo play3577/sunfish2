@@ -49,7 +49,7 @@ namespace Search {
 			// futility pruning
 			if (!tree.isCheck() && !tree.isCheckMove()) {
 				Estimate<Value> estimate = tree.negaEstimate();
-				if (estimate.getValue() + estimate.getError() <= newAlpha) {
+				if (standPat + estimate.getValue() + estimate.getError() <= newAlpha) {
 					continue;
 				}
 			}

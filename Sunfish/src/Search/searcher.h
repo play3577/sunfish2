@@ -85,7 +85,7 @@ namespace Search {
 		}
 
 		static Evaluate::Value getFutMgn(int depth, int count) {
-			return 600 / PLY1 * depth + 10 * count;
+			return 600 / PLY1 * depth + 5 * count;
 		}
 
 	public:

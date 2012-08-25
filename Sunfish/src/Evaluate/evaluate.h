@@ -74,7 +74,7 @@ namespace Evaluate {
 		}
 
 		Value getValue(const Shogi::Position& pos) {
-			return baseValue + getAdditionalValue(pos) / Param::SCALE;
+			return baseValue + getAdditionalValue(pos);
 		}
 
 		const Param& getParam() const {
