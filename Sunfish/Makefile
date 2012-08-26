@@ -23,11 +23,13 @@ override CFLAGS+=-O2
 #override CFLAGS+=-NDEBUG
 #override CFLAGS+=-g
 #override CFLAGS+=-pg
+override LIBS+=-lboost_thread-mt
+override LIBS+=-lboost_regex-mt
 
 .PHONY: all
 all: $(PROGRAM)
 $(PROGRAM): $(OBJECTS)
-	$(GPP) -o $(PROGRAM) $(CFLAGS) $^
+	$(GPP) -o $(PROGRAM) $(CFLAGS) $^ $(LIBS)
 
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<

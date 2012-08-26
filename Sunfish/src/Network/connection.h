@@ -65,7 +65,7 @@ namespace Network {
 			this->host = host;
 		}
 
-		void setHost(int port) {
+		void setPort(int port) {
 			this->port = port;
 		}
 

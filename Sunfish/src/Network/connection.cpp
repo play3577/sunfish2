@@ -74,9 +74,10 @@ namespace Network {
 			return true;
 		}
 
+		memset( buf, 0, sizeof(buf) );
 		if (recv(sock, buf, sizeof(buf) - 1, 0) > 0) {
 			char* p = buf;
-			while (p != NULL) {
+			while (p != NULL && p[0] != '\0') {
 				char* p2 = strchr(p, '\n');
 				if (p2 != NULL) {
 					p2[0] = '\0';
