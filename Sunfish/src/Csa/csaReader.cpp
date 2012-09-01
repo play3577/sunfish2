@@ -118,14 +118,14 @@ namespace Csa {
 			in.getline(line, sizeof(line));
 			if (in.eof()) { break; }
 			if (in.fail()) {
-				Log::Logger::out() << "ERROR: unknown i/o error :\"" << line << "\"\n";
+				Log::error << "ERROR: unknown i/o error :\"" << line << "\"\n";
 				return false;
 			}
 			LineStat stat = parseLine(line, pos);
 			if (stat == LINE_TURN) {
 				break;
 			} else if (stat == LINE_ERROR) {
-				Log::Logger::out() << "ERROR: CSA syntax :\"" << line << "\"\n";
+				Log::error << "ERROR: CSA syntax :\"" << line << "\"\n";
 				return false;
 			}
 		}
@@ -136,7 +136,7 @@ namespace Csa {
 	bool CsaReader::read(const char* filename, Position& pos) {
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::Logger::out() << "ERROR: can't open a file :\"" << "\"\n";
+			Log::error << "ERROR: can't open a file :\"" << "\"\n";
 			return false;
 		}
 		if (!read(fin, pos)) {
@@ -151,7 +151,7 @@ namespace Csa {
 		Position pos;
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::Logger::out() << "ERROR: can't open a file :\"" << "\"\n";
+			Log::error << "ERROR: can't open a file :\"" << "\"\n";
 			return false;
 		}
 
@@ -168,12 +168,12 @@ namespace Csa {
 			fin.getline(line, sizeof(line));
 			if (fin.eof()) { break; }
 			if (fin.fail()) {
-				Log::Logger::out() << "ERROR: unknown i/o error :\"" << line << "\"\n";
+				Log::error << "ERROR: unknown i/o error :\"" << line << "\"\n";
 				return false;
 			}
 			LineStat stat = parseLine(line, record);
 			if (stat == LINE_ERROR) {
-				Log::Logger::out() << "ERROR: CSA syntax :\"" << line << "\"\n";
+				Log::error << "ERROR: CSA syntax :\"" << line << "\"\n";
 				fin.close();
 				return false;
 			}

@@ -8,5 +8,8 @@
 #include "logger.h"
 
 namespace Log {
-	std::ostream* Logger::pout = NULL;
+	Logger error;
+	Logger warning;
+	Logger message;
+	Logger debug;
 }

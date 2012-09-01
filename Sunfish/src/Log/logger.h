@@ -10,22 +10,34 @@
 namespace Log {
 	class Logger {
 	private:
-		static std::ostream* pout;
-
-		Logger() {
-		}
+		std::ostream* pout;
 
 	public:
-		static void setStream(std::ostream& o) {
+		Logger() {
+			pout = &std::cout;
+		}
+
+		void setStream(std::ostream& o) {
 			pout = &o;
 		}
 
-		static std::ostream& out() {
+		std::ostream& out() {
 			if (pout != NULL) {
 				return *pout;
 			} else {
 				return std::cout;
 			}
 		}
+
+		template <class T>
+		Logger& operator<<(T t) {
+			out() << t;
+			return *this;
+		}
 	};
+
+	extern Logger error;
+	extern Logger warning;
+	extern Logger message;
+	extern Logger debug;
 }
