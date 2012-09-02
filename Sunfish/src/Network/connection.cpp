@@ -97,4 +97,12 @@ namespace Network {
 		}
 		return false;
 	}
+
+	bool Connection::sendln(const std::string& str) {
+		std::string strln = str + '\n';
+		if (-1 != ::send(sock, strln.c_str(), strln.length(), 0)) {
+			return true;
+		}
+		return false;
+	}
 }

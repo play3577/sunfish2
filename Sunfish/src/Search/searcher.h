@@ -20,7 +20,7 @@ namespace Search {
 	};
 
 	struct SearchResult {
-		bool noMoves;
+		bool resign;
 		Shogi::Move move;
 		Pv pv;
 		Evaluate::Value value;
@@ -34,7 +34,7 @@ namespace Search {
 			oss << "* NODES :" << nodes << '\n';
 			oss << "* SEC   :" << sec << '\n';
 			oss << "* NPS   :" << nps << '\n';
-			if (!noMoves) {
+			if (!resign) {
 				oss << "* " << move.toString() << '\n';
 			}
 			return oss.str();
@@ -75,11 +75,11 @@ namespace Search {
 			result.sec = timer.elapsed();
 			result.nps = result.nodes / result.sec;
 			if (pmove != NULL) {
-				result.noMoves = false;
+				result.resign = false;
 				result.move = *pmove;
 				return true;
 			} else {
-				result.noMoves = true;
+				result.resign = true;
 				return false;
 			}
 		}

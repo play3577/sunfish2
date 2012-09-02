@@ -50,18 +50,6 @@ namespace Csa {
 	}
 
 	bool CsaReader::parseLineMove(const char* line, Record::Record& record) {
-		/*
-		if (strlen(line) < 6) {
-			return false;
-		}
-		Square from(line[0]-'0', line[1]-'0');
-		Square to(line[2]-'0', line[3]-'0');
-		Piece piece = Piece::parseCsa(&line[4]);
-		if (!from.valid() || !to.valid() || piece.isEmpty()) {
-			return false;
-		}
-		return record.move(Move(from, to, promote, hand, piece));
-		*/
 		Move move;
 		return record.getPosition().inputMoveCsa(line, move) && record.move(move);
 	}

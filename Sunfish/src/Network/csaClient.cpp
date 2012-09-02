@@ -7,20 +7,25 @@
 
 #include "csaClient.h"
 #include "../Csa/csaReader.h"
+#include "../Record/record.h"
+#include "../Search/searcher.h"
 
 #include <boost/bind.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 namespace Network {
 	using namespace Shogi;
 	using namespace Csa;
+	using namespace Search;
 
 	const CsaClient::ReceiveFlagSet CsaClient::flagSets[RECV_NUM] = {
 		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL },
 		{ boost::regex("^LOGIN:incorect$"), RECV_LOGIN_INC, NULL },
 		{ boost::regex("^LOGOUT:completed$"), RECV_LOGOUT, NULL },
-		{ boost::regex("^%.*"), RECV_MOVE, recvMove },
-		{ boost::regex("^\\+.*"), RECV_MOVE, recvMove },
-		{ boost::regex("^-.*"), RECV_MOVE, recvMove },
+		{ boost::regex("^%.*"), RECV_MOVE_EX, recvMove },
+		{ boost::regex("^\\+.*"), RECV_MOVE_B, recvMove },
+		{ boost::regex("^-.*"), RECV_MOVE_W, recvMove },
 		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, st_recvGameSummary },
 		{ boost::regex("^START:.*"), RECV_START, NULL },
 		{ boost::regex("^REJECT:.* BY .*"), RECV_REJECT, NULL },
@@ -42,17 +47,58 @@ namespace Network {
 		con.setPort(4081);
 		con.connect();
 		boost::thread receiverThread(boost::bind(&CsaClient::receiver, this));
+
+		// login
 		if (!login()) {
-			std::cout << "login failed!\n";
+			Log::message << "login failed!\n";
 			goto lab_end;
 		}
-		std::cout << "login ok!!\n";
+		Log::message << "login ok!!\n";
 
-		if (!waitGameSummary()) {
-			goto lab_end;
+		// wait for match-make and agree
+		if (waitGameSummary() && agree()) {
+			Record::Record record(pos);
+			Searcher searcher(*pparam);
+			SearchConfig searchConfig;
+
+			searchConfig.depth = 5;
+			searchConfig.pvHandler = this;
+			searcher.setSearchConfig(searchConfig);
+
+			while (1) {
+				Log::message << record.toString();
+				if (black == record.getPosition().isBlackTurn()) {
+					// my turn
+					SearchResult result;
+					searcher.init(record.getPosition());
+					searcher.idSearch(result);
+					if (!result.resign && record.move(result.move)) {
+						sendMove(result.move);
+					} else {
+						sendResign();
+						break;
+					}
+				} else {
+					// enemy's turn
+					unsigned mask = black ? RECV_MOVE_W : RECV_MOVE_B;
+					unsigned flags = waitReceive(mask | RECV_END_MSK);
+					if (flags & mask) {
+						if (!CsaReader::parseLineMove(moveStr.c_str(), record)) {
+							Log::error << "ERROR :illegal move!!\n";
+							break;
+						}
+					} else if (flags & RECV_END_MSK) {
+						break;
+					} else {
+						Log::error << "ERROR :see receive-log.\n";
+						break;
+					}
+				}
+			}
+			// TODO: 結果の記録
 		}
 
-lab_logout:
+		// logout
 		logout();
 
 lab_end:
@@ -62,26 +108,39 @@ lab_end:
 	}
 
 	bool CsaClient::login() {
-		send("LOGIN user pass");
+		if (!send("LOGIN user pass")) { return false; }
 		unsigned result = waitReceive(RECV_LOGIN_MSK);
-		if (result & RECV_LOGIN_OK) {
-			return true;
-		}
-		return false;
+		return (result & RECV_LOGIN_OK) != 0U;
 	}
 
 	bool CsaClient::logout() {
-		send("LOGOUT");
+		if (!send("LOGOUT")) { return false; }
 #if 0
 		unsigned result = waitReceive(RECV_LOGOUT);
-		if (result & RECV_LOGOUT) {
-			return true;
-		}
-		return false;
+		return (result & RECV_LOGOUT) != 0U;
 #else
 		// floodgateがLOGOUT:completedを送信してくれない。
 		return true;
 #endif
+	}
+
+	bool CsaClient::agree() {
+		if (!send("AGREE")) { return false; }
+		unsigned result = waitReceive(RECV_AGREE_MSK);
+		return (result & RECV_START) != 0U;
+	}
+
+	bool CsaClient::sendMove(const Shogi::Move& move) {
+		if (!send((move.toStringCsa()).c_str())) { return false; }
+		unsigned mask = black ? RECV_MOVE_B : RECV_MOVE_W;
+		unsigned result = waitReceive(mask);
+		return (result & mask) != 0U;
+	}
+
+	bool CsaClient::sendResign() {
+		if (!send("%TORYO")) { return false; }
+		unsigned result = waitReceive(RECV_END_MSK);
+		return (result & RECV_END_MSK) != 0U;
 	}
 
 	unsigned CsaClient::waitReceive(unsigned flags) {
@@ -92,6 +151,7 @@ lab_end:
 				return masked;
 			}
 			if (recvFlags & RECV_LOGOUT) {
+				recvFlags &= ~RECV_LOGOUT;
 				return 0U;
 			}
 			sleep(20);
@@ -119,11 +179,39 @@ lab_end:
 			printReceivedString();
 			if (recvStr == "BEGIN Time") {
 				recvTime();
+				continue;
 			} else if (recvStr == "BEGIN Position") {
 				recvPosition();
+				continue;
 			} else if (recvStr == "END Game_Summary") {
 				return;
 			}
+
+			std::vector<std::string> tokens;
+			boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
+			if (tokens.size() < 2) {
+				continue;
+			}
+
+			if (tokens[0] == "Your_Turn") {
+				if (tokens[1] == "+") {
+					black = true;
+				} else if (tokens[1] == "-") {
+					black = false;
+				}
+			}
+			/*
+				"^Protocol_Version:.*"
+				"^Protocol_Mode:.*"
+				"^Format:.*"
+				"^Declaration:.*"
+				"^Game_ID:.*"
+				"^Name\\+:.*"
+				"^Name-:.*"
+				"^Your_Turn:.*"
+				"^Rematch_On_Draw:.*"
+				"^To_Move:.*"
+			*/
 		}
 	}
 
@@ -134,21 +222,19 @@ lab_end:
 			if (recvStr == "END Time") {
 				return;
 			}
+			std::vector<std::string> tokens;
+			boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
+			if (tokens.size() < 2) {
+				continue;
+			}
+			/*
+				^Time_Unit:.*"
+				"^Least_Time_Per_Move:.*"
+				"^Total_Timey:.*"
+				"^Byoyomi:.*"
+			*/
 		}
 	}
-
-	/*
-	"^Protocol_Version:.*"
-	"^Protocol_Mode:.*"
-	"^Format:.*"
-	"^Declaration:.*"
-	"^Game_ID:.*"
-	"^Name\\+:.*"
-	"^Name-:.*"
-	"^Your_Turn:.*"
-	"^Rematch_On_Draw:.*"
-	"^To_Move:.*"
-	*/
 
 	void CsaClient::recvPosition() {
 		pos.setBoard(Square(5,5), Piece::BPAWN);
@@ -168,11 +254,4 @@ lab_end:
 			}
 		}
 	}
-
-	/*
-	^Time_Unit:.*"
-	"^Least_Time_Per_Move:.*"
-	"^Total_Timey:.*"
-	"^Byoyomi:.*"
-	*/
 }

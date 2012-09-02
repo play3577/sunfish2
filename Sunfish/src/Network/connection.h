@@ -82,6 +82,8 @@ namespace Network {
 		}
 
 		bool send(const std::string& str);
+
+		bool sendln(const std::string& str);
 	};
 }
 

@@ -133,7 +133,7 @@ namespace Cui {
 				searcher.init(record.getPosition());
 				searcher.idSearch(result);
 				std::cout << result.toString();
-				if (!record.move(result.move)) {
+				if (result.resign || !record.move(result.move)) {
 					if (config.autoBlack) {
 						std::cout << "black :auto => manual\n";
 						config.autoBlack = false;
@@ -189,7 +189,7 @@ namespace Cui {
 				searcher.init(record.getPosition());
 				searcher.idSearch(result);
 				std::cout << result.toString();
-				if (result.noMoves) {
+				if (result.resign) {
 					std::cout << "lose.\n";
 				}
 				break;
