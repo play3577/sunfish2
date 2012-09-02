@@ -136,7 +136,7 @@ namespace Csa {
 	bool CsaReader::read(const char* filename, Position& pos) {
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::error << "ERROR: can't open a file :\"" << "\"\n";
+			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
 			return false;
 		}
 		if (!read(fin, pos)) {
@@ -151,7 +151,7 @@ namespace Csa {
 		Position pos;
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::error << "ERROR: can't open a file :\"" << "\"\n";
+			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
 			return false;
 		}
 

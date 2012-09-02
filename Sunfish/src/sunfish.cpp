@@ -40,7 +40,10 @@ int main(int argc, char* argv[]) {
 	options_description opt("Option");
 	opt.add_options()
 			("help,h", "show help.")
-			("network,n", "CSA client moode.");
+			("network,n", "CSA client moode.")
+			("auto-black,b", "auto move on black turn.")
+			("auto-white,w", "auto move on white turn.")
+			("file,f", value<std::string>(), "CSA file name to read.");
 	variables_map argmap;
 	try {
 		store(parse_command_line(argc, argv, opt), argmap);
@@ -62,7 +65,15 @@ int main(int argc, char* argv[]) {
 	}
 
 	Cui::Controller controller;
-	controller.init(argc, argv);
+	if (argmap.count("auto-black")) {
+		controller.setAutoBlack(true);
+	}
+	if (argmap.count("auto-white")) {
+		controller.setAutoWhite(true);
+	}
+	if (argmap.count("file")) {
+		controller.setFilename(argmap["file"].as<std::string>().c_str());
+	}
 	controller.play();
 
 	return 0;

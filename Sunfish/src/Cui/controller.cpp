@@ -18,31 +18,18 @@ namespace Cui {
 	using namespace Csa;
 
 	const Controller::CommandSet Controller::commandSet[CMD_NUM] = {
-		{ "q", "quit", QUIT },
-		{ "p", "prev", PREV },
-		{ "n", "next", NEXT },
-		{ "m", "moves", MOVES },
-		{ "s", "search", SEARCH },
-		{ "c", "cap", CAPTURES },
-		{ "nc", "ncap", NOCAPTURES },
+		{ "q", "quit", QUIT, "quit." },
+		{ "h", "help", HELP, "show this help." },
+		{ "p", "prev", PREV, "go to a previous position." },
+		{ "n", "next", NEXT, "go to a next position." },
+		{ "s", "search", SEARCH, "search from current position." },
+		{ "m", "moves", MOVES, "show legal moves." },
+		{ "c", "cap", CAPTURES, "show capturing moves." },
+		{ "nc", "ncap", NOCAPTURES, "show not captureing moves." },
 #ifndef NDEBUG
-		{ NULL, "see", SEE },
+		{ NULL, "see", SEE, "static exchange evaluation test.(DEBUG)" },
 #endif // ifndef NDEBUG
 	};
-
-	void Controller::init(int argc, char* argv[]) {
-		for (int i = 0; i < argc; i++) {
-			if (0 == strcmp(argv[i], "-f")) {
-				if (argc > i + 1) {
-					config.filename = argv[++i];
-				}
-			} else if (0 == strcmp(argv[i], "-b")) {
-				config.autoBlack = true;
-			} else if (0 == strcmp(argv[i], "-w")) {
-				config.autoWhite = true;
-			}
-		}
-	}
 
 	Controller::Command Controller::inputCommand(const char* str) {
 		for (int i = 0; i < CMD_NUM; i++) {
@@ -54,6 +41,20 @@ namespace Cui {
 			}
 		}
 		return UNKNOWN;
+	}
+
+	void Controller::showHelp() {
+		for (int i = 0; i < CMD_NUM; i++) {
+			const char* l = commandSet[i].longStr;
+			const char* s = commandSet[i].shortStr;
+			const char* d = commandSet[i].description;
+			if (l != NULL) { std::cout << l; }
+			std::cout << '\t';
+			if (s != NULL) { std::cout << s; }
+			std::cout << '\t';
+			if (d != NULL) { std::cout << d; }
+			std::cout << '\n';
+		}
 	}
 
 	void Controller::showLegalMoves(const Position& pos) {
@@ -107,7 +108,7 @@ namespace Cui {
 		// 棋譜読み込み
 		if (config.filename != NULL) {
 			if (!CsaReader::read(config.filename, record)) {
-				std::cout << "ERROR: can't read a file :" << config.filename << '\n';
+				std::cerr << "ERROR: failed to read a file :\"" << config.filename << "\"\n";
 			}
 		}
 
@@ -152,6 +153,9 @@ namespace Cui {
 			Command command = line[0] != '\0' ? inputCommand(line) : prevCommand;
 			if (command == QUIT) { break; }
 			switch(prevCommand = command) {
+			case HELP:
+				showHelp();
+				break;
 			case PREV: // 1手進む。
 				if (record.prev()) {
 					printBoard = true;

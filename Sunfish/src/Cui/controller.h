@@ -18,10 +18,11 @@ namespace Cui {
 	private:
 		enum Command {
 			QUIT = 0,
+			HELP,
 			PREV,
 			NEXT,
-			MOVES,
 			SEARCH,
+			MOVES,
 			CAPTURES,
 			NOCAPTURES,
 #ifndef NDEBUG
@@ -36,8 +37,19 @@ namespace Cui {
 			const char* shortStr;
 			const char* longStr;
 			Command command;
+			const char* description;
 		};
 		static const CommandSet commandSet[CMD_NUM];
+
+		void showHelp();
+
+		void showLegalMoves(const Shogi::Position& pos);
+
+		void showCaptures(const Shogi::Position& pos);
+
+		void showNoCaptures(const Shogi::Position& pos);
+
+		void SeeTest(const Shogi::Position& pos, const Evaluate::Param& param);
 
 		Evaluate::Param* pparam;
 
@@ -68,19 +80,21 @@ namespace Cui {
 			config.autoWhite = false;
 		}
 
-		void init(int argc, char* argv[]);
+		void setFilename(const char* filename) {
+			config.filename = filename;
+		}
+
+		void setAutoBlack(bool autoBlack) {
+			config.autoBlack = autoBlack;
+		}
+
+		void setAutoWhite(bool autoWhite) {
+			config.autoWhite = autoWhite;
+		}
 
 		void pvHandler(const Search::Pv& pv, Evaluate::Value value) {
 			std::cout << pv.toString() << ':' << value << '\n';
 		}
-
-		void showLegalMoves(const Shogi::Position& pos);
-
-		void showCaptures(const Shogi::Position& pos);
-
-		void showNoCaptures(const Shogi::Position& pos);
-
-		void SeeTest(const Shogi::Position& pos, const Evaluate::Param& param);
 
 		bool play();
 	};
