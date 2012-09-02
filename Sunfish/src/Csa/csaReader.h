@@ -15,6 +15,11 @@
 namespace Csa {
 	class CsaReader {
 		private:
+			static const int LINE_BUFFER_SIZE = 1024;
+			CsaReader() {
+			}
+
+		public:
 			enum LineStat {
 				LINE_ERROR,
 				LINE_EMPTY,
@@ -28,17 +33,12 @@ namespace Csa {
 				LINE_STAT,
 			};
 
-			static const int LINE_BUFFER_SIZE = 1024;
-			CsaReader() {
-			}
 			static bool parseLineBoard(const char* line, unsigned rank, Shogi::Position& pos);
 			static bool parseLineHand(const char* line, Shogi::Position& pos, bool black);
 			static bool parseLineMove(const char* line, Record::Record& record);
 			static LineStat parseLine(const char* line, Shogi::Position& pos);
 			static LineStat parseLine(const char* line, Record::Record& record);
 			static bool read(std::istream& in, Shogi::Position& pos);
-
-		public:
 			static bool read(const char* filename, Shogi::Position& pos);
 			static bool read(const char* filename, Record::Record& record);
 	};

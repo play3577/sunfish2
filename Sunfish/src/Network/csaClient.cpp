@@ -6,10 +6,14 @@
  */
 
 #include "csaClient.h"
+#include "../Csa/csaReader.h"
 
 #include <boost/bind.hpp>
 
 namespace Network {
+	using namespace Shogi;
+	using namespace Csa;
+
 	const CsaClient::ReceiveFlagSet CsaClient::flagSets[RECV_NUM] = {
 		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL },
 		{ boost::regex("^LOGIN:incorect$"), RECV_LOGIN_INC, NULL },
@@ -17,26 +21,7 @@ namespace Network {
 		{ boost::regex("^%.*"), RECV_MOVE, recvMove },
 		{ boost::regex("^\\+.*"), RECV_MOVE, recvMove },
 		{ boost::regex("^-.*"), RECV_MOVE, recvMove },
-		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, recvGameSummary },
-		/*
-		{ boost::regex("^Protocol_Version:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Protocol_Mode:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Format:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Declaration:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Game_ID:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Name\\+:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Name-:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Your_Turn:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Rematch_On_Draw:.*"), RECV_NULL, NULL },
-		{ boost::regex("^To_Move:.*"), RECV_NULL, NULL },
-		{ boost::regex("^BEGIN Time$"), RECV_NULL, NULL },
-		{ boost::regex("^Time_Unit:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Least_Time_Per_Move:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Total_Timey:.*"), RECV_NULL, NULL },
-		{ boost::regex("^Byoyomi:.*"), RECV_NULL, NULL },
-		{ boost::regex("^End Time$"), RECV_NULL, NULL },
-		{ boost::regex("^BEGIN Position$"), RECV_NULL, NULL },
-		*/
+		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, st_recvGameSummary },
 		{ boost::regex("^START:.*"), RECV_START, NULL },
 		{ boost::regex("^REJECT:.* BY .*"), RECV_REJECT, NULL },
 		{ boost::regex("^#WIN$"), RECV_WIN, NULL },
@@ -77,7 +62,7 @@ lab_end:
 	}
 
 	bool CsaClient::login() {
-		con.send("LOGIN user pass");
+		send("LOGIN user pass");
 		unsigned result = waitReceive(RECV_LOGIN_MSK);
 		if (result & RECV_LOGIN_OK) {
 			return true;
@@ -86,7 +71,7 @@ lab_end:
 	}
 
 	bool CsaClient::logout() {
-		con.send("LOGOUT");
+		send("LOGOUT");
 #if 0
 		unsigned result = waitReceive(RECV_LOGOUT);
 		if (result & RECV_LOGOUT) {
@@ -128,11 +113,66 @@ lab_end:
 		}
 	}
 
-	void CsaClient::recvGameSummary(CsaClient* p) {
-		while (p->con.receive()) {
-			p->recvStr = p->con.getReceivedString();
-			if (p->recvStr == "END Game_Summary") {
+	void CsaClient::recvGameSummary() {
+		while (con.receive()) {
+			recvStr = con.getReceivedString();
+			printReceivedString();
+			if (recvStr == "BEGIN Time") {
+				recvTime();
+			} else if (recvStr == "BEGIN Position") {
+				recvPosition();
+			} else if (recvStr == "END Game_Summary") {
+				return;
 			}
 		}
 	}
+
+	void CsaClient::recvTime() {
+		while (con.receive()) {
+			recvStr = con.getReceivedString();
+			printReceivedString();
+			if (recvStr == "END Time") {
+				return;
+			}
+		}
+	}
+
+	/*
+	"^Protocol_Version:.*"
+	"^Protocol_Mode:.*"
+	"^Format:.*"
+	"^Declaration:.*"
+	"^Game_ID:.*"
+	"^Name\\+:.*"
+	"^Name-:.*"
+	"^Your_Turn:.*"
+	"^Rematch_On_Draw:.*"
+	"^To_Move:.*"
+	*/
+
+	void CsaClient::recvPosition() {
+		pos.setBoard(Square(5,5), Piece::BPAWN);
+		Log::debug << pos.toString();
+		while (con.receive()) {
+			recvStr = con.getReceivedString();
+			printReceivedString();
+			if (recvStr == "END Position") {
+				Log::debug << pos.toString();
+				return;
+			} else {
+				CsaReader::LineStat stat =
+						CsaReader::parseLine(recvStr.c_str(), pos);
+				if (stat == CsaReader::LINE_ERROR) {
+					Log::error << "ERROR :" << recvStr << "\n";
+				}
+			}
+		}
+	}
+
+	/*
+	^Time_Unit:.*"
+	"^Least_Time_Per_Move:.*"
+	"^Total_Timey:.*"
+	"^Byoyomi:.*"
+	*/
 }

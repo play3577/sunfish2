@@ -6,21 +6,60 @@
  */
 
 #include <iostream>
+#include <boost/program_options.hpp>
 #include "Cui/controller.h"
 #include "Shogi/position.h"
 #include "sunfish.h"
 #include "Network/csaClient.h"
+#include "Log/logger.h"
+
+using boost::program_options::options_description;
+using boost::program_options::variables_map;
+using boost::program_options::value;
+using boost::program_options::store;
+using boost::program_options::parse_command_line;
 
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';
 	std::cout << SUNFISH_VERSION << '\n';
 	std::cout << SUNFISH_COPYRIGHT << '\n';
 
-	Network::CsaClient csaClient;
-	csaClient.execute();
+	// log
+	Log::error.addStream(std::cerr, "\x1b[31m", "\x1b[39m");
+	Log::warning.addStream(std::cerr, "\x1b[31m", "\x1b[39m");
+	Log::message.addStream(std::cerr);
+	Log::send.addStream(std::cerr, "\x1b[34m", "\x1b[39m");
+	Log::receive.addStream(std::cerr, "\x1b[35m", "\x1b[39m");
+	Log::debug.addStream(std::cerr);
 
+	// hash
 	Shogi::PositionHash hash(Shogi::PositionHash::FILE_NAME);
 	Shogi::Position::setPositionHash(&hash);
+
+	// program options
+	options_description opt("Option");
+	opt.add_options()
+			("help,h", "show help.")
+			("network,n", "CSA client moode.");
+	variables_map argmap;
+	try {
+		store(parse_command_line(argc, argv, opt), argmap);
+	} catch (std::exception& e) {
+		std::cerr << "ERROR :" << e.what() << std::endl;
+		std::cerr << opt << std::endl;
+		return 1;
+	}
+
+	if (argmap.count("help")) {
+		// --help or -h => show help
+		std::cerr << opt << std::endl;
+		return 0;
+	} else if (argmap.count("network")) {
+		// --network or -n => CSA client
+		Network::CsaClient csaClient;
+		csaClient.execute();
+		return 0;
+	}
 
 	Cui::Controller controller;
 	controller.init(argc, argv);

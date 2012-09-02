@@ -5,33 +5,51 @@
  *      Author: Kubo Ryosuke
  */
 
+#ifndef LOGGER_H_
+#define LOGGER_H_
+
 #include <iostream>
+#include <vector>
 
 namespace Log {
 	class Logger {
 	private:
-		std::ostream* pout;
+		struct STREAM {
+			std::ostream* pout;
+			const char* before;
+			const char* after;
+		};
+
+		std::vector<STREAM> os;
 
 	public:
 		Logger() {
-			pout = &std::cout;
 		}
 
-		void setStream(std::ostream& o) {
-			pout = &o;
+		void addStream(std::ostream& o) {
+			addStream(o, NULL, NULL);
 		}
 
-		std::ostream& out() {
-			if (pout != NULL) {
-				return *pout;
-			} else {
-				return std::cout;
-			}
+		void addStream(std::ostream& o,
+				const char* before,
+				const char* after) {
+			STREAM s = { &o, before, after };
+			os.push_back(s);
 		}
 
 		template <class T>
 		Logger& operator<<(T t) {
-			out() << t;
+			std::vector<STREAM>::iterator it;
+			for (it = os.begin(); it != os.end(); it++) {
+				if (it->before != NULL) {
+					*(it->pout) << it->before;
+				}
+				*(it->pout) << t;
+				if (it->after != NULL) {
+					*(it->pout) << it->after;
+				}
+				it->pout->flush();
+			}
 			return *this;
 		}
 	};
@@ -39,5 +57,9 @@ namespace Log {
 	extern Logger error;
 	extern Logger warning;
 	extern Logger message;
+	extern Logger send;
+	extern Logger receive;
 	extern Logger debug;
 }
+
+#endif // LOGGER_H_

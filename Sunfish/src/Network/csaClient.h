@@ -9,6 +9,7 @@
 #define CSACLIENT_H_
 
 #include "../Log/logger.h"
+#include "../Shogi/position.h"
 #include "connection.h"
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
@@ -60,6 +61,8 @@ namespace Network {
 
 		Connection con;
 
+		Shogi::Position pos;
+
 		std::string recvStr;
 
 		std::string moveStr;
@@ -69,6 +72,11 @@ namespace Network {
 		bool login();
 
 		bool logout();
+
+		bool send(const char* str) {
+			printSendString(str);
+			return con.send(str);
+		}
 
 		bool waitGameSummary() {
 			return waitReceive(RECV_SUMMARY) == RECV_SUMMARY;
@@ -84,17 +92,27 @@ namespace Network {
 			p->moveStr = p->recvStr;
 		}
 
-		static void recvGameSummary(CsaClient* p);
+		static void st_recvGameSummary(CsaClient* p) {
+			p->recvGameSummary();
+		}
+
+		void recvGameSummary();
+
+		void recvTime();
+
+		void recvPosition();
 
 		void sleep(unsigned msec) {
 			boost::thread::sleep(boost::get_system_time()
 				+ boost::posix_time::milliseconds(msec));
 		}
 
+		void printSendString(const char* str) {
+			Log::send << '<' << str << '\n';
+		}
+
 		void printReceivedString() {
-			Log::message << "\x1b[35m"
-					<< '>' << recvStr
-					<< "\x1b[39m" << '\n';
+			Log::receive << '>' << recvStr << '\n';
 		}
 
 	public:

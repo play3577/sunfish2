@@ -11,5 +11,7 @@ namespace Log {
 	Logger error;
 	Logger warning;
 	Logger message;
+	Logger send;
+	Logger receive;
 	Logger debug;
 }

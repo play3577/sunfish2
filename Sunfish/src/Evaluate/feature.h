@@ -13,11 +13,11 @@
 #include "../Shogi/position.h"
 
 namespace Evaluate {
+	static const int KING_ERROR  = 100 * 16;
+	static const int PIECE_ERROR = 100 *  8;
+
 	class Feature {
 	private:
-		static const int KING_ERROR  = 100 * 16;
-		static const int PIECE_ERROR = 100 *  8;
-
 		template<class X, class T, class U, bool get, bool cum>
 		static void extract(const Shogi::Position& pos,
 				const TempParam<T, U>* iparam, const X* ivalue,
