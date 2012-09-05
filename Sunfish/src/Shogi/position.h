@@ -17,7 +17,7 @@
 #include "positionHash.h"
 #include "change.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	class Evaluate;
 }
 
@@ -57,11 +57,11 @@ namespace Shogi {
 
 		template <bool black, bool chNotNull, bool evNotNull>
 		void moveUnsafe(const Move& move, Change* change,
-				Evaluate::Evaluate* eval);
+				Evaluates::Evaluate* eval);
 
 		template <bool chNotNull, bool evNotNull>
 		void moveUnsafe(const Move& move, Change* change,
-				Evaluate::Evaluate* eval) {
+				Evaluates::Evaluate* eval) {
 			if (blackTurn) {
 				moveUnsafe<true, chNotNull, evNotNull>
 					(move, change, eval);
@@ -79,7 +79,7 @@ namespace Shogi {
 
 		template <bool chNotNull, bool evNotNull>
 		bool move(const Move& move, Change* change,
-				Evaluate::Evaluate* eval) {
+				Evaluates::Evaluate* eval) {
 			if (isLegalMove(move)) {
 				moveUnsafe<chNotNull, evNotNull>(move, change, eval);
 				return true;
@@ -306,7 +306,7 @@ namespace Shogi {
 		}
 
 		bool move(const Move& move, Change& change,
-				Evaluate::Evaluate& eval) {
+				Evaluates::Evaluate& eval) {
 			return this->move<true, true>(move, &change, &eval);
 		}
 
@@ -319,7 +319,7 @@ namespace Shogi {
 		}
 
 		void moveUnsafe(const Move& move, Change& change,
-				Evaluate::Evaluate& eval) {
+				Evaluates::Evaluate& eval) {
 			moveUnsafe<true, true>(move, &change, &eval);
 		}
 

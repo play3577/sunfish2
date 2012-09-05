@@ -8,14 +8,14 @@
 #ifndef TREE_H_
 #define TREE_H_
 
-#include "../Evaluate/evaluate.h"
+#include "../Evaluates/evaluate.h"
 #include "node.h"
 
 namespace Search {
 	class Tree {
 	private:
 		Shogi::Position pos;
-		Evaluate::Evaluate eval;
+		Evaluates::Evaluate eval;
 		const History& history;
 		Node* nodes;
 		int depth;
@@ -24,7 +24,7 @@ namespace Search {
 	public:
 		static const int DEF_MAX_DEPTH = 64;
 
-		Tree(const Evaluate::Param& param,
+		Tree(const Evaluates::Param& param,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), history(history),
@@ -32,7 +32,7 @@ namespace Search {
 			init(maxDepth);
 		}
 
-		Tree(const Evaluate::Param& param,
+		Tree(const Evaluates::Param& param,
 				const Shogi::Position& pos,
 				const History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
@@ -162,23 +162,23 @@ namespace Search {
 			return false;
 		}
 
-		Evaluate::Value evaluate() {
+		Evaluates::Value evaluate() {
 			return eval.getValue(pos);
 		}
 
-		Evaluate::Estimate<Evaluate::Value> estimate() const {
+		Evaluates::Estimate<Evaluates::Value> estimate() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
 				return eval.estimate(pos, *pmove);
 			}
-			return Evaluate::Estimate<Evaluate::Value>();
+			return Evaluates::Estimate<Evaluates::Value>();
 		}
 
-		Evaluate::Estimate<Evaluate::Value> negaEstimate() const {
+		Evaluates::Estimate<Evaluates::Value> negaEstimate() const {
 			return pos.isBlackTurn() ? estimate() : -estimate();
 		}
 
-		Evaluate::Value negaEvaluate() {
+		Evaluates::Value negaEvaluate() {
 			if (pos.isBlackTurn()) {
 				return eval.getValue(pos);
 			} else {
@@ -206,7 +206,7 @@ namespace Search {
 			nodes[this->depth].getHistory(history, depth);
 		}
 
-		void sort(Evaluate::Value values[]) {
+		void sort(Evaluates::Value values[]) {
 			nodes[0].sort(values);
 		}
 

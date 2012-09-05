@@ -10,7 +10,7 @@
 
 namespace Search {
 	using namespace Shogi;
-	using namespace Evaluate;
+	using namespace Evaluates;
 
 	void PhasedMoveGenerator::sort(Value values[]) {
 		for (unsigned i = 0; i < getNumber(); i++) {

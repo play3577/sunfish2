@@ -9,7 +9,7 @@
 #define PHASED_MOVE_GENERATOR_H_
 
 #include "../Shogi/moveGenerator.h"
-#include "../Evaluate/param.h"
+#include "../Evaluates/param.h"
 #include "hashMove.h"
 #include "history.h"
 
@@ -30,7 +30,7 @@ namespace Search {
 	private:
 		PHASE phase;
 		HashMove hashMove;
-		const Evaluate::Param& param;
+		const Evaluates::Param& param;
 		const History& history;
 		unsigned hashNum;
 
@@ -42,7 +42,7 @@ namespace Search {
 		typedef Shogi::MoveGenerator Super;
 
 		PhasedMoveGenerator(const Shogi::Position& pos,
-				const Evaluate::Param& param,
+				const Evaluates::Param& param,
 				const History& history) :
 				Shogi::MoveGenerator(pos),
 				param(param), history(history) {
@@ -74,7 +74,7 @@ namespace Search {
 			return getCurrent() <= hashNum;
 		}
 
-		void sort(Evaluate::Value values[]);
+		void sort(Evaluates::Value values[]);
 	};
 }
 

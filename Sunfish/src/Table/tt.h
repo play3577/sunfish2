@@ -43,9 +43,9 @@ namespace Table {
 		}
 
 		bool entry(Util::uint64 hash,
-				Evaluate::Value alpha,
-				Evaluate::Value beta,
-				Evaluate::Value value,
+				Evaluates::Value alpha,
+				Evaluates::Value beta,
+				Evaluates::Value value,
 				int depth,
 				const Shogi::Move* pmove) {
 			return table[hash&mask].update(hash, alpha, beta, value, depth, pmove);

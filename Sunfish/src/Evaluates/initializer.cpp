@@ -7,7 +7,7 @@
 
 #include "initializer.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	using namespace Shogi;
 
 	const int Initializer::pieceValues[] = {

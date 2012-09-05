@@ -11,7 +11,7 @@
 #include "evaluateTable.h"
 #include "feature.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	class Evaluate {
 	private:
 		const Param& param;

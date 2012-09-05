@@ -7,7 +7,7 @@
 
 #include "evEntity.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	class EvaluateTable {
 	private:
 		static const unsigned DEF_BITS = 20;

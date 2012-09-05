@@ -8,7 +8,7 @@
 #ifndef ASP_WINDOW_H_
 #define ASP_WINDOW_H_
 
-#include "../Evaluate/value.h"
+#include "../Evaluates/value.h"
 
 namespace Search {
 	extern const int aspWind[2];
@@ -19,7 +19,7 @@ namespace Search {
 	class AspWindow {
 	private:
 		int aspPhase;
-		Evaluate::Value aspValue;
+		Evaluates::Value aspValue;
 
 	public:
 		AspWindow(int value) {
@@ -49,9 +49,9 @@ namespace Search {
 			}
 		}
 
-		Evaluate::Value getValue() const {
+		Evaluates::Value getValue() const {
 			if (aspPhase == ASP_MAX) {
-				return Evaluate::Value::MAX * sign;
+				return Evaluates::Value::MAX * sign;
 			} else {
 				return aspValue + aspWind[aspPhase] * sign;
 			}

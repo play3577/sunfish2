@@ -10,7 +10,7 @@
 
 #include "param.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	class Initializer {
 	private:
 		static const int pieceValues[];

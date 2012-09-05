@@ -10,7 +10,7 @@
 
 namespace Search {
 	using namespace Shogi;
-	using namespace Evaluate;
+	using namespace Evaluates;
 
 	template <bool black>
 	Value Attackers::see(int b, int w, Value v) const {

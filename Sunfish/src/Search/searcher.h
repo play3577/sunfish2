@@ -23,7 +23,7 @@ namespace Search {
 		bool resign;
 		Shogi::Move move;
 		Pv pv;
-		Evaluate::Value value;
+		Evaluates::Value value;
 		Util::uint64 nodes;
 		double sec;
 		double nps;
@@ -51,14 +51,14 @@ namespace Search {
 		Util::uint64 cntNodes;
 		boost::timer timer;
 
-		Evaluate::Value quies(Tree& tree, int ply,
-				Evaluate::Value alpha,
-				Evaluate::Value beta);
+		Evaluates::Value quies(Tree& tree, int ply,
+				Evaluates::Value alpha,
+				Evaluates::Value beta);
 
 		template <bool pvNode, bool nullMoveNode>
-		Evaluate::Value negaMax(Tree& tree, int depth,
-				Evaluate::Value alpha,
-				Evaluate::Value beta);
+		Evaluates::Value negaMax(Tree& tree, int depth,
+				Evaluates::Value alpha,
+				Evaluates::Value beta);
 
 		void before(SearchResult& result) {
 			cntNodes = 0;
@@ -67,7 +67,7 @@ namespace Search {
 			timer.restart();
 		}
 
-		bool after(SearchResult& result, Evaluate::Value value) {
+		bool after(SearchResult& result, Evaluates::Value value) {
 			result.value = value;
 			const Shogi::Move* pmove = tree.getPv().getTop();
 			result.pv.copy(tree.getPv());
@@ -84,16 +84,16 @@ namespace Search {
 			}
 		}
 
-		static Evaluate::Value getFutMgn(int depth, int count) {
+		static Evaluates::Value getFutMgn(int depth, int count) {
 			return 600 / PLY1 * depth + 5 * count;
 		}
 
 	public:
-		Searcher(const Evaluate::Param& param) :
+		Searcher(const Evaluates::Param& param) :
 			tree(param, history) {
 		}
 
-		Searcher(const Evaluate::Param& param,
+		Searcher(const Evaluates::Param& param,
 				const Shogi::Position& pos) :
 			tree(param, pos, history) {
 		}

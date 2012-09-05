@@ -9,7 +9,7 @@
 #define TTENTITY_H_
 
 #include "../Util/int.h"
-#include "../Evaluate/value.h"
+#include "../Evaluates/value.h"
 #include "../Shogi/move.h"
 
 namespace Table {
@@ -17,7 +17,7 @@ namespace Table {
 	class TTEntity {
 	private:
 		Util::uint64 hash;
-		Evaluate::Value value;
+		Evaluates::Value value;
 		int valueType;
 		int depth;
 		Search::HashMove hashMove; // TODO: HashMove => other namespace
@@ -39,7 +39,7 @@ namespace Table {
 		}
 
 		bool update(Util::uint64 hash,
-				Evaluate::Value value,
+				Evaluates::Value value,
 				int valueType,
 				int depth,
 				const Shogi::Move* pmove) {
@@ -59,9 +59,9 @@ namespace Table {
 		}
 
 		bool update(Util::uint64 newHash,
-				Evaluate::Value alpha,
-				Evaluate::Value beta,
-				Evaluate::Value newValue,
+				Evaluates::Value alpha,
+				Evaluates::Value beta,
+				Evaluates::Value newValue,
 				int newDepth,
 				const Shogi::Move* pmove) {
 			int newValueType;
@@ -83,7 +83,7 @@ namespace Table {
 			return hash;
 		}
 
-		Evaluate::Value getValue() const {
+		Evaluates::Value getValue() const {
 			return value;
 		}
 

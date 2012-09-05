@@ -11,7 +11,7 @@
 #include <climits>
 #include <cfloat>
 
-namespace Evaluate {
+namespace Evaluates {
 	template <class T, int vmax>
 	class TempValue {
 	private:

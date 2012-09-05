@@ -10,7 +10,7 @@
 #include "../Tools/debug.h" // TODO: remove debugging code
 #include "../Csa/csa.h"
 #include "position.h"
-#include "../Evaluate/evaluate.h"
+#include "../Evaluates/evaluate.h"
 #include "squareDiff.h"
 
 namespace Shogi {
@@ -281,7 +281,7 @@ namespace Shogi {
 
 	template <bool black, bool chNotNull, bool evNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change,
-			Evaluate::Evaluate* eval) {
+			Evaluates::Evaluate* eval) {
 		if (chNotNull) {
 			change->setHash(hash); // hash
 			change->setBlackKing(bking); // black king's square
@@ -388,28 +388,28 @@ namespace Shogi {
 	}
 	template void Position::moveUnsafe<true, true, true>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<true, false, true>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<false, true, true>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<false, false, true>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<true, true, false>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<true, false, false>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<false, true, false>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 	template void Position::moveUnsafe<false, false, false>
 			(const Move& move, Change* change,
-			Evaluate::Evaluate* eval);
+			Evaluates::Evaluate* eval);
 
 	template <bool chNotNull>
 	bool Position::nullMove(Change* change) {

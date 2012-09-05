@@ -18,14 +18,14 @@ namespace Search {
 		PhasedMoveGenerator* pgen;
 		const Shogi::Move* pmove;
 		Shogi::Change change;
-		Evaluate::Value baseValue;
+		Evaluates::Value baseValue;
 		Pv pv;
 
 	public:
 		Node() : pgen(NULL), pmove(NULL) {
 		}
 
-		Node(const Shogi::Position& pos, const Evaluate::Param& param,
+		Node(const Shogi::Position& pos, const Evaluates::Param& param,
 				const History& history) : pgen(NULL), pmove(NULL) {
 			init(pos, param, history);
 		}
@@ -37,7 +37,7 @@ namespace Search {
 		}
 
 		void init(const Shogi::Position& pos,
-				const Evaluate::Param& param,
+				const Evaluates::Param& param,
 				const History& history) {
 			if (pgen != NULL) { delete pgen; }
 			pgen = new PhasedMoveGenerator(pos, param, history);
@@ -92,19 +92,19 @@ namespace Search {
 		}
 
 		void makeMove(Shogi::Position& pos,
-				Evaluate::Evaluate& eval) {
+				Evaluates::Evaluate& eval) {
 			baseValue = eval.getBaseValue();
 			pos.moveUnsafe(*pmove, change, eval);
 		}
 
 		bool nullMove(Shogi::Position& pos,
-				Evaluate::Evaluate& eval) {
+				Evaluates::Evaluate& eval) {
 			baseValue = eval.getBaseValue();
 			return pos.nullMove(change);
 		}
 
 		void unmakeMove(Shogi::Position& pos,
-				Evaluate::Evaluate& eval) {
+				Evaluates::Evaluate& eval) {
 			eval.setBaseValue(baseValue);
 			pos.back(change);
 		}
@@ -125,7 +125,7 @@ namespace Search {
 			history.addGood(*pmove, depth);
 		}
 
-		void sort(Evaluate::Value values[]) {
+		void sort(Evaluates::Value values[]) {
 			pgen->sort(values);
 		}
 	};

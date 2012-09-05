@@ -31,7 +31,7 @@ namespace Csa {
 			return true;
 		}
 
-		bool CsaWriter::write(const char* filename, Record::Record& record) {
+		bool CsaWriter::write(const char* filename, Records::Record& record) {
 			std::ofstream fout(filename);
 			if (!fout) {
 				Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";

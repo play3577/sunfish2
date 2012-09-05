@@ -6,7 +6,7 @@
  */
 
 #include <iostream>
-#include "../Record/record.h"
+#include "../Records/record.h"
 
 namespace Csa {
 	class CsaWriter {
@@ -15,6 +15,6 @@ namespace Csa {
 
 	public:
 		static bool write(const char* filename, const Shogi::Position& pos);
-		static bool write(const char* filename, Record::Record& record);
+		static bool write(const char* filename, Records::Record& record);
 	};
 }

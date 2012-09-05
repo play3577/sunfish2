@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include "csa.h"
-#include "../Record/record.h"
+#include "../Records/record.h"
 
 namespace Csa {
 	class CsaReader {
@@ -35,12 +35,12 @@ namespace Csa {
 
 			static bool parseLineBoard(const char* line, unsigned rank, Shogi::Position& pos);
 			static bool parseLineHand(const char* line, Shogi::Position& pos, bool black);
-			static bool parseLineMove(const char* line, Record::Record& record);
+			static bool parseLineMove(const char* line, Records::Record& record);
 			static LineStat parseLine(const char* line, Shogi::Position& pos);
-			static LineStat parseLine(const char* line, Record::Record& record);
+			static LineStat parseLine(const char* line, Records::Record& record);
 			static bool read(std::istream& in, Shogi::Position& pos);
 			static bool read(const char* filename, Shogi::Position& pos);
-			static bool read(const char* filename, Record::Record& record);
+			static bool read(const char* filename, Records::Record& record);
 	};
 }
 

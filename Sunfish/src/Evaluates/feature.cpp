@@ -8,7 +8,7 @@
 #include "feature.h"
 #include "../Tools/debug.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	using namespace Shogi;
 
 	template<class X, class T, class U, bool get, bool cum>

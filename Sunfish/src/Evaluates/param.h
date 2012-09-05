@@ -11,7 +11,7 @@
 #include "../Shogi/position.h"
 #include "value.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	extern const int sym[];
 
 	extern const int blackPiece[];

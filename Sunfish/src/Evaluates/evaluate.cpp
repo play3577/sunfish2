@@ -7,7 +7,7 @@
 
 #include "evaluate.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	using namespace Shogi;
 
 	void Evaluate::init(const Position& pos) {

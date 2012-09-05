@@ -10,7 +10,7 @@
 
 #include "../Shogi/position.h"
 
-namespace Record {
+namespace Records {
 	class Record {
 	private:
 		static const int STACK_SIZE = 1024;

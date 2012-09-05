@@ -16,13 +16,13 @@
 #include "debug.h"
 #include "../Csa/csaReader.h"
 #include "../Shogi/moveGenerator.h"
-#include "../Evaluate/initializer.h"
-#include "../Evaluate/evaluate.h"
+#include "../Evaluates/initializer.h"
+#include "../Evaluates/evaluate.h"
 #include "../Search/attackers.h"
 
 namespace Tools{
 	using namespace Shogi;
-	using namespace Evaluate;
+	using namespace Evaluates;
 	using namespace Search;
 
 	void Debug::Print( const char* str, ... ){

@@ -7,7 +7,7 @@
 
 #include "csaClient.h"
 #include "../Csa/csaReader.h"
-#include "../Record/record.h"
+#include "../Records/record.h"
 #include "../Search/searcher.h"
 
 #include <boost/bind.hpp>
@@ -44,6 +44,7 @@ namespace Network {
 	bool CsaClient::execute() {
 		init();
 		con.setHost("localhost");
+		//con.setHost("wdoor.c.u-tokyo.ac.jp");
 		con.setPort(4081);
 		con.connect();
 		boost::thread receiverThread(boost::bind(&CsaClient::receiver, this));
@@ -57,7 +58,7 @@ namespace Network {
 
 		// wait for match-make and agree
 		if (waitGameSummary() && agree()) {
-			Record::Record record(pos);
+			Records::Record record(pos);
 			Searcher searcher(*pparam);
 			SearchConfig searchConfig;
 
@@ -108,7 +109,7 @@ lab_end:
 	}
 
 	bool CsaClient::login() {
-		if (!send("LOGIN user pass")) { return false; }
+		if (!send("LOGIN Sunfish3-trial01 floodgate-900-0,SunTest")) { return false; }
 		unsigned result = waitReceive(RECV_LOGIN_MSK);
 		return (result & RECV_LOGIN_OK) != 0U;
 	}

@@ -10,7 +10,7 @@
 
 namespace Search {
 	using namespace Shogi;
-	using namespace Evaluate;
+	using namespace Evaluates;
 	using namespace Table;
 
 	/***************************************************************
@@ -26,6 +26,7 @@ namespace Search {
 
 		// stand-pat
 		const Value standPat = tree.negaEvaluate();
+
 		// 静的評価値がbeta値を越えた場合
 		if (standPat >= beta) {
 			return standPat;
@@ -98,6 +99,7 @@ namespace Search {
 		const TTEntity& ttEntity = tt.getEntity(hash);
 		Move hash1;
 		Move hash2;
+		bool hashOk = false;
 		if (ttEntity.is(hash)) { // 局面が一致したら
 			if (ttEntity.getDepth() >= depth) { // 深さ
 				switch (ttEntity.getValueType()) {
@@ -117,14 +119,12 @@ namespace Search {
 				}
 			}
 			tree.setHashMove(ttEntity.getHashMove());
-		} else if (depth >= PLY1 * 3) {
-			// recursive iterative-deepening search
-			if (pvNode) {
-				negaMax<true, true>(tree, depth - PLY1 * 2, alpha, beta);
-			} else {
-				negaMax<false, true>(tree, depth - PLY1 / 2, alpha, beta);
-			}
+			hashOk = true;
 		}
+
+		// stand-pat
+		Value standPat = Value::MIN;
+#define STAND_PAT		(standPat == Value::MIN ? standPat = tree.negaEvaluate() : standPat)
 
 		// null move pruning
 		bool mate = false;
@@ -132,7 +132,7 @@ namespace Search {
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
 				nullDepth > PLY1*tree.getDepth() &&
-				beta < tree.negaEvaluate()){
+				beta < STAND_PAT){
 			if (tree.nullMove()) {
 				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
 				tree.unmakeMove();
@@ -141,6 +141,23 @@ namespace Search {
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
 					mate = true;
+				}
+			}
+		}
+
+		if (!hashOk && depth >= PLY1 * 3) {
+			// recursive iterative-deepening search
+			if (pvNode) {
+				negaMax<true, true>(tree, depth - PLY1 * 2, alpha, beta);
+				const TTEntity& tte = tt.getEntity(hash);
+				if (tte.is(hash)) {
+					tree.setHashMove(tte.getHashMove());
+				}
+			} else if (!tree.isCheck() && STAND_PAT + 80 >= beta) {
+				negaMax<false, true>(tree, depth / 2, alpha, beta);
+				const TTEntity& tte = tt.getEntity(hash);
+				if (tte.is(hash)) {
+					tree.setHashMove(tte.getHashMove());
 				}
 			}
 		}
@@ -180,7 +197,7 @@ namespace Search {
 
 				// futility pruning
 				Estimate<Value> estimate = tree.negaEstimate();
-				if (tree.negaEvaluate() + estimate.getValue() + estimate.getError()
+				if (STAND_PAT + estimate.getValue() + estimate.getError()
 						+ getFutMgn(newDepth, moveCount) <= newAlpha) {
 					value = newAlpha; // fail soft
 					continue;
@@ -206,7 +223,9 @@ namespace Search {
 			} else {
 				// nega-scout
 				newValue = -negaMax<false, true>(tree, newDepth, -newAlpha-1, -newAlpha);
+				// 値がalpha値を超えて、かつnull windowでないかあるいはreductionが効いていたとき
 				if (newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
+					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
 				}
@@ -276,6 +295,8 @@ namespace Search {
 		tree.initNode();
 		// 合法手生成
 		tree.generateMoves();
+		// TODO: 指し手がない場合
+		// TODO: 確定手
 		// 反復進化探索
 		for (unsigned depth = 0; depth < config.depth; depth++) {
 			// 段階的に広がる探索窓 (aspiration search)

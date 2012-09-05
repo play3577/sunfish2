@@ -9,35 +9,35 @@
 #define ATTACKERS_H_
 
 #include "../Shogi/position.h"
-#include "../Evaluate/param.h"
+#include "../Evaluates/param.h"
 
 namespace Search {
 	class Attackers {
 	private:
 		static const int SIZE = 32;
-		const Evaluate::Param& param;
+		const Evaluates::Param& param;
 		int blackNum;
-		Evaluate::Value blackAttackers[SIZE];
+		Evaluates::Value blackAttackers[SIZE];
 		int whiteNum;
-		Evaluate::Value whiteAttackers[SIZE];
+		Evaluates::Value whiteAttackers[SIZE];
 		bool blackTurn;
-		Evaluate::Value firstValue;
-		Evaluate::Value defaultValue;
+		Evaluates::Value firstValue;
+		Evaluates::Value defaultValue;
 
 		template <bool black>
 		void create(const Shogi::Position& pos, Shogi::Move move);
 
-		void sort(Evaluate::Value attackers[], int num);
+		void sort(Evaluates::Value attackers[], int num);
 
 		template <bool black>
-		Evaluate::Value see(int b, int w, Evaluate::Value v) const;
+		Evaluates::Value see(int b, int w, Evaluates::Value v) const;
 
 	public:
-		Attackers(const Evaluate::Param& param) :
+		Attackers(const Evaluates::Param& param) :
 				param(param) {
 		}
 
-		Attackers(const Evaluate::Param& param,
+		Attackers(const Evaluates::Param& param,
 				const Shogi::Position& pos, Shogi::Move move) :
 				param(param) {
 			create(pos, move);
@@ -48,7 +48,7 @@ namespace Search {
 			firstValue = param.getPieceExchangeAbs(move.getPiece());
 			Shogi::Piece piece = pos.getBoard(move.getTo());
 			if (piece.isEmpty()) {
-				defaultValue = Evaluate::Value(0);
+				defaultValue = Evaluates::Value(0);
 			} else {
 				defaultValue = param.getPieceExchangeAbs(piece);
 			}
@@ -56,7 +56,7 @@ namespace Search {
 			create<false>(pos, move);
 		}
 
-		Evaluate::Value see() const {
+		Evaluates::Value see() const {
 			if (blackTurn) {
 				return defaultValue - see<false>(0, 0, firstValue);
 			} else {

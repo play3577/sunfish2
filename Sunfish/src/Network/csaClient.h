@@ -9,8 +9,8 @@
 #define CSACLIENT_H_
 
 #include "../Log/logger.h"
-#include "../Evaluate/param.h"
-#include "../Evaluate/initializer.h"
+#include "../Evaluates/param.h"
+#include "../Evaluates/initializer.h"
 #include "../Search/pvHandler.h"
 #include "connection.h"
 #define BOOST_THREAD_USE_LIB
@@ -73,7 +73,7 @@ namespace Network {
 
 		Shogi::Position pos;
 
-		Evaluate::Param* pparam;
+		Evaluates::Param* pparam;
 
 		std::string recvStr;
 
@@ -137,8 +137,8 @@ namespace Network {
 
 	public:
 		CsaClient() {
-			pparam = new Evaluate::Param();
-			Evaluate::Initializer::apply(*pparam);
+			pparam = new Evaluates::Param();
+			Evaluates::Initializer::apply(*pparam);
 			pparam->read("evdata");
 		}
 
@@ -148,7 +148,7 @@ namespace Network {
 
 		bool execute();
 
-		void pvHandler(const Search::Pv& pv, Evaluate::Value value) {
+		void pvHandler(const Search::Pv& pv, Evaluates::Value value) {
 			Log::message << pv.toString() << ':' << value << '\n';
 		}
 	};

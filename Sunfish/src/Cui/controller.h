@@ -8,10 +8,10 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include "../Evaluate/param.h"
-#include "../Evaluate/initializer.h"
+#include "../Evaluates/param.h"
+#include "../Evaluates/initializer.h"
 #include "../Search/pvHandler.h"
-#include "../Record/record.h"
+#include "../Records/record.h"
 
 namespace Cui {
 	class Controller : public Search::PvHandler {
@@ -49,9 +49,9 @@ namespace Cui {
 
 		void showNoCaptures(const Shogi::Position& pos);
 
-		void SeeTest(const Shogi::Position& pos, const Evaluate::Param& param);
+		void SeeTest(const Shogi::Position& pos, const Evaluates::Param& param);
 
-		Evaluate::Param* pparam;
+		Evaluates::Param* pparam;
 
 		// settings
 		struct {
@@ -64,8 +64,8 @@ namespace Cui {
 
 	public:
 		Controller() {
-			pparam = new Evaluate::Param();
-			Evaluate::Initializer::apply(*pparam);
+			pparam = new Evaluates::Param();
+			Evaluates::Initializer::apply(*pparam);
 			pparam->read("evdata");
 			initSettings();
 		}
@@ -92,7 +92,7 @@ namespace Cui {
 			config.autoWhite = autoWhite;
 		}
 
-		void pvHandler(const Search::Pv& pv, Evaluate::Value value) {
+		void pvHandler(const Search::Pv& pv, Evaluates::Value value) {
 			std::cout << pv.toString() << ':' << value << '\n';
 		}
 

@@ -49,7 +49,7 @@ namespace Csa {
 		return true;
 	}
 
-	bool CsaReader::parseLineMove(const char* line, Record::Record& record) {
+	bool CsaReader::parseLineMove(const char* line, Records::Record& record) {
 		Move move;
 		return record.getPosition().inputMoveCsa(line, move) && record.move(move);
 	}
@@ -82,7 +82,7 @@ namespace Csa {
 		}
 	}
 
-	CsaReader::LineStat CsaReader::parseLine(const char* line, Record::Record& record) {
+	CsaReader::LineStat CsaReader::parseLine(const char* line, Records::Record& record) {
 		switch (line[0]) {
 		case CHAR_BLK: // '+'
 		case CHAR_WHT: // '-'
@@ -135,7 +135,7 @@ namespace Csa {
 		return true;
 	}
 
-	bool CsaReader::read(const char* filename, Record::Record& record) {
+	bool CsaReader::read(const char* filename, Records::Record& record) {
 		Position pos;
 		std::ifstream fin(filename);
 		if (!fin) {

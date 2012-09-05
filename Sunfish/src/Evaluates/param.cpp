@@ -9,7 +9,7 @@
 #include <cassert>
 #include "param.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	using namespace Shogi;
 
 	const int blackPiece[] = {

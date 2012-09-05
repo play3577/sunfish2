@@ -14,7 +14,7 @@
 namespace Cui {
 	using namespace Shogi;
 	using namespace Search;
-	using namespace Evaluate;
+	using namespace Evaluates;
 	using namespace Csa;
 
 	const Controller::CommandSet Controller::commandSet[CMD_NUM] = {
@@ -100,7 +100,7 @@ namespace Cui {
 	bool Controller::play() {
 		char line[1024];
 		Command prevCommand = UNKNOWN;
-		Record::Record record;
+		Records::Record record;
 		Searcher searcher(*pparam);
 		SearchConfig searchConfig;
 		SearchResult result;
@@ -201,23 +201,10 @@ namespace Cui {
 			default: // 指し手入力
 				if ((record.getPosition().inputMoveCsa(line, move)) ||
 						(record.getPosition().inputMove(line, move))) {
-#ifndef NDEBUG
-					if (record.getPosition().isLegalMove(move)) {
-						Estimate<Value> estimate = Feature::estimate<Value, ValueS, ValueS>(record.getPosition(), pparam, move);
-						std::cout << "estimated value :" << (int)estimate.getValue() << '\n';
-						std::cout << "estimated error :" << (int)estimate.getError() << '\n';
-						Evaluate::Evaluate eval(*pparam, record.getPosition());
-						std::cout << "stand pat prev. :" << (int)eval.getValue(record.getPosition()) << '\n';
-					}
-#endif
 					// 合法手チェック
 					if (record.move(move)) {
 						std::cout << move.toString() << '\n';
 						printBoard = true;
-#ifndef NDEBUG
-						Evaluate::Evaluate eval(*pparam, record.getPosition());
-						std::cout << "stand pat       :" << (int)eval.getValue(record.getPosition()) << '\n';
-#endif
 					} else {
 						std::cout << "illegal move!!\n";
 					}

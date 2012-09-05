@@ -10,7 +10,7 @@
 
 #include "param.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	template <class T>
 	class Estimate {
 	private:

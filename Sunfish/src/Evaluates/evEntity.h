@@ -7,7 +7,7 @@
 
 #include "param.h"
 
-namespace Evaluate {
+namespace Evaluates {
 	class EvEntity {
 	private:
 		Util::uint64 hash;
