@@ -10,6 +10,7 @@
 #include "../Records/record.h"
 #include "../Search/searcher.h"
 
+#include <sstream>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -18,6 +19,8 @@ namespace Network {
 	using namespace Shogi;
 	using namespace Csa;
 	using namespace Search;
+
+	const char* CsaClient::DEFAULT_CONFIG_FILE = "nconf";
 
 	const CsaClient::ReceiveFlagSet CsaClient::flagSets[RECV_NUM] = {
 		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL },
@@ -42,11 +45,22 @@ namespace Network {
 	};
 
 	bool CsaClient::execute() {
+		// 設定の読み込み
+		if (!config.read(configFilename)) {
+			Log::error << "ERROR : can not read configurations.\n";
+			return false;
+		}
+
 		init();
-		con.setHost("localhost");
-		//con.setHost("wdoor.c.u-tokyo.ac.jp");
-		con.setPort(4081);
-		con.connect();
+		con.setHost(config.getHost());
+		con.setPort(config.getPort());
+		con.setKeepalive(config.getKeepalive(), config.getKeepidle(),
+			config.getKeepintvl(), config.getKeepcnt());
+		if (!con.connect()) {
+			Log::error << "ERROR : can not connect to [" << config.getHost()
+					<< "] (port:" << config.getPort() << ")\n";
+			return false;
+		}
 		boost::thread receiverThread(boost::bind(&CsaClient::receiver, this));
 
 		// login
@@ -62,8 +76,10 @@ namespace Network {
 			Searcher searcher(*pparam);
 			SearchConfig searchConfig;
 
-			searchConfig.depth = 5;
+			searchConfig.depth = config.getDepth();
 			searchConfig.pvHandler = this;
+			searchConfig.limitEnable = config.getLimit() != 0;
+			searchConfig.limitSeconds = config.getLimit();
 			searcher.setSearchConfig(searchConfig);
 
 			while (1) {
@@ -109,7 +125,9 @@ lab_end:
 	}
 
 	bool CsaClient::login() {
-		if (!send("LOGIN Sunfish3-trial01 floodgate-900-0,SunTest")) { return false; }
+		std::ostringstream os;
+		os << "LOGIN " << config.getUser() << ' ' << config.getPass();
+		if (!send(os.str().c_str())) { return false; }
 		unsigned result = waitReceive(RECV_LOGIN_MSK);
 		return (result & RECV_LOGIN_OK) != 0U;
 	}

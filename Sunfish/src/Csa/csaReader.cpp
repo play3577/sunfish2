@@ -106,7 +106,7 @@ namespace Csa {
 			in.getline(line, sizeof(line));
 			if (in.eof()) { break; }
 			if (in.fail()) {
-				Log::error << "ERROR: unknown i/o error :\"" << line << "\"\n";
+				Log::error << "ERROR: unknown i/o error.\n";
 				return false;
 			}
 			LineStat stat = parseLine(line, pos);
@@ -156,7 +156,7 @@ namespace Csa {
 			fin.getline(line, sizeof(line));
 			if (fin.eof()) { break; }
 			if (fin.fail()) {
-				Log::error << "ERROR: unknown i/o error :\"" << line << "\"\n";
+				Log::error << "ERROR: unknown i/o error.\n";
 				return false;
 			}
 			LineStat stat = parseLine(line, record);

@@ -59,6 +59,7 @@ namespace Search {
 			tree.makeMove();
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
 			tree.unmakeMove();
+			if (interrupt()) { return Value(0); }
 
 			if (newValue > value) {
 				value = newValue;
@@ -136,6 +137,7 @@ namespace Search {
 			if (tree.nullMove()) {
 				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
 				tree.unmakeMove();
+				if (interrupt()) { return Value(0); }
 				if (newValue >= beta) {
 					return beta;
 				} else if (newValue <= -Value::MATE) {
@@ -149,12 +151,14 @@ namespace Search {
 			// recursive iterative-deepening search
 			if (pvNode) {
 				negaMax<true, true>(tree, depth - PLY1 * 2, alpha, beta);
+				if (interrupt()) { return Value(0); }
 				const TTEntity& tte = tt.getEntity(hash);
 				if (tte.is(hash)) {
 					tree.setHashMove(tte.getHashMove());
 				}
 			} else if (!tree.isCheck() && STAND_PAT + 80 >= beta) {
 				negaMax<false, true>(tree, depth / 2, alpha, beta);
+				if (interrupt()) { return Value(0); }
 				const TTEntity& tte = tt.getEntity(hash);
 				if (tte.is(hash)) {
 					tree.setHashMove(tte.getHashMove());
@@ -224,7 +228,7 @@ namespace Search {
 				// nega-scout
 				newValue = -negaMax<false, true>(tree, newDepth, -newAlpha-1, -newAlpha);
 				// 値がalpha値を超えて、かつnull windowでないかあるいはreductionが効いていたとき
-				if (newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
+				if (!interrupt() && newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
 					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
@@ -233,6 +237,10 @@ namespace Search {
 
 			// unmake move
 			tree.unmakeMove();
+
+			if (interrupt()) {
+				return Value(0);
+			}
 
 			if (newValue > value) {
 				value = newValue;
@@ -325,11 +333,15 @@ revaluation:
 					// null window searchを試みる。
 					vtemp = -negaMax<false, true>(tree,
 							depth * PLY1, -alpha - 1, -alpha);
-					if (vtemp >= alpha) {
+					if (!interrupt() && vtemp >= alpha) {
 						// 再探索
 						vtemp = -negaMax<true, true>(tree,
 								depth * PLY1, -aspBeta, -alpha);
 					}
+				}
+				if (interrupt()) {
+					tree.unmakeMove();
+					goto lab_search_end;
 				}
 				// fail-high
 				if (vtemp >= aspBeta && aspBeta.next()) {
@@ -365,6 +377,11 @@ revaluation:
 			if (value >= Value::MATE || value <= -Value::MATE) {
 				break;
 			}
+		}
+lab_search_end:
+
+		if (config.pvHandler != NULL) {
+			config.pvHandler->pvHandler(tree.getPv(), value);
 		}
 
 		// 後処理

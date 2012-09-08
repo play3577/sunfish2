@@ -46,7 +46,7 @@ namespace Network {
 		int keepintvl;
 		int keepcnt;
 
-		void initKeepAlive() {
+		void initKeepalive() {
 			keepalive = 0;
 			keepidle = 7200;
 			keepintvl = 75;
@@ -67,6 +67,15 @@ namespace Network {
 
 		void setPort(int port) {
 			this->port = port;
+		}
+
+		void setKeepalive(
+				int keepalive, int keepidle,
+				int keepintvl, int keepcnt) {
+			this->keepalive = keepalive;
+			this->keepidle = keepidle;
+			this->keepintvl = keepintvl;
+			this->keepcnt = keepcnt;
 		}
 
 		bool connect();

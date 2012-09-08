@@ -8,6 +8,7 @@
 #ifndef CSACLIENT_H_
 #define CSACLIENT_H_
 
+#include "csaClientConfig.h"
 #include "../Log/logger.h"
 #include "../Evaluates/param.h"
 #include "../Evaluates/initializer.h"
@@ -68,6 +69,10 @@ namespace Network {
 			void (*func)(CsaClient*);
 		};
 		static const ReceiveFlagSet flagSets[RECV_NUM];
+
+		const char* configFilename;
+
+		CsaClientConfig config;
 
 		Connection con;
 
@@ -136,14 +141,21 @@ namespace Network {
 		}
 
 	public:
+		static const char* DEFAULT_CONFIG_FILE;
+
 		CsaClient() {
 			pparam = new Evaluates::Param();
 			Evaluates::Initializer::apply(*pparam);
 			pparam->read("evdata");
+			configFilename = DEFAULT_CONFIG_FILE;
 		}
 
 		~CsaClient() {
 			delete pparam;
+		}
+
+		void setConfigFile(const char* filename) {
+			configFilename = filename;
 		}
 
 		bool execute();

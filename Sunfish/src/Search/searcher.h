@@ -17,6 +17,8 @@ namespace Search {
 	struct SearchConfig {
 		unsigned depth;
 		PvHandler* pvHandler;
+		bool limitEnable;
+		double limitSeconds;
 	};
 
 	struct SearchResult {
@@ -50,6 +52,7 @@ namespace Search {
 		static const int PLY1 = 4;
 		Util::uint64 cntNodes;
 		boost::timer timer;
+		const bool* pinterrupt;
 
 		Evaluates::Value quies(Tree& tree, int ply,
 				Evaluates::Value alpha,
@@ -86,6 +89,12 @@ namespace Search {
 
 		static Evaluates::Value getFutMgn(int depth, int count) {
 			return 600 / PLY1 * depth + 5 * count;
+		}
+
+		bool interrupt() const {
+			return tree.getPv().getTop() != NULL &&
+					config.limitEnable &&
+					timer.elapsed() >= config.limitSeconds;
 		}
 
 	public:
