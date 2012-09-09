@@ -12,6 +12,7 @@
 #include "../Evaluates/initializer.h"
 #include "../Search/pvHandler.h"
 #include "../Records/record.h"
+#include "../Log/logger.h"
 
 namespace Cui {
 	class Controller : public Search::PvHandler {
@@ -66,7 +67,9 @@ namespace Cui {
 		Controller() {
 			pparam = new Evaluates::Param();
 			Evaluates::Initializer::apply(*pparam);
-			pparam->read("evdata");
+			if (!pparam->read("evdata")) {
+				Log::error << "ERROR : can not read \"evdata\"\n";
+			}
 			initSettings();
 		}
 
