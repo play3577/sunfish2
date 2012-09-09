@@ -60,6 +60,18 @@ int main(int argc, char* argv[]) {
 		return 0;
 	} else if (argmap.count("network")) {
 		// --network or -n => CSA client
+
+		// log
+		std::ofstream fout("network.log");
+		if (fout) {
+			Log::error.addStream(fout);
+			Log::warning.addStream(fout);
+			Log::message.addStream(fout);
+			Log::send.addStream(fout);
+			Log::receive.addStream(fout);
+			Log::debug.addStream(fout);
+		}
+
 		Network::CsaClient csaClient;
 		csaClient.execute();
 		return 0;

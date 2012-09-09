@@ -53,6 +53,7 @@ namespace Search {
 		Util::uint64 cntNodes;
 		boost::timer timer;
 		const bool* pinterrupt;
+		int rootDepth;
 
 		Evaluates::Value quies(Tree& tree, int ply,
 				Evaluates::Value alpha,
@@ -89,6 +90,18 @@ namespace Search {
 
 		static Evaluates::Value getFutMgn(int depth, int count) {
 			return 600 / PLY1 * depth + 5 * count;
+		}
+
+		int extension(Tree& tree) const {
+			if (tree.getDepth() < rootDepth) {
+				return PLY1;
+			} else if (tree.getDepth() < rootDepth * 3 / 2) {
+				return PLY1 * 3 / 4;
+			} else if (tree.getDepth() < rootDepth * 2) {
+				return PLY1 / 2;
+			} else {
+				return PLY1 / 4;
+			}
 		}
 
 		bool interrupt() const {

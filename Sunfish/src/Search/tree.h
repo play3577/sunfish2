@@ -154,6 +154,16 @@ namespace Search {
 			return false;
 		}
 
+		bool isRecapture() const {
+			const Shogi::Move* pmove;
+			const Shogi::Move* pprev;
+			if ((pmove = getCurrentMove()) != NULL &&
+					(pprev = getPrevMove()) != NULL) {
+				return pmove->getTo() == pprev->getTo();
+			}
+			return false;
+		}
+
 		bool isTacticalMove() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {

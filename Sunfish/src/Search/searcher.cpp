@@ -180,6 +180,16 @@ namespace Search {
 			Value newAlpha = Value::max(alpha, value);
 
 			int newDepth = depth - PLY1;
+
+			// extensions
+			if (tree.isCheckMove()) {
+				newDepth += extension(tree);
+			} else if (tree.isRecapture()) {
+				newDepth += extension(tree) * 3 / 4;
+			} else if (mate) {
+				newDepth += extension(tree) / 2;
+			}
+
 			int reduction = 0;
 			if (!isHash && !mate && !tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
 				// late move reduction
@@ -279,8 +289,13 @@ namespace Search {
 		// 前処理
 		before(result);
 		// 探索
+		// 基本深さ
+		rootDepth = config.depth;
+
+		// 探索
 		Value value = negaMax<true, true>(tree, config.depth * PLY1,
 				Value::MIN, Value::MAX);
+
 		// 後処理
 		return after(result, value);
 	}
@@ -307,6 +322,8 @@ namespace Search {
 		// TODO: 確定手
 		// 反復進化探索
 		for (unsigned depth = 0; depth < config.depth; depth++) {
+			// 基本深さ
+			rootDepth = depth;
 			// 段階的に広がる探索窓 (aspiration search)
 			AspWindow<-1> aspAlpha;
 			AspWindow<1> aspBeta;
