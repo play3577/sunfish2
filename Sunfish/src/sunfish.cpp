@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <boost/program_options.hpp>
 #include "Cui/controller.h"
 #include "Shogi/position.h"

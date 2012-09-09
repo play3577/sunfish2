@@ -51,76 +51,80 @@ namespace Network {
 			return false;
 		}
 
-		init();
 		con.setHost(config.getHost());
 		con.setPort(config.getPort());
 		con.setKeepalive(config.getKeepalive(), config.getKeepidle(),
 			config.getKeepintvl(), config.getKeepcnt());
-		if (!con.connect()) {
-			Log::error << "ERROR : can not connect to [" << config.getHost()
-					<< "] (port:" << config.getPort() << ")\n";
-			return false;
-		}
-		boost::thread receiverThread(boost::bind(&CsaClient::receiver, this));
 
-		// login
-		if (!login()) {
-			Log::message << "login failed!\n";
-			goto lab_end;
-		}
-		Log::message << "login ok!!\n";
+		// 連続対局
+		for (int i = 0; i < config.getRepeat(); i++) {
+			if (!con.connect()) {
+				Log::error << "ERROR : can not connect to [" << config.getHost()
+						<< "] (port:" << config.getPort() << ")\n";
+				return false;
+			}
+			init();
+			boost::thread receiverThread(boost::bind(&CsaClient::receiver, this));
 
-		// wait for match-make and agree
-		if (waitGameSummary() && agree()) {
-			Records::Record record(pos);
-			Searcher searcher(*pparam);
-			SearchConfig searchConfig;
+			// login
+			if (!login()) {
+				Log::message << "login failed!\n";
+				goto lab_end;
+			}
+			Log::message << "login ok!!\n";
 
-			searchConfig.depth = config.getDepth();
-			searchConfig.pvHandler = this;
-			searchConfig.limitEnable = config.getLimit() != 0;
-			searchConfig.limitSeconds = config.getLimit();
-			searcher.setSearchConfig(searchConfig);
+			// wait for match-make and agree
+			if (waitGameSummary() && agree()) {
+				Records::Record record(pos);
+				Searcher searcher(*pparam);
+				SearchConfig searchConfig;
 
-			while (1) {
-				Log::message << record.toString();
-				if (black == record.getPosition().isBlackTurn()) {
-					// my turn
-					SearchResult result;
-					searcher.init(record.getPosition());
-					searcher.idSearch(result);
-					if (!result.resign && record.move(result.move)) {
-						sendMove(result.move);
-					} else {
-						sendResign();
-						break;
-					}
-				} else {
-					// enemy's turn
-					unsigned mask = black ? RECV_MOVE_W : RECV_MOVE_B;
-					unsigned flags = waitReceive(mask | RECV_END_MSK);
-					if (flags & mask) {
-						if (!CsaReader::parseLineMove(moveStr.c_str(), record)) {
-							Log::error << "ERROR :illegal move!!\n";
+				searchConfig.depth = config.getDepth();
+				searchConfig.pvHandler = this;
+				searchConfig.limitEnable = config.getLimit() != 0;
+				searchConfig.limitSeconds = config.getLimit();
+				searcher.setSearchConfig(searchConfig);
+
+				while (1) {
+					Log::message << record.toString();
+					if (black == record.getPosition().isBlackTurn()) {
+						// my turn
+						SearchResult result;
+						searcher.init(record.getPosition());
+						searcher.idSearch(result);
+						if (!result.resign && record.move(result.move)) {
+							sendMove(result.move);
+						} else {
+							sendResign();
 							break;
 						}
-					} else if (flags & RECV_END_MSK) {
-						break;
 					} else {
-						Log::error << "ERROR :see receive-log.\n";
-						break;
+						// enemy's turn
+						unsigned mask = black ? RECV_MOVE_W : RECV_MOVE_B;
+						unsigned flags = waitReceive(mask | RECV_END_MSK);
+						if (flags & mask) {
+							if (!CsaReader::parseLineMove(moveStr.c_str(), record)) {
+								Log::error << "ERROR :illegal move!!\n";
+								break;
+							}
+						} else if (flags & RECV_END_MSK) {
+							break;
+						} else {
+							Log::error << "ERROR :see receive-log.\n";
+							break;
+						}
 					}
 				}
+				// TODO: 結果の記録
 			}
-			// TODO: 結果の記録
-		}
 
-		// logout
-		logout();
+			// logout
+			logout();
 
 lab_end:
-		con.disconnect();
-		receiverThread.join();
+			con.disconnect();
+			receiverThread.join();
+		}
 		return true;
 	}
 
