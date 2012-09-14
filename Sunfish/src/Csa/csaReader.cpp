@@ -54,6 +54,23 @@ namespace Csa {
 		return record.getPosition().inputMoveCsa(line, move) && record.move(move);
 	}
 
+	CsaReader::LineStat CsaReader::parseLine(const char* line, Records::Record& record) {
+		switch (line[0]) {
+		case CHAR_BLK: // '+'
+		case CHAR_WHT: // '-'
+			return parseLineMove(line, record) ? LINE_MOVE : LINE_ERROR;
+		case CHAR_TIM: // 'T'
+			return LINE_TIME;
+		case CHAR_STA: // '%'
+			return LINE_STAT;
+		case CHAR_COM: // '\''
+		case CHAR_NON: // '\0'
+			return LINE_EMPTY;
+		default:
+			return LINE_ERROR;
+		}
+	}
+
 	CsaReader::LineStat CsaReader::parseLine(const char* line, Position& pos) {
 		switch (line[0]) {
 		case CHAR_POS: // 'P'
@@ -66,31 +83,16 @@ namespace Csa {
 			}
 			return LINE_ERROR;
 		case CHAR_BLK: // '+'
-			return pos.setBlackTurn() ? LINE_TURN : LINE_ERROR;
+			pos.setBlackTurn();
+			return LINE_TURN;
 		case CHAR_WHT: // '-'
-			return pos.setWhiteTurn() ? LINE_TURN : LINE_ERROR;
+			pos.setWhiteTurn();
+			return LINE_TURN;
 		case CHAR_VAR: // 'V'
 			return LINE_VAR;
 		case CHAR_PLR: // 'N'
 		case CHAR_INF: // '$'
 			return LINE_INFO;
-		case CHAR_COM: // '\''
-		case CHAR_NON: // '\0'
-			return LINE_EMPTY;
-		default:
-			return LINE_ERROR;
-		}
-	}
-
-	CsaReader::LineStat CsaReader::parseLine(const char* line, Records::Record& record) {
-		switch (line[0]) {
-		case CHAR_BLK: // '+'
-		case CHAR_WHT: // '-'
-			return parseLineMove(line, record) ? LINE_MOVE : LINE_ERROR;
-		case CHAR_TIM: // 'T'
-			return LINE_TIME;
-		case CHAR_STA: // '%'
-			return LINE_STAT;
 		case CHAR_COM: // '\''
 		case CHAR_NON: // '\0'
 			return LINE_EMPTY;
