@@ -511,16 +511,22 @@ namespace Shogi {
 
 	template <bool black, unsigned excludingFlag>
 	bool Position::isKingMoveable(Direction dir) const {
-		Square square = (black ? bking : wking) + dir;
-		Piece piece = board.get(square);
+		Square to = (black ? bking : wking) + dir; // 移動先
+		Piece piece = board.get(to); // 移動先のマス
+		if (piece.isWall()) {
+			return false; // 盤外
+		}
 		if (!piece.isEmpty()) {
+			// 移動先に自分の駒があれば移動不可
 			if (black && piece.isBlack()) {
 				return false;
 			} else if (!black && piece.isWhite()) {
 				return false;
 			}
 		}
-		DirectionFlags flags = effectBoard.get(square, !black);
+		// 移動先の相手の利き
+		DirectionFlags flags = effectBoard.get(to, !black);
+		// 打った駒によって消える利きは除外
 		flags.remove(DirectionFlags(excludingFlag));
 		return !flags.longOrShortRange();
 	}
