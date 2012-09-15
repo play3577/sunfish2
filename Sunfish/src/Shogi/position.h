@@ -90,9 +90,9 @@ namespace Shogi {
 		template <bool black, unsigned excludingFlag>
 		bool isKingMoveable(Direction dir) const;
 
-		// 玉の移動以外で王手回避可能か
+		// 歩打ちに対して玉の移動以外で王手回避可能か
 		template<bool black>
-		bool isEvadable(const Square& square, const Direction& dir) const;
+		bool isEvadablePawn() const;
 
 		template<bool black>
 		bool canPawnDropCheck() const;
@@ -103,7 +103,7 @@ namespace Shogi {
 			if (king.isZero()) { return Direction(Direction::NON); }
 			Piece piece = move.getPiece();
 			if (move.isPromotion()) { piece.promote(); }
-			if (king.isCheck(piece.getMoveableDirection())) {
+			if (king.isAttackedBy(piece.getMoveableDirection())) {
 				return true;// 長い利き
 			}
 			Square ksq = blackTurn ? bking : wking;
@@ -118,7 +118,7 @@ namespace Shogi {
 		bool isCheckMoveDiscovered(const Move& move) const {
 			DirectionFlags king = effectBoard.get(move.getFrom(), !blackTurn);
 			DirectionFlags attacker = effectBoard.get(move.getFrom(), blackTurn);
-			if (king.isCheck(attacker)) {
+			if (king.isAttackedBy(attacker)) {
 				return attacker.toDirection();
 			}
 			return Direction(Direction::NON);
@@ -308,9 +308,9 @@ namespace Shogi {
 
 		DirectionFlags pin(const Square& sq, bool blackTurn) const {
 			if (blackTurn) {
-				return effectBoard.get(sq, true).isCheck(effectBoard.get(sq, false));
+				return effectBoard.get(sq, true).isAttackedBy(effectBoard.get(sq, false));
 			} else {
-				return effectBoard.get(sq, false).isCheck(effectBoard.get(sq, true));
+				return effectBoard.get(sq, false).isAttackedBy(effectBoard.get(sq, true));
 			}
 		}
 

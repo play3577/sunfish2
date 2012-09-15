@@ -531,18 +531,32 @@ namespace Shogi {
 		return !flags.longOrShortRange();
 	}
 
-	// 玉の移動以外で王手回避可能か
+	// 歩打ちに対して玉の移動以外で王手回避可能か
 	template<bool black>
-		bool Position::isEvadable(const Square& square, const Direction& dir) const {
-		Square sq = blackTurn ? bking : wking;
-		Direction rdir = dir.reverse();
-		for (sq += rdir; getBoard(sq) == Piece::EMPTY; sq += rdir) {
+	bool Position::isEvadablePawn() const {
+		Square king = black ? wking : bking;
+		Square square = king + (black ? Direction::DOWN : Direction::UP);
+		DirectionFlags flags = effectBoard.get(square, !black).getExcludeKing();
+		flags.remove(DirectionFlags(black
+				? DirectionFlags::SHORT_DOWN
+				: DirectionFlags::SHORT_UP));
+		while (flags.isNonZero()) {
+			Direction dir = flags.pop().toDirection().reverse();
+			Square from = square;
+			for (from += dir; getBoard(from) == Piece::EMPTY; from += dir)
+				;
+			if (pin(from, !black).isZero()) {
+				return true;
+			}
 		}
-		return true;
+		return false;
 	}
 
 	template<bool black>
 	bool Position::canPawnDropCheck() const {
+		if (isEvadablePawn<black>()) {
+			return true;
+		}
 		if (black) {
 			return isKingMoveable<false, DirectionFlags::NON           >(Direction::LEFT_UP)
 				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::UP)

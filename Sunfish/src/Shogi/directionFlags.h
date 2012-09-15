@@ -224,7 +224,7 @@ namespace Shogi {
 			return (bits & (bits-1)) != 0U;
 		}
 
-		DirectionFlags isCheck(const DirectionFlags attacker) const {
+		DirectionFlags isAttackedBy(const DirectionFlags attacker) const {
 			return DirectionFlags((bits >> KING_SHIFT) & attacker.bits & LONG_MASK);
 		}
 
