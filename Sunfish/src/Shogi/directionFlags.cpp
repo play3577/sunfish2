@@ -26,6 +26,7 @@ namespace Shogi {
 
 	const unsigned int DirectionFlags::direction[] = {
 			Direction::NON,
+			// 短い利き
 			Direction::RIGHT_UP,
 			Direction::UP,
 			Direction::LEFT_UP,
@@ -38,6 +39,7 @@ namespace Shogi {
 			Direction::LEFT_UP2,
 			Direction::RIGHT_DOWN2,
 			Direction::LEFT_DOWN2,
+			// 長い利き
 			Direction::RIGHT_UP,
 			Direction::UP,
 			Direction::LEFT_UP,
@@ -46,6 +48,7 @@ namespace Shogi {
 			Direction::RIGHT_DOWN,
 			Direction::DOWN,
 			Direction::LEFT_DOWN,
+			// 玉からの放射線上フラグ
 			Direction::LEFT_DOWN,
 			Direction::DOWN,
 			Direction::RIGHT_DOWN,

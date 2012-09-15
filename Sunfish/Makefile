@@ -19,7 +19,8 @@ DEPENDS:=$(SOURCES:.cpp=.d)
 
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-override CFLAGS+=-O2
+#override CFLAGS+=-O2
+override CFLAGS+=-O3
 #override CFLAGS+=-NDEBUG
 #override CFLAGS+=-g
 #override CFLAGS+=-pg

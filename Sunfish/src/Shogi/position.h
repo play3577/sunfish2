@@ -90,8 +90,39 @@ namespace Shogi {
 		template <bool black, unsigned excludingFlag>
 		bool isKingMoveable(Direction dir) const;
 
+		// 玉の移動以外で王手回避可能か
+		template<bool black>
+		bool isEvadable(const Square& square, const Direction& dir) const;
+
 		template<bool black>
 		bool canPawnDropCheck() const;
+
+		// 動かした駒による王手
+		bool isCheckMoveDirect(const Move& move) const {
+			DirectionFlags king = effectBoard.get(move.getTo(), !blackTurn).getKingOnly();
+			if (king.isZero()) { return Direction(Direction::NON); }
+			Piece piece = move.getPiece();
+			if (move.isPromotion()) { piece.promote(); }
+			if (king.isCheck(piece.getMoveableDirection())) {
+				return true;// 長い利き
+			}
+			Square ksq = blackTurn ? bking : wking;
+			Direction kingDir = king.toDirection();
+			if ((move.getFrom() == ksq + kingDir)) {
+				return true;// 短い利き
+			}
+			return false;
+		}
+
+		// 開き王手
+		bool isCheckMoveDiscovered(const Move& move) const {
+			DirectionFlags king = effectBoard.get(move.getFrom(), !blackTurn);
+			DirectionFlags attacker = effectBoard.get(move.getFrom(), blackTurn);
+			if (king.isCheck(attacker)) {
+				return attacker.toDirection();
+			}
+			return Direction(Direction::NON);
+		}
 
 	public:
 		Position(bool blackTurn = true) : blackTurn(blackTurn) {
@@ -249,12 +280,8 @@ namespace Shogi {
 		}
 
 		bool isCheckMove(const Move& move) const {
-			DirectionFlags king = effectBoard.get(move.getTo(), !blackTurn).getKingOnly();
-			Square ksq = blackTurn ? bking : wking;
-			Piece piece = move.getPiece();
-			if (move.isPromotion()) { piece.promote(); }
-			return king.pin(piece.getMoveableDirection()) || // 長い利き
-				(move.getFrom() == ksq + king.toDirection());
+			return isCheckMoveDirect(move) ||
+					isCheckMoveDiscovered(move);
 		}
 
 		bool isCapturingMove(const Move& move) const {
@@ -269,6 +296,8 @@ namespace Shogi {
 			}
 		}
 
+		bool isMate() const;
+
 		DirectionFlags getCheckDirection() const {
 			if (blackTurn) {
 				return effectBoard.get(bking, false).getExcludeKing();
@@ -279,9 +308,9 @@ namespace Shogi {
 
 		DirectionFlags pin(const Square& sq, bool blackTurn) const {
 			if (blackTurn) {
-				return effectBoard.get(sq, true).pin(effectBoard.get(sq, false));
+				return effectBoard.get(sq, true).isCheck(effectBoard.get(sq, false));
 			} else {
-				return effectBoard.get(sq, false).pin(effectBoard.get(sq, true));
+				return effectBoard.get(sq, false).isCheck(effectBoard.get(sq, true));
 			}
 		}
 

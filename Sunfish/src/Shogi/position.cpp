@@ -531,6 +531,16 @@ namespace Shogi {
 		return !flags.longOrShortRange();
 	}
 
+	// 玉の移動以外で王手回避可能か
+	template<bool black>
+		bool Position::isEvadable(const Square& square, const Direction& dir) const {
+		Square sq = blackTurn ? bking : wking;
+		Direction rdir = dir.reverse();
+		for (sq += rdir; getBoard(sq) == Piece::EMPTY; sq += rdir) {
+		}
+		return true;
+	}
+
 	template<bool black>
 	bool Position::canPawnDropCheck() const {
 		if (black) {
@@ -553,8 +563,11 @@ namespace Shogi {
 				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::RIGHT_DOWN);
 		}
 	}
-
 	template bool Position::canPawnDropCheck<true>() const;
 	template bool Position::canPawnDropCheck<false>() const;
+
+	bool Position::isMate() const {
+		return true;
+	}
 }
 
