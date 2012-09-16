@@ -176,6 +176,14 @@ namespace Search {
 			return eval.getValue(pos);
 		}
 
+		Evaluates::Value negaEvaluate() {
+			if (pos.isBlackTurn()) {
+				return eval.getValue(pos);
+			} else {
+				return -eval.getValue(pos);
+			}
+		}
+
 		Evaluates::Estimate<Evaluates::Value> estimate() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
@@ -186,14 +194,6 @@ namespace Search {
 
 		Evaluates::Estimate<Evaluates::Value> negaEstimate() const {
 			return pos.isBlackTurn() ? estimate() : -estimate();
-		}
-
-		Evaluates::Value negaEvaluate() {
-			if (pos.isBlackTurn()) {
-				return eval.getValue(pos);
-			} else {
-				return -eval.getValue(pos);
-			}
 		}
 
 		void setHashMove(const HashMove& hashMove) {

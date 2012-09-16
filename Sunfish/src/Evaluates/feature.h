@@ -13,7 +13,7 @@
 #include "../Shogi/position.h"
 
 namespace Evaluates {
-	static const int KING_ERROR  = 100 * 14;
+	static const int KING_ERROR  = 100 * 24;
 	static const int PIECE_ERROR = 100 *  8;
 
 	class Feature {

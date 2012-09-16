@@ -11,6 +11,7 @@
 #include "tree.h"
 #include "pvHandler.h"
 #include "../Table/tt.h"
+#include <algorithm>
 #include <boost/timer.hpp>
 
 namespace Search {
@@ -54,6 +55,7 @@ namespace Search {
 		boost::timer timer;
 		const bool* pinterrupt;
 		int rootDepth;
+		Evaluates::Value gain[Shogi::Piece::WDRAGON+1][Shogi::Square::END+1];
 
 		Evaluates::Value quies(Tree& tree, int ply,
 				Evaluates::Value alpha,
@@ -67,6 +69,7 @@ namespace Search {
 		void before(SearchResult& result) {
 			cntNodes = 0;
 			memset(&result, 0, sizeof(SearchResult));
+			memset(&gain, 0, sizeof(gain));
 			tt.init();
 			timer.restart();
 		}
@@ -89,7 +92,34 @@ namespace Search {
 		}
 
 		static Evaluates::Value getFutMgn(int depth, int count) {
-			return 600 / PLY1 * depth + 5 * count;
+				return 120 * depth / PLY1 + 4 * count;
+		}
+
+		void updateGain(const Search::Tree& tree,
+				const Evaluates::Value& before, const Evaluates::Value& after) {
+			const Shogi::Move* pmove = tree.getCurrentMove();
+			if (pmove != NULL) {
+				updateGain(pmove->getPiece(), pmove->getTo(), before, after);
+			}
+		}
+
+		void updateGain(const Shogi::Piece& piece, const Shogi::Square& square,
+				const Evaluates::Value& before, const Evaluates::Value& after) {
+			gain[piece][square] = std::max(-(before + after), gain[piece][square] - 1);
+		}
+
+		Evaluates::Value getGain(const Search::Tree& tree) const {
+			const Shogi::Move* pmove = tree.getCurrentMove();
+			if (pmove != NULL) {
+				return getGain(pmove->getPiece(), pmove->getTo());
+			}
+			return Evaluates::Value(0);
+		}
+
+		Evaluates::Value getGain(Shogi::Piece piece, Shogi::Square square) const {
+			assert((unsigned)piece <= Shogi::Piece::WDRAGON);
+			assert((unsigned)square <= Shogi::Square::END);
+			return gain[piece][square];
 		}
 
 		int extension(Tree& tree) const {

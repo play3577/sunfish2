@@ -190,6 +190,7 @@ namespace Search {
 				newDepth += extension(tree) / 2;
 			}
 
+			Estimate<Value> estimate = tree.negaEstimate();
 			int reduction = 0;
 			if (!isHash && !mate && !tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
 				// late move reduction
@@ -210,9 +211,9 @@ namespace Search {
 				newDepth -= reduction;
 
 				// futility pruning
-				Estimate<Value> estimate = tree.negaEstimate();
 				if (STAND_PAT + estimate.getValue() + estimate.getError()
-						+ getFutMgn(newDepth, moveCount) <= newAlpha) {
+						+ getFutMgn(newDepth, moveCount)
+						+ getGain(tree) <= newAlpha) {
 					value = newAlpha; // fail soft
 					continue;
 				}
@@ -222,14 +223,19 @@ namespace Search {
 			Value newValue;
 			tree.makeMove();
 
+			// new stand-pat
+			Value newStandPat = tree.negaEvaluate();
+
 			// extended futility pruning
 			if (!isHash && !mate && !tree.isCheck() && !tree.isTacticalMove()) {
-				if (tree.negaEvaluate() - getFutMgn(newDepth, moveCount) >= -newAlpha) {
+				if (newStandPat - getFutMgn(newDepth, moveCount) >= -newAlpha) {
 					tree.unmakeMove();
 					value = newAlpha; // fail soft
 					continue;
 				}
 			}
+
+			updateGain(tree, STAND_PAT + estimate.getValue(), newStandPat);
 
 			// recurcive search
 			if (moveCount == 1 && reduction == 0) {
