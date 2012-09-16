@@ -12,6 +12,7 @@
 #include "../Log/logger.h"
 #include "../Evaluates/param.h"
 #include "../Evaluates/initializer.h"
+#include "../Records/record.h"
 #include "../Search/pvHandler.h"
 #include "connection.h"
 #define BOOST_THREAD_USE_LIB
@@ -62,6 +63,7 @@ namespace Network {
 			RECV_NUM       = 19,
 		};
 		unsigned recvFlags;
+		unsigned endFlags;
 
 		struct ReceiveFlagSet {
 			boost::regex regex;
@@ -70,21 +72,22 @@ namespace Network {
 		};
 		static const ReceiveFlagSet flagSets[RECV_NUM];
 
-		const char* configFilename;
+		boost::mutex recvMutex;
 
+		const char* configFilename;
 		CsaClientConfig config;
 
-		Connection con;
-
 		Shogi::Position pos;
-
 		Evaluates::Param* pparam;
 
-		std::string recvStr;
+		Connection con; // コネクション
+		std::string recvStr; // 受信文字列
+		std::string moveStr; // 受信した指し手
 
-		std::string moveStr;
-
-		bool black;
+		bool black; // 自分の手番が黒か
+		std::string gameId; // 対局ID
+		std::string blackName; // 先手の名前
+		std::string whiteName; // 後手の名前
 
 		void receiver();
 
@@ -109,6 +112,10 @@ namespace Network {
 
 		void init() {
 			recvFlags = RECV_NULL;
+			endFlags = RECV_NULL;
+			gameId = "";
+			blackName = "";
+			whiteName = "";
 		}
 
 		unsigned waitReceive(unsigned flags);
@@ -139,6 +146,8 @@ namespace Network {
 		void printReceivedString() {
 			Log::receive << '>' << recvStr << '\n';
 		}
+
+		void writeResult(Records::Record record);
 
 	public:
 		static const char* DEFAULT_CONFIG_FILE;

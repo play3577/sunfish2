@@ -28,6 +28,8 @@ namespace Network {
 		int keepintvl;
 		int keepcnt;
 
+		std::string kifu;
+
 		bool readLine(const char* line);
 
 	public:
@@ -81,6 +83,14 @@ namespace Network {
 
 		int getKeepcnt() const {
 			return keepcnt;
+		}
+
+		std::string getKifu() const {
+			if (kifu.length() > 0 && kifu[kifu.length()-1] == '/') {
+				return kifu;
+			} else {
+				return kifu + '/';
+			}
 		}
 	};
 }

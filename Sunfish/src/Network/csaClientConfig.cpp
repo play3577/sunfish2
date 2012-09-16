@@ -65,6 +65,8 @@ namespace Network {
 			keepintvl = boost::lexical_cast<int>(tokens[1]);
 		} else if (tokens[0] == "keepcnt") {
 			keepcnt = boost::lexical_cast<int>(tokens[1]);
+		} else if (tokens[0] == "kifu") {
+			kifu = tokens[1];
 		} else {
 			return false;
 		}

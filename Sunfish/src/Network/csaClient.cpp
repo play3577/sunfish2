@@ -7,7 +7,7 @@
 
 #include "csaClient.h"
 #include "../Csa/csaReader.h"
-#include "../Records/record.h"
+#include "../Csa/csaWriter.h"
 #include "../Search/searcher.h"
 
 #include <sstream>
@@ -19,6 +19,7 @@ namespace Network {
 	using namespace Shogi;
 	using namespace Csa;
 	using namespace Search;
+	using namespace Records;
 
 	const char* CsaClient::DEFAULT_CONFIG_FILE = "nconf";
 
@@ -75,7 +76,7 @@ namespace Network {
 
 			// wait for match-make and agree
 			if (waitGameSummary() && agree()) {
-				Records::Record record(pos);
+				Record record(pos);
 				Searcher searcher(*pparam);
 				SearchConfig searchConfig;
 
@@ -93,7 +94,9 @@ namespace Network {
 						searcher.init(record.getPosition());
 						searcher.idSearch(result);
 						if (!result.resign && record.move(result.move)) {
-							sendMove(result.move);
+							if (!sendMove(result.move)) {
+								break;
+							}
 						} else {
 							sendResign();
 							break;
@@ -115,7 +118,7 @@ namespace Network {
 						}
 					}
 				}
-				// TODO: 結果の記録
+				writeResult(record);
 			}
 
 			// logout
@@ -156,7 +159,7 @@ lab_end:
 	bool CsaClient::sendMove(const Shogi::Move& move) {
 		if (!send((move.toStringCsa()).c_str())) { return false; }
 		unsigned mask = black ? RECV_MOVE_B : RECV_MOVE_W;
-		unsigned result = waitReceive(mask);
+		unsigned result = waitReceive(mask & RECV_END_MSK);
 		return (result & mask) != 0U;
 	}
 
@@ -168,14 +171,18 @@ lab_end:
 
 	unsigned CsaClient::waitReceive(unsigned flags) {
 		while (true) {
-			unsigned masked = recvFlags & flags;
-			if (masked) {
-				recvFlags &= ~masked;
-				return masked;
-			}
-			if (recvFlags & RECV_LOGOUT) {
-				recvFlags &= ~RECV_LOGOUT;
-				return 0U;
+			{
+				boost::mutex::scoped_lock lock(recvMutex);
+				unsigned masked = recvFlags & flags;
+				endFlags |= recvFlags & RECV_END_MSK;
+				if (masked) {
+					recvFlags &= ~masked;
+					return masked;
+				}
+				if (recvFlags & RECV_LOGOUT) {
+					recvFlags &= ~RECV_LOGOUT;
+					return 0U;
+				}
 			}
 			sleep(20);
 		}
@@ -190,6 +197,7 @@ lab_end:
 					if (flagSets[i].func != NULL) {
 						flagSets[i].func(this);
 					}
+					boost::mutex::scoped_lock lock(recvMutex);
 					recvFlags |= flagSets[i].flag;
 				}
 			}
@@ -222,18 +230,20 @@ lab_end:
 				} else if (tokens[1] == "-") {
 					black = false;
 				}
+			} else if (tokens[0] == "Game_ID") {
+				gameId = tokens[1];
+			} else if (tokens[0] == "Name+") {
+				blackName = tokens[1];
+			} else if (tokens[0] == "Name-") {
+				whiteName = tokens[1];
 			}
 			/*
-				"^Protocol_Version:.*"
-				"^Protocol_Mode:.*"
-				"^Format:.*"
-				"^Declaration:.*"
-				"^Game_ID:.*"
-				"^Name\\+:.*"
-				"^Name-:.*"
-				"^Your_Turn:.*"
-				"^Rematch_On_Draw:.*"
-				"^To_Move:.*"
+				"Protocol_Version"
+				"Protocol_Mode"
+				"Format"
+				"Declaration"
+				"Rematch_On_Draw" // 自動再試合(1.1.3では無視してよい。)
+				"To_Move"
 			*/
 		}
 	}
@@ -251,10 +261,10 @@ lab_end:
 				continue;
 			}
 			/*
-				^Time_Unit:.*"
-				"^Least_Time_Per_Move:.*"
-				"^Total_Timey:.*"
-				"^Byoyomi:.*"
+				"Time_Unit"
+				"Least_Time_Per_Move"
+				"Total_Time"
+				"Byoyomi"
 			*/
 		}
 	}
@@ -276,5 +286,15 @@ lab_end:
 				}
 			}
 		}
+	}
+
+	void CsaClient::writeResult(Record record) {
+		// 結果の保存
+
+		// 棋譜の保存
+		std::ostringstream path;
+		path << config.getKifu();
+		path << gameId << ".csa";
+		CsaWriter::write(path.str().c_str(), record);
 	}
 }
