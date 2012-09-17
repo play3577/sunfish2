@@ -32,7 +32,7 @@ namespace Network {
 		{ boost::regex("^-.*"), RECV_MOVE_W, recvMove },
 		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, st_recvGameSummary },
 		{ boost::regex("^START:.*"), RECV_START, NULL },
-		{ boost::regex("^REJECT:.* BY .*"), RECV_REJECT, NULL },
+		{ boost::regex("^REJECT:.* by .*"), RECV_REJECT, NULL },
 		{ boost::regex("^#WIN$"), RECV_WIN, NULL },
 		{ boost::regex("^#LOSE$"), RECV_LOSE, NULL },
 		{ boost::regex("^#DRAW$"), RECV_DRAW, NULL },
