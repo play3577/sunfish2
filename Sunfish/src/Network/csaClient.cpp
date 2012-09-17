@@ -159,7 +159,7 @@ lab_end:
 	bool CsaClient::sendMove(const Shogi::Move& move) {
 		if (!send((move.toStringCsa()).c_str())) { return false; }
 		unsigned mask = black ? RECV_MOVE_B : RECV_MOVE_W;
-		unsigned result = waitReceive(mask & RECV_END_MSK);
+		unsigned result = waitReceive(mask | RECV_END_MSK);
 		return (result & mask) != 0U;
 	}
 
