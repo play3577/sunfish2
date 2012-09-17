@@ -97,6 +97,12 @@ namespace Cui {
 		}
 	}
 
+	void Controller::printMate(const Position& pos) const {
+		if (pos.isMate()) {
+			std::cout << "mate!!\n";
+		}
+	}
+
 	bool Controller::play() {
 		char line[1024];
 		Command prevCommand = UNKNOWN;
@@ -120,6 +126,7 @@ namespace Cui {
 		searcher.setSearchConfig(searchConfig);
 
 		std::cout << record.toString();
+		printMate(record.getPosition());
 
 		while (true) {
 			bool printBoard = false;
@@ -218,6 +225,7 @@ namespace Cui {
 			// 盤面の表示
 			if (printBoard) {
 				std::cout << record.toString();
+				printMate(record.getPosition());
 			}
 		}
 

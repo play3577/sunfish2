@@ -95,6 +95,10 @@ namespace Shogi {
 		bool isEvadablePawn() const;
 
 		template<bool black>
+		bool isEvadable(const Shogi::Square square,
+				const Shogi::DirectionFlags except) const;
+
+		template<bool black>
 		bool canPawnDropCheck() const;
 
 		// 動かした駒による王手
@@ -123,6 +127,24 @@ namespace Shogi {
 			}
 			return Direction(Direction::NON);
 		}
+
+		bool isDropable(const Shogi::Square& sq,
+				const Shogi::Piece& piece) const {
+			if (piece.isBlack()) {
+				return getBlackHand(piece) &&
+					!sq.isCompulsoryPromotion(piece) &&
+					(piece != Piece::BPAWN ||
+					bpawns.exist(sq.getFile()));
+			} else {
+				return getWhiteHand(piece) &&
+					!sq.isCompulsoryPromotion(piece) &&
+					(piece != Piece::WPAWN ||
+					wpawns.exist(sq.getFile()));
+			}
+		}
+
+		template <bool black>
+		bool _isMate() const;
 
 	public:
 		Position(bool blackTurn = true) : blackTurn(blackTurn) {
@@ -296,7 +318,9 @@ namespace Shogi {
 			}
 		}
 
-		bool isMate() const;
+		bool isMate() const {
+			return (blackTurn ? _isMate<true>() : _isMate<false>());
+		}
 
 		DirectionFlags getCheckDirection() const {
 			if (blackTurn) {

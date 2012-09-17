@@ -580,8 +580,89 @@ namespace Shogi {
 	template bool Position::canPawnDropCheck<true>() const;
 	template bool Position::canPawnDropCheck<false>() const;
 
-	bool Position::isMate() const {
+	template<bool black>
+	bool Position::isEvadable(const Square square, const DirectionFlags except) const {
+		DirectionFlags flags = effectBoard.get(square, black).getExcludeKing();
+		flags.remove(except);
+		while (flags.isNonZero()) {
+			Direction dir = flags.pop().toDirection().reverse();
+			Square from = square;
+			for (from += dir; getBoard(from) == Piece::EMPTY; from += dir)
+				;
+			if (pin(from, black).isZero()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	template <bool black>
+	bool Position::_isMate() const {
+		DirectionFlags flags = getCheckDirection();
+		// 玉の移動
+		if (isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT_UP) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::UP) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT_UP) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT_DOWN) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::DOWN) ||
+				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT_DOWN)
+				) {
+			return false;
+		}
+		if (!flags.isPlural()) { // 両王手でない場合
+			Square sq = (black ? bking : wking);
+			Direction dir = flags.toDirection().reverse();
+			// 距離が1出ない場合は合駒ができれば不詰め
+			sq += dir;
+			if (getBoard(sq) == Piece::EMPTY) {
+				// どこにでも打てる持ち駒
+				if (black) {
+					if (getBlackHand(Piece::SILVER != 0) ||
+							getBlackHand(Piece::GOLD != 0) ||
+							getBlackHand(Piece::BISHOP != 0) ||
+							getBlackHand(Piece::ROOK) != 0) {
+						return false;
+					}
+				} else {
+					if (getWhiteHand(Piece::SILVER) != 0 ||
+							getWhiteHand(Piece::GOLD) != 0 ||
+							getWhiteHand(Piece::BISHOP) != 0 ||
+							getWhiteHand(Piece::ROOK) != 0) {
+						return false;
+					}
+				}
+				do {
+					// 持ち駒
+					if (black &&
+							(isDropable(sq, Piece::BPAWN)
+							|| isDropable(sq, Piece::BLANCE)
+							|| isDropable(sq, Piece::BKNIGHT)
+							)) {
+						return false;
+					} else if (!black &&
+							(isDropable(sq, Piece::WPAWN)
+							|| isDropable(sq, Piece::WLANCE)
+							|| isDropable(sq, Piece::WKNIGHT)
+							)) {
+						return false;
+					}
+					// 移動合
+					if (isEvadable<black>(sq, DirectionFlags(dir))) {
+						return false;
+					}
+					sq += dir;
+				} while (getBoard(sq) != Piece::EMPTY);
+			}
+			// 王手している駒を取る手
+			if (isEvadable<black>(sq, DirectionFlags(dir))) {
+				return false;
+			}
+		}
 		return true;
 	}
+	template bool Position::_isMate<true>() const;
+	template bool Position::_isMate<false>() const;
 }
 

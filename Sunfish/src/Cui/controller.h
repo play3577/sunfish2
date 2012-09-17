@@ -63,6 +63,8 @@ namespace Cui {
 
 		Command inputCommand(const char* str);
 
+		void printMate(const Shogi::Position& pos) const;
+
 	public:
 		Controller() {
 			pparam = new Evaluates::Param();
