@@ -129,11 +129,11 @@ namespace Search {
 
 		// null move pruning
 		bool mate = false;
-		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
-				nullDepth > PLY1*tree.getDepth() &&
-				beta < STAND_PAT){
+				depth >= PLY1 * 2 &&
+				beta <= STAND_PAT){
+			int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 			if (tree.nullMove()) {
 				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
 				tree.unmakeMove();
@@ -149,20 +149,15 @@ namespace Search {
 
 		if (!hashOk && depth >= PLY1 * 3) {
 			// recursive iterative-deepening search
-			if (pvNode) {
-				negaMax<true, true>(tree, depth - PLY1 * 2, alpha, beta);
-				if (interrupt()) { return Value(0); }
-				const TTEntity& tte = tt.getEntity(hash);
-				if (tte.is(hash)) {
-					tree.setHashMove(tte.getHashMove());
-				}
-			} else if (!tree.isCheck() && STAND_PAT + 80 >= beta) {
-				negaMax<false, true>(tree, depth / 2, alpha, beta);
-				if (interrupt()) { return Value(0); }
-				const TTEntity& tte = tt.getEntity(hash);
-				if (tte.is(hash)) {
-					tree.setHashMove(tte.getHashMove());
-				}
+			int newDepth = pvNode ? depth - PLY1 * 3 : depth / 2;
+			if (newDepth < PLY1 * 2) {
+				newDepth = PLY1 * 2;
+			}
+			negaMax<true, true>(tree, newDepth, alpha, beta);
+			if (interrupt()) { return Value(0); }
+			const TTEntity& tte = tt.getEntity(hash);
+			if (tte.is(hash)) {
+				tree.setHashMove(tte.getHashMove());
 			}
 		}
 
@@ -195,18 +190,24 @@ namespace Search {
 			if (!isHash && !mate && !tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
 				// late move reduction
 				unsigned hist = history.get(*tree.getCurrentMove());
-				if        (hist * 16U < History::SCALE) {
-					reduction = PLY1 * 2;
-				} else if (hist * 12U < History::SCALE) {
-					reduction = PLY1 * 3 / 2;
-				} else if (hist *  8U < History::SCALE) {
-					reduction = PLY1;
-				} else if (hist *  6U < History::SCALE) {
-					reduction = PLY1 * 3 / 4;
-				} else if (hist *  4U < History::SCALE) {
-					reduction = PLY1 / 2;
-				} else if (hist *  2U < History::SCALE) {
-					reduction = PLY1 / 4;
+				if (beta != alpha + 1) {
+					if        (hist * 20U < History::SCALE) {
+						reduction = PLY1 * 3 / 2;
+					} else if (hist *  8U < History::SCALE) {
+						reduction = PLY1;
+					} else if (hist *  2U < History::SCALE) {
+						reduction = PLY1 / 2;
+					}
+				} else {
+					if        (hist * 16U < History::SCALE) {
+						reduction = PLY1 * 2;
+					} else if (hist *  8U < History::SCALE) {
+						reduction = PLY1 * 3 / 2;
+					} else if (hist *  3U < History::SCALE) {
+						reduction = PLY1;
+					} else if (hist *  1U < History::SCALE) {
+						reduction = PLY1 / 2;
+					}
 				}
 				newDepth -= reduction;
 

@@ -50,7 +50,7 @@ namespace Search {
 
 		void addAppear(const Shogi::Move& move, int depth) {
 			unsigned index = from(move);
-			if (all[index][move.getTo()] * SCALE > UINT_MAX - depth * SCALE) {
+			if (all[index][move.getTo()] * SCALE >= UINT_MAX - depth * SCALE) {
 				all[index][move.getTo()] /= 2U;
 				good[index][move.getTo()] /= 2U;
 			}

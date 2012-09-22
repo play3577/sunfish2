@@ -342,8 +342,8 @@ namespace Shogi {
 			blackTurn = !blackTurn;
 		}
 
-		bool isLegalMove(const Move& move, bool cuick = false) const {
-			if (cuick) {
+		bool isLegalMove(const Move& move, bool quick = false) const {
+			if (quick) {
 				return (blackTurn ? isLegalMove<true, true>(move) : isLegalMove<false, true>(move));
 			} else {
 				return (blackTurn ? isLegalMove<true, false>(move) : isLegalMove<false, false>(move));
