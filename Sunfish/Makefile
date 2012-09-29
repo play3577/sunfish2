@@ -13,7 +13,8 @@ $(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Network/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp) \
-$(wildcard ./src/Log/*.cpp)
+$(wildcard ./src/Log/*.cpp) \
+$(wildcard ./src/Develop/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 

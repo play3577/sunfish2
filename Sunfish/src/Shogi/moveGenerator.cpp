@@ -60,6 +60,9 @@ namespace Shogi {
 		return num;
 	}
 
+	unsigned generateCheck() {
+	}
+
 	template <bool black, bool genCap, bool genNocap, bool genPro>
 	void MoveGenerator::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {

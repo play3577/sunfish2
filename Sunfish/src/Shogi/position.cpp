@@ -7,7 +7,6 @@
 
 #include <cassert>
 #include <sstream>
-#include "../Tools/debug.h" // TODO: remove debugging code
 #include "../Csa/csa.h"
 #include "position.h"
 #include "../Evaluates/evaluate.h"

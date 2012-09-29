@@ -20,6 +20,14 @@ using boost::program_options::value;
 using boost::program_options::store;
 using boost::program_options::parse_command_line;
 
+#ifndef DEVELOP
+#	define DEVELOP	1
+#endif
+
+#if DEVELOP
+#	include "Develop/checkTableGenerator.h"
+#endif
+
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';
 	std::cout << SUNFISH_VERSION << '\n';
@@ -44,7 +52,11 @@ int main(int argc, char* argv[]) {
 			("network,n", "CSA client moode.")
 			("auto-black,b", "auto move on black turn.")
 			("auto-white,w", "auto move on white turn.")
-			("file,f", value<std::string>(), "CSA file name to read.");
+			("file,f", value<std::string>(), "CSA file name to read.")
+#if DEVELOP
+			("develop-checkTable", value<std::string>(), "DEVELOP: generate \'checkTable\'.")
+#endif
+			;
 	variables_map argmap;
 	try {
 		store(parse_command_line(argc, argv, opt), argmap);
@@ -75,6 +87,11 @@ int main(int argc, char* argv[]) {
 		Network::CsaClient csaClient;
 		csaClient.execute();
 		return 0;
+#if DEVELOP
+	} else if (argmap.count("develop-checkTable")) {
+		Develop::CheckTableGenerator codeGen;
+		codeGen.write(argmap["develop-checkTable"].as<std::string>().c_str());
+#endif
 	}
 
 	Cui::Controller controller;

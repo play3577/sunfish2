@@ -97,6 +97,8 @@ namespace Shogi {
 
 		unsigned generateTactical();
 
+		unsigned generateCheck();
+
 		unsigned add(const Move& move) {
 			moves[num++] = move;
 			return num;
