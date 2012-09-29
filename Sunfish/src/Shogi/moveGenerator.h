@@ -35,14 +35,6 @@ namespace Shogi {
 		template <bool black>
 		void generateMoveOneMove(const Piece piece, const Square from, const Square to) {
 			if (!to.isCompulsoryPromotion(piece)) {
-				if (from.is(3, 0)) { // TODO: remove debugging code
-					std::cout << "********** Error **********\n";
-					std::cout << __LINE__ << '\n';
-					std::cout << pos.toString();
-					std::cout << std::hex << (unsigned)pos.getEffect(to, black).getExcludeKing() << '\n';
-					std::cout.flush();
-					abort();
-				}
 				moves[num++] = Move(from, to, false, false, piece);
 			}
 		}
@@ -50,13 +42,6 @@ namespace Shogi {
 		template <bool black>
 		void generateMoveOneMovePro(const Piece piece, const Square from, const Square to) {
 			if (to.isPromotableRank(black) || from.isPromotableRank(black)) {
-				if (from.is(3, 0)) { // TODO: remove debugging code
-					std::cout << "********** Error **********\n";
-					std::cout << __LINE__ << '\n';
-					std::cout << pos.toString();
-					std::cout.flush();
-					abort();
-				}
 				moves[num++] = Move(from, to, true, false, piece);
 			}
 		}
