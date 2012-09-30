@@ -14,6 +14,11 @@
 namespace Shogi {
 	class Square {
 	private:
+		static const unsigned nextTable[];
+		static const unsigned shortIndex[];
+		unsigned square;
+
+	public:
 		static const unsigned UPPERMOST = 0x20;
 		static const unsigned LOWERMOST = 0xA0;
 		static const unsigned RIGHTMOST = 0x01;
@@ -23,11 +28,6 @@ namespace Shogi {
 		static const unsigned SHIFT_RANK = 4;
 		static const unsigned OFFSET = 0x10;
 		static const unsigned WIDTH = 0x10;
-		static const unsigned nextTable[];
-		static const unsigned shortIndex[];
-		unsigned square;
-
-	public:
 		static const unsigned SIZE = 0xD0;
 		static const unsigned NON = 0x00;
 		static const unsigned TOP_W = 0x00;

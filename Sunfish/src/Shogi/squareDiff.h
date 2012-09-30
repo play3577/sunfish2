@@ -17,6 +17,11 @@ namespace Shogi {
 		int diff;
 		static const int _diff2dir[];
 		static const int* diff2dir;
+		static const int _diff2dis[];
+		static const int* diff2dis;
+
+		static const int _attackTable[][17][17];
+		static const int (*attackTable)[17][17];
 
 	public:
 		SquareDiff(int diff = 0) {
@@ -33,6 +38,10 @@ namespace Shogi {
 
 		Direction toDirection() const {
 			return diff2dir[diff];
+		}
+
+		int toDistance() const {
+			return diff2dis[diff];
 		}
 
 		DirectionAndRange toDirectionAndRange() const {

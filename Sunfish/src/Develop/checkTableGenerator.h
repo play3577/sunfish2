@@ -7,6 +7,9 @@
 
 #include "codeGenerator.h"
 
+#ifndef CHECKTABLEGENERATOR_H_
+#define CHECKTABLEGENERATOR_H_
+
 namespace Develop {
 	class CheckTableGenerator : public CodeGenerator {
 	private:
@@ -15,3 +18,5 @@ namespace Develop {
 		std::string develop();
 	};
 }
+
+#endif // CHECKTABLEGENERATOR_H_

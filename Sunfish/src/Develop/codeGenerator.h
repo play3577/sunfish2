@@ -9,6 +9,9 @@
 #include <fstream>
 #include "../Log/logger.h"
 
+#ifndef CODEGENERATOR_H_
+#define CODEGENERATOR_H_
+
 namespace Develop {
 	class CodeGenerator {
 	private:
@@ -31,3 +34,5 @@ namespace Develop {
 		}
 	};
 }
+
+#endif // CODEGENERATOR_H_
