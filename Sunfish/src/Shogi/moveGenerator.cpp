@@ -487,7 +487,7 @@ namespace Shogi {
 	}
 
 	template <bool black>
-	unsigned generateCheckOnBoard() {
+	unsigned MoveGenerator::generateCheckOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
 			const Piece& piece = pos.getBoard(sq);
 			const Direction pin = pos.pin(sq, black).toDirection();
@@ -498,6 +498,6 @@ namespace Shogi {
 	}
 
 	template <bool black>
-	unsigned generateCheckDrop() {
+	unsigned MoveGenerator::generateCheckDrop() {
 	}
 }
