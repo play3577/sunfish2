@@ -16,10 +16,10 @@ namespace Develop {
 	std::string AttackTableGenerator::develop() {
 		std::ostringstream oss;
 
-		oss << "#include \"../squareDiff.h\"\n";
+		oss << "#include \"../attack.h\"\n";
 		oss << "namespace Shogi {\n";
 
-		oss << "const int SquareDiff::_attackTable[][17][17] =\n";
+		oss << "const int Attack::_attackTable[][17][17] =\n";
 		oss << "{\n";
 		for (Piece piece = Piece::BPAWN; piece <= Piece::WDRAGON; piece.toNext()) {
 			DirectionFlags flags = piece.getMoveableDirection();
@@ -28,7 +28,7 @@ namespace Develop {
 				oss << "{";
 				for (int file = -8; file <= 8; file++) {
 					SquareDiff diff(file+(rank<<Square::SHIFT_RANK));
-					Direction dir = diff.toDirection().reverse();
+					Direction dir = diff.toDirection();
 					bool longRange = diff.toDistance() > 1;
 					int result = 0;
 					if (flags.check(dir, true) || (!longRange && flags.check(dir, false))) {
@@ -43,8 +43,8 @@ namespace Develop {
 		}
 		oss << "};\n";
 
-		oss << "const int (*SquareDiff::attackTable)[17][17] =\n";
-		oss << "(int (*)[17][17])&_attackTable[0][8][8];\n";
+		oss << "const int (*Attack::attackTable)[17][17] =\n";
+		oss << "(int (*)[17][17])&_attackTable[-1][8][8];\n";
 
 		oss << "}\n"; // namespace
 

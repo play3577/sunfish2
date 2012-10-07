@@ -60,9 +60,6 @@ namespace Shogi {
 		return num;
 	}
 
-	unsigned generateCheck() {
-	}
-
 	template <bool black, bool genCap, bool genNocap, bool genPro>
 	void MoveGenerator::generateOnBoard() {
 		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
@@ -487,5 +484,20 @@ namespace Shogi {
 			}
 		}
 		return true;
+	}
+
+	template <bool black>
+	unsigned generateCheckOnBoard() {
+		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
+			const Piece& piece = pos.getBoard(sq);
+			const Direction pin = pos.pin(sq, black).toDirection();
+			if (black && piece.isBlack()) {
+			} else if (!black && !piece.isBlack()) {
+			}
+		}
+	}
+
+	template <bool black>
+	unsigned generateCheckDrop() {
 	}
 }

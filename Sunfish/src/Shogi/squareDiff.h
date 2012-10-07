@@ -20,9 +20,6 @@ namespace Shogi {
 		static const int _diff2dis[];
 		static const int* diff2dis;
 
-		static const int _attackTable[][17][17];
-		static const int (*attackTable)[17][17];
-
 	public:
 		SquareDiff(int diff = 0) {
 			this->diff = diff;

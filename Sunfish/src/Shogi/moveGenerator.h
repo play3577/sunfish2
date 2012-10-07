@@ -67,6 +67,12 @@ namespace Shogi {
 		template <bool black, unsigned piece>
 		void generateEvasionDrop(Square to);
 
+		template <bool black>
+		unsigned generateCheckOnBoard();
+
+		template <bool black>
+		unsigned generateCheckDrop();
+
 	public:
 		MoveGenerator(const Position& pos) : pos(pos) {
 			clear();
@@ -97,7 +103,16 @@ namespace Shogi {
 
 		unsigned generateTactical();
 
-		unsigned generateCheck();
+		unsigned generateCheck() {
+			if (pos.isBlackTurn()) {
+				generateCheckOnBoard<true>();
+				generateCheckDrop<true>();
+			} else {
+				generateCheckOnBoard<false>();
+				generateCheckDrop<false>();
+			}
+			return num;
+		}
 
 		unsigned add(const Move& move) {
 			moves[num++] = move;
