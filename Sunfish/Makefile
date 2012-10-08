@@ -19,10 +19,6 @@ OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 
 DEV_PROGRAMS:=attackTable checkTable
-DEV_SOURCES:=$(wildcard ./src/Shogi/*.cpp) \
-$(wildcard ./src/Log/*.cpp)
-DEV_OBJECTS:=$(DEV_SOURCES:.cpp=.o)
-DEV_DEPENDS:=$(DEV_SOURCES:.cpp=.d)
 
 override CFLAGS+=-Wall
 override CFLAGS+=-W
@@ -46,13 +42,20 @@ $(PROGRAM): attackTable checkTable $(OBJECTS)
 
 src/Shogi/Attack/attackTable.o : attackTable
 
-attackTable : src/attackTable.cpp $(DEV_OBJECTS) src/Develop/attackTableGenerator.o
+attackTable : src/attackTable.cpp \
+src/Shogi/squareDiff.o src/Shogi/piece.o \
+src/Shogi/directionFlags.o src/Log/logger.cpp \
+src/Develop/attackTableGenerator.o
 	$(GPP) -o $@ $(CFLAGS) $^ $(LIBS)
 	./$@ src/Shogi/Attack/attackTable.cpp
 
 src/Shogi/Attack/checkTable.o : checkTable
 
-checkTable : src/checkTable.cpp $(DEV_OBJECTS) src/Develop/checkTableGenerator.o src/Shogi/Attack/attackTable.o
+checkTable : src/checkTable.cpp \
+src/Shogi/squareDiff.o src/Shogi/piece.o \
+src/Shogi/directionFlags.o src/Log/logger.cpp \
+src/Develop/checkTableGenerator.o \
+src/Shogi/Attack/attackTable.o
 	$(GPP) -o $@ $(CFLAGS) $^ $(LIBS)
 	./$@ src/Shogi/Attack/checkTable.cpp
 
@@ -61,7 +64,7 @@ checkTable : src/checkTable.cpp $(DEV_OBJECTS) src/Develop/checkTableGenerator.o
 
 .PHONY: clean
 clean:
-	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) $(DEV_OBJECTS) $(DEV_DEPENDS) src/*.o src/*.d
+	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
 
 %.d: %.cpp
 	@$(SHELL) -c '$(CC) -MM $(CFLAGS) $< | sed "s|^.*:|$*.o $@:|g" > $@; [ -s $@ ] || rm -f $@'

@@ -205,7 +205,7 @@ namespace Shogi {
 			return (piece&PIECE) == KING;
 		}
 
-		DirectionFlags getMoveableDirection() const {
+		DirectionFlags getMovableDirection() const {
 			return direction[piece];
 		}
 

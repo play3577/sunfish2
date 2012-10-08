@@ -88,7 +88,7 @@ namespace Shogi {
 		}
 
 		template <bool black, unsigned excludingFlag>
-		bool isKingMoveable(Direction dir) const;
+		bool isKingMovable(Direction dir) const;
 
 		// 歩打ちに対して玉の移動以外で王手回避可能か
 		template<bool black>
@@ -100,33 +100,6 @@ namespace Shogi {
 
 		template<bool black>
 		bool canPawnDropCheck() const;
-
-		// 動かした駒による王手
-		bool isCheckMoveDirect(const Move& move) const {
-			DirectionFlags king = effectBoard.get(move.getTo(), !blackTurn).getKingOnly();
-			if (king.isZero()) { return Direction(Direction::NON); }
-			Piece piece = move.getPiece();
-			if (move.isPromotion()) { piece.promote(); }
-			if (king.isAttackedBy(piece.getMoveableDirection())) {
-				return true;// 長い利き
-			}
-			Square ksq = blackTurn ? bking : wking;
-			Direction kingDir = king.toDirection();
-			if ((move.getFrom() == ksq + kingDir)) {
-				return true;// 短い利き
-			}
-			return false;
-		}
-
-		// 開き王手
-		bool isCheckMoveDiscovered(const Move& move) const {
-			DirectionFlags king = effectBoard.get(move.getFrom(), !blackTurn);
-			DirectionFlags attacker = effectBoard.get(move.getFrom(), blackTurn);
-			if (king.isAttackedBy(attacker)) {
-				return attacker.toDirection();
-			}
-			return Direction(Direction::NON);
-		}
 
 		bool isDropable(const Shogi::Square& sq,
 				const Shogi::Piece& piece) const {
@@ -303,7 +276,38 @@ namespace Shogi {
 
 		bool isCheckMove(const Move& move) const {
 			return isCheckMoveDirect(move) ||
-					isCheckMoveDiscovered(move);
+					(!move.isHand() && isCheckMoveDiscovered(move));
+		}
+
+		// 動かした駒による王手
+		bool isCheckMoveDirect(const Move& move) const {
+			return isCheckMoveDirect(move.getTo(),
+					move.getPiece(), move.isPromotion());
+		}
+
+		bool isCheckMoveDirect(const Square& to, Piece piece, bool pro) const {
+			DirectionFlags king = effectBoard.get(to, !blackTurn).getKingOnly();
+			if (king.isZero()) { return Direction(Direction::NON); }
+			if (pro) { piece.promote(); }
+			if (king.isAttackedBy(piece.getMovableDirection())) {
+				return true;// 長い利き
+			}
+			Square ksq = blackTurn ? bking : wking;
+			Direction kingDir = king.toDirection();
+			if ((to == ksq + kingDir)) {
+				return true;// 短い利き
+			}
+			return false;
+		}
+
+		// 開き王手
+		bool isCheckMoveDiscovered(const Move& move) const {
+			DirectionFlags king = effectBoard.get(move.getFrom(), !blackTurn);
+			DirectionFlags attacker = effectBoard.get(move.getFrom(), blackTurn);
+			if (king.isAttackedBy(attacker)) {
+				return attacker.toDirection();
+			}
+			return Direction(Direction::NON);
 		}
 
 		bool isCapturingMove(const Move& move) const {

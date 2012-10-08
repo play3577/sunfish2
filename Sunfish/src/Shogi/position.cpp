@@ -249,7 +249,7 @@ namespace Shogi {
 			}
 			if (dir.isShortRange()) { // 1マス
 				// 移動可能な方向か
-				if (piece.getMoveableDirection().check(dir) || piece.getMoveableDirection().check(dir, true)) {
+				if (piece.getMovableDirection().check(dir) || piece.getMovableDirection().check(dir, true)) {
 					Piece pieceTo = board.get(move.getTo());
 					// 移動先に駒がいないか相手の駒か
 					return pieceTo.isEmpty() || (black ? pieceTo.isWhite() : pieceTo.isBlack());
@@ -257,7 +257,7 @@ namespace Shogi {
 				return false;
 			} else { // 跳び駒の移動
 				// 移動可能な方向か
-				if (piece.getMoveableDirection().check(dir)) {
+				if (piece.getMovableDirection().check(dir)) {
 					// 間に駒がないか
 					for (Square sq = move.getFrom() + dir; ; sq += dir) {
 						Piece pieceTo = board.get(sq);
@@ -303,7 +303,7 @@ namespace Shogi {
 				if (piece == Piece::BPAWN) {
 					bpawns.set(move.getTo().getFile());
 				}
-				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, true>(move.getTo(), piece.getMovableDirection(), board); // effect
 			} else { // 後手
 				assert(piece.isWhite());
 				if (chNotNull) { change->setHandNum(whiteHand.get(piece)); } // number of pieces
@@ -316,7 +316,7 @@ namespace Shogi {
 				if (piece == Piece::WPAWN) {
 					wpawns.set(move.getTo().getFile());
 				}
-				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, true>(move.getTo(), piece.getMovableDirection(), board); // effect
 			}
 		} else { // 盤上の駒
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY); // board
@@ -324,9 +324,9 @@ namespace Shogi {
 			if (chNotNull) { change->setFromSquare(move.getFrom()); } // move from
 			if (chNotNull) { change->setFromPiece(piece); } // moved piece
 			if (black) { // 先手
-				effectBoard.change<true, false>(move.getFrom(), piece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, false>(move.getFrom(), piece.getMovableDirection(), board); // effect
 			} else { // 後手
-				effectBoard.change<false, false>(move.getFrom(), piece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, false>(move.getFrom(), piece.getMovableDirection(), board); // effect
 			}
 			if (move.isPromotion()) { // 成
 				if (black && piece == Piece::BPAWN) { // 先手の歩
@@ -359,7 +359,7 @@ namespace Shogi {
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
 					hash ^= hashHand(captureUP, blackHand.get(captureUP), true); // hash
 					blackHand.inc(captureUP); // hand
-					effectBoard.change<false, false>(move.getTo(), capture.getMoveableDirection(), board); // effect
+					effectBoard.change<false, false>(move.getTo(), capture.getMovableDirection(), board); // effect
 					if (capture == Piece::WPAWN) { // 後手の歩
 						wpawns.unset(move.getTo().getFile());
 					}
@@ -368,7 +368,7 @@ namespace Shogi {
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
 					hash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hash
 					whiteHand.inc(capture.getUnPromoted()); // hand
-					effectBoard.change<true, false>(move.getTo(), capture.getMoveableDirection(), board); // effect
+					effectBoard.change<true, false>(move.getTo(), capture.getMovableDirection(), board); // effect
 					if (capture == Piece::BPAWN) { // 先手の歩
 						bpawns.unset(move.getTo().getFile());
 					}
@@ -377,9 +377,9 @@ namespace Shogi {
 				if (chNotNull) { change->setType(Change::NO_CAPTURE); } // type of change
 			}
 			if (black) {
-				effectBoard.change<true, true>(move.getTo(), piece.getMoveableDirection(), board);
+				effectBoard.change<true, true>(move.getTo(), piece.getMovableDirection(), board);
 			} else {
-				effectBoard.change<false, true>(move.getTo(), piece.getMoveableDirection(), board);
+				effectBoard.change<false, true>(move.getTo(), piece.getMovableDirection(), board);
 			}
 		}
 		turn();
@@ -448,9 +448,9 @@ namespace Shogi {
 			}
 			board.set(to, Piece::EMPTY);
 			if (black) {
-				effectBoard.change<true, false>(to, handPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, false>(to, handPiece.getMovableDirection(), board); // effect
 			} else {
-				effectBoard.change<false, false>(to, handPiece.getTurnedWhite().getMoveableDirection(), board); // effect
+				effectBoard.change<false, false>(to, handPiece.getTurnedWhite().getMovableDirection(), board); // effect
 			}
 			break;
 		case Change::CAPTURE:
@@ -460,23 +460,23 @@ namespace Shogi {
 			toPiece = change.getToPiece();
 			board.set(from, fromPiece);
 			if (black) { // 先手
-				effectBoard.change<true, true>(from, fromPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, true>(from, fromPiece.getMovableDirection(), board); // effect
 			} else { // 後手
-				effectBoard.change<false, true>(from, fromPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, true>(from, fromPiece.getMovableDirection(), board); // effect
 			}
 			toAfterPiece = board.set(to, toPiece);
 			if (black) {
-				effectBoard.change<true, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, false>(to, toAfterPiece.getMovableDirection(), board); // effect
 			} else {
-				effectBoard.change<false, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, false>(to, toAfterPiece.getMovableDirection(), board); // effect
 			}
 			handPiece = change.getHandPiece();
 			if (black) {
 				blackHand.set(handPiece, change.getHandNum());
-				effectBoard.change<false, true>(to, toPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, true>(to, toPiece.getMovableDirection(), board); // effect
 			} else {
 				whiteHand.set(handPiece, change.getHandNum());
-				effectBoard.change<true, true>(to, toPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, true>(to, toPiece.getMovableDirection(), board); // effect
 			}
 			break;
 		case Change::NO_CAPTURE:
@@ -486,15 +486,15 @@ namespace Shogi {
 			toPiece = change.getToPiece();
 			board.set(from, fromPiece);
 			if (black) { // 先手
-				effectBoard.change<true, true>(from, fromPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, true>(from, fromPiece.getMovableDirection(), board); // effect
 			} else { // 後手
-				effectBoard.change<false, true>(from, fromPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, true>(from, fromPiece.getMovableDirection(), board); // effect
 			}
 			toAfterPiece = board.set(to, toPiece);
 			if (black) {
-				effectBoard.change<true, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<true, false>(to, toAfterPiece.getMovableDirection(), board); // effect
 			} else {
-				effectBoard.change<false, false>(to, toAfterPiece.getMoveableDirection(), board); // effect
+				effectBoard.change<false, false>(to, toAfterPiece.getMovableDirection(), board); // effect
 			}
 			break;
 		}
@@ -509,7 +509,7 @@ namespace Shogi {
 	template void Position::back<false>(const Change& change);
 
 	template <bool black, unsigned excludingFlag>
-	bool Position::isKingMoveable(Direction dir) const {
+	bool Position::isKingMovable(Direction dir) const {
 		Square to = (black ? bking : wking) + dir; // 移動先
 		Piece piece = board.get(to); // 移動先のマス
 		if (piece.isWall()) {
@@ -557,23 +557,23 @@ namespace Shogi {
 			return true;
 		}
 		if (black) {
-			return isKingMoveable<false, DirectionFlags::NON           >(Direction::LEFT_UP)
-				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::UP)
-				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::RIGHT_UP)
-				|| isKingMoveable<false, DirectionFlags::LONG_LEFT_UP  >(Direction::LEFT)
-				|| isKingMoveable<false, DirectionFlags::LONG_RIGHT_UP >(Direction::RIGHT)
-				|| isKingMoveable<false, DirectionFlags::LONG_LEFT     >(Direction::LEFT_DOWN)
-				|| isKingMoveable<false, DirectionFlags::NON           >(Direction::DOWN)
-				|| isKingMoveable<false, DirectionFlags::LONG_RIGHT    >(Direction::RIGHT_DOWN);
+			return isKingMovable<false, DirectionFlags::NON           >(Direction::LEFT_UP)
+				|| isKingMovable<false, DirectionFlags::NON           >(Direction::UP)
+				|| isKingMovable<false, DirectionFlags::NON           >(Direction::RIGHT_UP)
+				|| isKingMovable<false, DirectionFlags::LONG_LEFT_UP  >(Direction::LEFT)
+				|| isKingMovable<false, DirectionFlags::LONG_RIGHT_UP >(Direction::RIGHT)
+				|| isKingMovable<false, DirectionFlags::LONG_LEFT     >(Direction::LEFT_DOWN)
+				|| isKingMovable<false, DirectionFlags::NON           >(Direction::DOWN)
+				|| isKingMovable<false, DirectionFlags::LONG_RIGHT    >(Direction::RIGHT_DOWN);
 		} else {
-			return isKingMoveable<true, DirectionFlags::LONG_LEFT      >(Direction::LEFT_UP)
-				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::UP)
-				|| isKingMoveable<true, DirectionFlags::LONG_RIGHT     >(Direction::RIGHT_UP)
-				|| isKingMoveable<true, DirectionFlags::LONG_LEFT_DOWN >(Direction::LEFT)
-				|| isKingMoveable<true, DirectionFlags::LONG_RIGHT_DOWN>(Direction::RIGHT)
-				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::LEFT_DOWN)
-				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::DOWN)
-				|| isKingMoveable<true, DirectionFlags::NON            >(Direction::RIGHT_DOWN);
+			return isKingMovable<true, DirectionFlags::LONG_LEFT      >(Direction::LEFT_UP)
+				|| isKingMovable<true, DirectionFlags::NON            >(Direction::UP)
+				|| isKingMovable<true, DirectionFlags::LONG_RIGHT     >(Direction::RIGHT_UP)
+				|| isKingMovable<true, DirectionFlags::LONG_LEFT_DOWN >(Direction::LEFT)
+				|| isKingMovable<true, DirectionFlags::LONG_RIGHT_DOWN>(Direction::RIGHT)
+				|| isKingMovable<true, DirectionFlags::NON            >(Direction::LEFT_DOWN)
+				|| isKingMovable<true, DirectionFlags::NON            >(Direction::DOWN)
+				|| isKingMovable<true, DirectionFlags::NON            >(Direction::RIGHT_DOWN);
 		}
 	}
 	template bool Position::canPawnDropCheck<true>() const;
@@ -599,14 +599,14 @@ namespace Shogi {
 	bool Position::_isMate() const {
 		DirectionFlags flags = getCheckDirection();
 		// 玉の移動
-		if (isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT_UP) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::UP) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT_UP) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::LEFT_DOWN) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::DOWN) ||
-				isKingMoveable<black, DirectionFlags::NON>(Direction::RIGHT_DOWN)
+		if (isKingMovable<black, DirectionFlags::NON>(Direction::LEFT_UP) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::UP) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT_UP) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::LEFT) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::LEFT_DOWN) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::DOWN) ||
+				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT_DOWN)
 				) {
 			return false;
 		}

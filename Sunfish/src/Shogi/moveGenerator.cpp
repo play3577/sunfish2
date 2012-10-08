@@ -10,6 +10,7 @@
 #include "../Tools/debug.h"
 #include "square.h"
 #include "moveGenerator.h"
+#include "attack.h"
 
 namespace Shogi {
 	template <bool genCap, bool genNocap>
@@ -486,18 +487,168 @@ namespace Shogi {
 		return true;
 	}
 
+	unsigned MoveGenerator::generateCheck() {
+		if (pos.isCheck()) {
+			// TODO
+		} else {
+			if (pos.isBlackTurn()) {
+				generateCheckOnBoard<true>();
+				generateCheckDrop<true>();
+			} else {
+				generateCheckOnBoard<false>();
+				generateCheckDrop<false>();
+			}
+		}
+		return num;
+	}
+
 	template <bool black>
-	unsigned MoveGenerator::generateCheckOnBoard() {
-		for (Square sq = Square::TOP; sq.valid(); sq.next()) {
-			const Piece& piece = pos.getBoard(sq);
-			const Direction pin = pos.pin(sq, black).toDirection();
-			if (black && piece.isBlack()) {
-			} else if (!black && !piece.isBlack()) {
+	void MoveGenerator::generateCheckOnBoard() {
+		Square king = black ? pos.getWKing() : pos.getBKing();
+		for (Square from = Square::TOP; from.valid(); from.next()) {
+			const Piece& piece = pos.getBoard(from);
+			const Direction pin = pos.pin(from, black).toDirection();
+			if ((black && piece.isBlack()) ||
+					(!black && !piece.isBlack())) {
+				// 直接王手
+				DirectionFlags flags(Attack::check(piece,
+						king.getRank() - from.getRank(),
+						king.getFile() - from.getFile()));
+				DirectionFlags f = flags.getShortRangeOnly();
+				while (f.isNonZero()) {
+					Direction dir = f.pop().toDirection();
+					if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
+						return;
+					}
+					Square to = from + dir;
+					Piece piece = pos.getBoard(to);
+					if ((black && piece.isBlackMovable()) ||
+							(!black && piece.isWhiteMovable())) {
+						generateCheck<black, true>(from, to, piece);
+					}
+				}
+				f = flags.getLongRangeOnly();
+				while (f.isNonZero()) {
+					Direction dir = f.pop().toDirection();
+					if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
+						return;
+					}
+					for (Square to = from + dir; ; from += dir) {
+						Piece piece = pos.getBoard(to);
+						if ((black && !piece.isBlackMovable()) ||
+								(!black && !piece.isWhiteMovable())) {
+							break;
+						}
+						generateCheck<black, true>(from, to, piece);
+					}
+				}
+				// 開き王手
+				DirectionFlags effectKing = pos.getEffect(from, !black);
+				DirectionFlags attacker = pos.getEffect(from, black);
+				if (effectKing.isAttackedBy(attacker)) {
+					DirectionFlags flags = piece.getMovableDirection();
+					flags.remove(attacker.toDirection());
+					f = flags.getShortRangeOnly();
+					while (f.isNonZero()) {
+						Direction dir = f.pop().toDirection();
+						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
+							return;
+						}
+						Square to = from + dir;
+						Piece piece = pos.getBoard(to);
+						if ((black && piece.isBlackMovable()) ||
+								(!black && piece.isWhiteMovable())) {
+							generateCheck<black, false>(from, to, piece);
+						}
+					}
+					f = flags.getLongRangeOnly();
+					while (f.isNonZero()) {
+						Direction dir = f.pop().toDirection();
+						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
+							return;
+						}
+						for (Square to = from + dir; ; from += dir) {
+							Piece piece = pos.getBoard(to);
+							if ((black && !piece.isBlackMovable()) ||
+									(!black && !piece.isWhiteMovable())) {
+								break;
+							}
+							generateCheck<black, false>(from, to, piece);
+						}
+					}
+				}
+			}
+		}
+	}
+	template void MoveGenerator::generateCheckOnBoard<true>();
+	template void MoveGenerator::generateCheckOnBoard<false>();
+
+	template <bool black, bool direct>
+	void MoveGenerator::generateCheck(Square from, Square to, Piece piece) {
+		// 不成
+		if (!to.isCompulsoryPromotion(piece)) {
+			if (pos.isCheckMoveDirect(to, piece, false) == direct) {
+				moves[num++] = Move(from, to, false, false, piece);
+			}
+		}
+		// 成り
+		if (piece.isPromotable() && (to.isPromotableRank(black) || from.isPromotableRank(black))) {
+			if (pos.isCheckMoveDirect(to, piece, false) == direct) {
+				moves[num++] = Move(from, to, true, false, piece);
 			}
 		}
 	}
 
+	template void MoveGenerator::generateCheck<true, true>(Square from, Square to, Piece piece);
+	template void MoveGenerator::generateCheck<false, true>(Square from, Square to, Piece piece);
+	template void MoveGenerator::generateCheck<true, false>(Square from, Square to, Piece piece);
+	template void MoveGenerator::generateCheck<false, false>(Square from, Square to, Piece piece);
+
 	template <bool black>
-	unsigned MoveGenerator::generateCheckDrop() {
+	void MoveGenerator::generateCheckDrop() {
+		if (black) {
+			generateCheckDropPieces<true, Piece::BPAWN>();
+			generateCheckDropPieces<true, Piece::BLANCE>();
+			generateCheckDropPieces<true, Piece::BKNIGHT>();
+			generateCheckDropPieces<true, Piece::BSILVER>();
+			generateCheckDropPieces<true, Piece::BGOLD>();
+			generateCheckDropPieces<true, Piece::BBISHOP>();
+			generateCheckDropPieces<true, Piece::BROOK>();
+		} else {
+			generateCheckDropPieces<false, Piece::WPAWN>();
+			generateCheckDropPieces<false, Piece::WLANCE>();
+			generateCheckDropPieces<false, Piece::WKNIGHT>();
+			generateCheckDropPieces<false, Piece::WSILVER>();
+			generateCheckDropPieces<false, Piece::WGOLD>();
+			generateCheckDropPieces<false, Piece::WBISHOP>();
+			generateCheckDropPieces<false, Piece::WROOK>();
+		}
 	}
+
+	template <bool black, unsigned piece>
+	void MoveGenerator::generateCheckDropPieces() {
+		Square king = black ? pos.getWKing() : pos.getBKing();
+		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
+			if (piece == Piece::BPAWN) {
+			} else if (piece == Piece::BLANCE) {
+			} else if (piece == Piece::BKNIGHT) {
+			} else if (piece == Piece::BSILVER) {
+			} else if (piece == Piece::BGOLD) {
+			} else if (piece == Piece::BBISHOP) {
+			} else if (piece == Piece::BROOK) {
+			} else if (piece == Piece::WPAWN) {
+			} else if (piece == Piece::WLANCE) {
+			} else if (piece == Piece::WKNIGHT) {
+			} else if (piece == Piece::WSILVER) {
+			} else if (piece == Piece::WGOLD) {
+			} else if (piece == Piece::WBISHOP) {
+			} else if (piece == Piece::WROOK) {
+			}
+		}
+	}
+
+	template <bool black, unsigned piece, bool oneStep>
+	void MoveGenerator::generateCheckDropOneStep(Square king, Direction dir) {
+	}
+
 }

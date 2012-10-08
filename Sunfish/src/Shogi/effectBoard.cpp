@@ -38,7 +38,7 @@ namespace Shogi {
 	void EffectBoard::createEffect(const Board& board, const Square& sq) {
 		const Piece& piece = board.get(sq);
 		if (!piece.isEmpty()) {
-			DirectionFlags dirFlags = piece.getMoveableDirection();
+			DirectionFlags dirFlags = piece.getMovableDirection();
 			while (dirFlags.isNonZero()) {
 				const DirectionFlags flag = dirFlags.pop();
 				const Direction dir = flag.toDirection();
