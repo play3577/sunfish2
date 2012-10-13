@@ -39,9 +39,9 @@ namespace Develop {
 									Attack::attack(piece.getPromoted(), rank, file) != 0)) { // 王手し得る位置か
 								SquareDiff diff(file2+(rank2<<Square::SHIFT_RANK));
 								Direction dir = diff.toDirection();
-								if (piece.getMoveableDirection().check(DirectionFlags(dir))) {
+								if (piece.getMovableDirection().check(DirectionFlags(dir))) {
 									flags.add(dir);
-								} else if (piece.getMoveableDirection().check(DirectionFlags(dir, true))) {
+								} else if (piece.getMovableDirection().check(DirectionFlags(dir, true))) {
 									flags.add(DirectionFlags(dir, true));
 								} else {
 									assert(false);
