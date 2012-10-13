@@ -12,6 +12,7 @@
 #include "../Evaluates/initializer.h"
 #include "../Search/pvHandler.h"
 #include "../Records/record.h"
+#include "../Shogi/moveGenerator.h"
 #include "../Log/logger.h"
 
 namespace Cui {
@@ -26,6 +27,7 @@ namespace Cui {
 			MOVES,
 			CAPTURES,
 			NOCAPTURES,
+			CHECK,
 #ifndef NDEBUG
 			SEE,
 #endif // ifndef NDEBUG
@@ -49,6 +51,10 @@ namespace Cui {
 		void showCaptures(const Shogi::Position& pos);
 
 		void showNoCaptures(const Shogi::Position& pos);
+
+		void showCheck(const Shogi::Position& pos);
+
+		void showMoves(Shogi::MoveGenerator& gen);
 
 		void SeeTest(const Shogi::Position& pos, const Evaluates::Param& param);
 

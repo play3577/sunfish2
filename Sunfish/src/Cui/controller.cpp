@@ -26,6 +26,7 @@ namespace Cui {
 		{ "m", "moves", MOVES, "show legal moves." },
 		{ "c", "cap", CAPTURES, "show capturing moves." },
 		{ "nc", "ncap", NOCAPTURES, "show not captureing moves." },
+		{ "k", "check", CHECK, "show checks." },
 #ifndef NDEBUG
 		{ NULL, "see", SEE, "static exchange evaluation test.(DEBUG)" },
 #endif // ifndef NDEBUG
@@ -60,26 +61,28 @@ namespace Cui {
 	void Controller::showLegalMoves(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generate();
-		const Move* pmove;
-		while ((pmove = gen.next()) != NULL) {
-			std::cout << pmove->toString() << ' ';
-		}
-		std::cout << '\n';
+		showMoves(gen);
 	}
 
 	void Controller::showCaptures(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generateCapture();
-		const Move* pmove;
-		while ((pmove = gen.next()) != NULL) {
-			std::cout << pmove->toString() << ' ';
-		}
-		std::cout << '\n';
+		showMoves(gen);
 	}
 
 	void Controller::showNoCaptures(const Position& pos) {
 		MoveGenerator gen(pos);
 		gen.generateNocapture();
+		showMoves(gen);
+	}
+
+	void Controller::showCheck(const Position& pos) {
+		MoveGenerator gen(pos);
+		gen.generateCheck();
+		showMoves(gen);
+	}
+
+	void Controller::showMoves(MoveGenerator& gen) {
 		const Move* pmove;
 		while ((pmove = gen.next()) != NULL) {
 			std::cout << pmove->toString() << ' ';
@@ -193,6 +196,9 @@ namespace Cui {
 				break;
 			case NOCAPTURES: // 駒を取らない手列挙
 				showNoCaptures(record.getPosition());
+				break;
+			case CHECK: // 王手
+				showCheck(record.getPosition());
 				break;
 			case SEARCH: // 探索
 				searcher.init(record.getPosition());

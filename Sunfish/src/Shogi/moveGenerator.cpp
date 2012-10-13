@@ -521,9 +521,9 @@ namespace Shogi {
 						return;
 					}
 					Square to = from + dir;
-					Piece piece = pos.getBoard(to);
-					if ((black && piece.isBlackMovable()) ||
-							(!black && piece.isWhiteMovable())) {
+					Piece piece2 = pos.getBoard(to);
+					if ((black && piece2.isBlackMovable()) ||
+							(!black && piece2.isWhiteMovable())) {
 						generateCheck<black, true>(from, to, piece);
 					}
 				}
@@ -533,10 +533,10 @@ namespace Shogi {
 					if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
 						return;
 					}
-					for (Square to = from + dir; ; from += dir) {
-						Piece piece = pos.getBoard(to);
-						if ((black && !piece.isBlackMovable()) ||
-								(!black && !piece.isWhiteMovable())) {
+					for (Square to = from + dir; ; to += dir) {
+						Piece piece2 = pos.getBoard(to);
+						if ((black && !piece2.isBlackMovable()) ||
+								(!black && !piece2.isWhiteMovable())) {
 							break;
 						}
 						generateCheck<black, true>(from, to, piece);
@@ -555,9 +555,9 @@ namespace Shogi {
 							return;
 						}
 						Square to = from + dir;
-						Piece piece = pos.getBoard(to);
-						if ((black && piece.isBlackMovable()) ||
-								(!black && piece.isWhiteMovable())) {
+						Piece piece2 = pos.getBoard(to);
+						if ((black && piece2.isBlackMovable()) ||
+								(!black && piece2.isWhiteMovable())) {
 							generateCheck<black, false>(from, to, piece);
 						}
 					}
@@ -567,10 +567,10 @@ namespace Shogi {
 						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
 							return;
 						}
-						for (Square to = from + dir; ; from += dir) {
-							Piece piece = pos.getBoard(to);
-							if ((black && !piece.isBlackMovable()) ||
-									(!black && !piece.isWhiteMovable())) {
+						for (Square to = from + dir; ; to += dir) {
+							Piece piece2 = pos.getBoard(to);
+							if ((black && !piece2.isBlackMovable()) ||
+									(!black && !piece2.isWhiteMovable())) {
 								break;
 							}
 							generateCheck<black, false>(from, to, piece);
@@ -593,7 +593,7 @@ namespace Shogi {
 		}
 		// 成り
 		if (piece.isPromotable() && (to.isPromotableRank(black) || from.isPromotableRank(black))) {
-			if (pos.isCheckMoveDirect(to, piece, false) == direct) {
+			if (pos.isCheckMoveDirect(to, piece, true) == direct) {
 				moves[num++] = Move(from, to, true, false, piece);
 			}
 		}

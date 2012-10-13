@@ -29,7 +29,7 @@ OBJECTS+=$(CHECK_TABLE_SRC:.cpp=.o)
 
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-override CFLAGS+=-O2
+#override CFLAGS+=-O2
 #override CFLAGS+=-O3
 #override CFLAGS+=-NDEBUG
 override CFLAGS+=-g

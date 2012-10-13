@@ -16,6 +16,8 @@
 #include "pawnFlags.h"
 #include "positionHash.h"
 #include "change.h"
+#include "squareDiff.h"
+#include "../Log/logger.h"
 
 namespace Evaluates {
 	class Evaluate;
@@ -286,15 +288,17 @@ namespace Shogi {
 		}
 
 		bool isCheckMoveDirect(const Square& to, Piece piece, bool pro) const {
-			DirectionFlags king = effectBoard.get(to, !blackTurn).getKingOnly();
-			if (king.isZero()) { return Direction(Direction::NON); }
 			if (pro) { piece.promote(); }
-			if (king.isAttackedBy(piece.getMovableDirection())) {
-				return true;// 長い利き
+			DirectionFlags movable = piece.getMovableDirection();
+			DirectionFlags king = effectBoard.get(to, !blackTurn).getKingOnly();
+			if (!king.isZero()) {
+				if (king.isAttackedBy(movable)) {
+					return true;// 長い利き
+				}
 			}
-			Square ksq = blackTurn ? bking : wking;
-			Direction kingDir = king.toDirection();
-			if ((to == ksq + kingDir)) {
+			Square ksq = !blackTurn ? bking : wking;
+			Direction kingDir = SquareDiff(to, ksq).toDirectionOne();
+			if (movable.check(kingDir)) {
 				return true;// 短い利き
 			}
 			return false;

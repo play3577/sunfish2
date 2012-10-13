@@ -17,6 +17,8 @@ namespace Shogi {
 		int diff;
 		static const int _diff2dir[];
 		static const int* diff2dir;
+		static const int _diff2dirOne[];
+		static const int* diff2dirOne;
 		static const int _diff2dis[];
 		static const int* diff2dis;
 
@@ -35,6 +37,10 @@ namespace Shogi {
 
 		Direction toDirection() const {
 			return diff2dir[diff];
+		}
+
+		Direction toDirectionOne() const {
+			return diff2dirOne[diff];
 		}
 
 		int toDistance() const {
