@@ -22,7 +22,7 @@ namespace Develop {
 		oss << "const int Attack::_attackTable[][17][17] =\n";
 		oss << "{\n";
 		for (Piece piece = Piece::BPAWN; piece <= Piece::WDRAGON; piece.toNext()) {
-			DirectionFlags flags = piece.getMoveableDirection();
+			DirectionFlags flags = piece.getMovableDirection();
 			oss << "{\n";
 			for (int rank = -8; rank <= 8; rank++) {
 				oss << "{";
