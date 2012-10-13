@@ -20,6 +20,13 @@ DEPENDS:=$(SOURCES:.cpp=.d)
 
 DEV_PROGRAMS:=attackTable checkTable
 
+ATTACK_TABLE=attackTable
+ATTACK_TABLE_SRC=src/Shogi/Attack/attackTable.cpp
+OBJECTS+=$(ATTACK_TABLE_SRC:.cpp=.o)
+CHECK_TABLE=checkTable
+CHECK_TABLE_SRC=src/Shogi/Attack/checkTable.cpp
+OBJECTS+=$(CHECK_TABLE_SRC:.cpp=.o)
+
 override CFLAGS+=-Wall
 override CFLAGS+=-W
 override CFLAGS+=-O2
@@ -37,27 +44,27 @@ override LIBS+=-lboost_program_options
 .PHONY: all
 all: $(PROGRAM)
 
-$(PROGRAM): attackTable checkTable $(OBJECTS)
-	$(GPP) -o $(PROGRAM) $(CFLAGS) $(OBJECTS) $(LIBS)
+$(PROGRAM): $(sort $(OBJECTS))
+	$(GPP) -o $(PROGRAM) $(CFLAGS) $^ $(LIBS)
 
-src/Shogi/Attack/attackTable.o : attackTable
-
-attackTable : src/attackTable.cpp \
+$(ATTACK_TABLE) : src/attackTable.cpp \
 src/Shogi/squareDiff.o src/Shogi/piece.o \
 src/Shogi/directionFlags.o src/Log/logger.cpp \
 src/Develop/attackTableGenerator.o
 	$(GPP) -o $@ $(CFLAGS) $^ $(LIBS)
-	./$@ src/Shogi/Attack/attackTable.cpp
 
-src/Shogi/Attack/checkTable.o : checkTable
+$(ATTACK_TABLE_SRC) : $(ATTACK_TABLE)
+	./$(ATTACK_TABLE) $@
 
-checkTable : src/checkTable.cpp \
+$(CHECK_TABLE) : src/checkTable.cpp \
 src/Shogi/squareDiff.o src/Shogi/piece.o \
 src/Shogi/directionFlags.o src/Log/logger.cpp \
 src/Develop/checkTableGenerator.o \
 src/Shogi/Attack/attackTable.o
 	$(GPP) -o $@ $(CFLAGS) $^ $(LIBS)
-	./$@ src/Shogi/Attack/checkTable.cpp
+
+$(CHECK_TABLE_SRC) : $(CHECK_TABLE)
+	./$(CHECK_TABLE) $@
 
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<
