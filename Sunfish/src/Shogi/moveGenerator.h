@@ -76,14 +76,8 @@ namespace Shogi {
 		template <bool black>
 		void generateCheckDrop();
 
-		template <bool black, unsigned piece>
-		void generateCheckDropPieces();
-
-		template <bool black, unsigned piece, bool oneStep>
-		void generateCheckDropOneStep(Square king, Direction dir);
-
-		template <bool black, unsigned piece>
-		void generateCheckDropStraight();
+		template <bool black, unsigned piece, bool longRange>
+		void generateCheckDropStraight(Direction dir);
 
 	public:
 		MoveGenerator(const Position& pos) : pos(pos) {

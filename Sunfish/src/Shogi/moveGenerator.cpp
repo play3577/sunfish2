@@ -607,48 +607,110 @@ namespace Shogi {
 	template <bool black>
 	void MoveGenerator::generateCheckDrop() {
 		if (black) {
-			generateCheckDropPieces<true, Piece::BPAWN>();
-			generateCheckDropPieces<true, Piece::BLANCE>();
-			generateCheckDropPieces<true, Piece::BKNIGHT>();
-			generateCheckDropPieces<true, Piece::BSILVER>();
-			generateCheckDropPieces<true, Piece::BGOLD>();
-			generateCheckDropPieces<true, Piece::BBISHOP>();
-			generateCheckDropPieces<true, Piece::BROOK>();
+			if (pos.getBlackHand(Piece::BPAWN) != 0) {
+				generateCheckDropStraight<true, Piece::BPAWN, false>(Direction::DOWN);
+			}
+			if (pos.getBlackHand(Piece::BLANCE) != 0) {
+				generateCheckDropStraight<true, Piece::BLANCE, true>(Direction::DOWN);
+			}
+			if (pos.getBlackHand(Piece::BKNIGHT) != 0) {
+				generateCheckDropStraight<true, Piece::BKNIGHT, false>(Direction::RIGHT_DOWN2);
+				generateCheckDropStraight<true, Piece::BKNIGHT, false>(Direction::LEFT_DOWN2);
+			}
+			if (pos.getBlackHand(Piece::BSILVER) != 0) {
+				generateCheckDropStraight<true, Piece::BSILVER, false>(Direction::RIGHT_UP);
+				generateCheckDropStraight<true, Piece::BSILVER, false>(Direction::LEFT_UP);
+				generateCheckDropStraight<true, Piece::BSILVER, false>(Direction::RIGHT_DOWN);
+				generateCheckDropStraight<true, Piece::BSILVER, false>(Direction::DOWN);
+				generateCheckDropStraight<true, Piece::BSILVER, false>(Direction::LEFT_DOWN);
+			}
+			if (pos.getBlackHand(Piece::BGOLD) != 0) {
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::UP);
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::RIGHT);
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::LEFT);
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::RIGHT_DOWN);
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::DOWN);
+				generateCheckDropStraight<true, Piece::BGOLD, false>(Direction::LEFT_DOWN);
+			}
+			if (pos.getBlackHand(Piece::BBISHOP) != 0) {
+				generateCheckDropStraight<true, Piece::BBISHOP, true>(Direction::RIGHT_UP);
+				generateCheckDropStraight<true, Piece::BBISHOP, true>(Direction::LEFT_UP);
+				generateCheckDropStraight<true, Piece::BBISHOP, true>(Direction::RIGHT_DOWN);
+				generateCheckDropStraight<true, Piece::BBISHOP, true>(Direction::LEFT_DOWN);
+			}
+			if (pos.getBlackHand(Piece::BROOK) != 0) {
+				generateCheckDropStraight<true, Piece::BROOK, true>(Direction::UP);
+				generateCheckDropStraight<true, Piece::BROOK, true>(Direction::RIGHT);
+				generateCheckDropStraight<true, Piece::BROOK, true>(Direction::LEFT);
+				generateCheckDropStraight<true, Piece::BROOK, true>(Direction::DOWN);
+			}
 		} else {
-			generateCheckDropPieces<false, Piece::WPAWN>();
-			generateCheckDropPieces<false, Piece::WLANCE>();
-			generateCheckDropPieces<false, Piece::WKNIGHT>();
-			generateCheckDropPieces<false, Piece::WSILVER>();
-			generateCheckDropPieces<false, Piece::WGOLD>();
-			generateCheckDropPieces<false, Piece::WBISHOP>();
-			generateCheckDropPieces<false, Piece::WROOK>();
-		}
-	}
-
-	template <bool black, unsigned piece>
-	void MoveGenerator::generateCheckDropPieces() {
-		Square king = black ? pos.getWKing() : pos.getBKing();
-		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
-			if (piece == Piece::BPAWN) {
-			} else if (piece == Piece::BLANCE) {
-			} else if (piece == Piece::BKNIGHT) {
-			} else if (piece == Piece::BSILVER) {
-			} else if (piece == Piece::BGOLD) {
-			} else if (piece == Piece::BBISHOP) {
-			} else if (piece == Piece::BROOK) {
-			} else if (piece == Piece::WPAWN) {
-			} else if (piece == Piece::WLANCE) {
-			} else if (piece == Piece::WKNIGHT) {
-			} else if (piece == Piece::WSILVER) {
-			} else if (piece == Piece::WGOLD) {
-			} else if (piece == Piece::WBISHOP) {
-			} else if (piece == Piece::WROOK) {
+			if (pos.getBlackHand(Piece::WPAWN) != 0) {
+				generateCheckDropStraight<false, Piece::WPAWN, false>(Direction::UP);
+			}
+			if (pos.getBlackHand(Piece::WLANCE) != 0) {
+				generateCheckDropStraight<false, Piece::WLANCE, true>(Direction::UP);
+			}
+			if (pos.getBlackHand(Piece::WKNIGHT) != 0) {
+				generateCheckDropStraight<false, Piece::WKNIGHT, false>(Direction::LEFT_UP2);
+				generateCheckDropStraight<false, Piece::WKNIGHT, false>(Direction::RIGHT_UP2);
+			}
+			if (pos.getBlackHand(Piece::WSILVER) != 0) {
+				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::LEFT_DOWN);
+				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::RIGHT_DOWN);
+				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::LEFT_UP);
+				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::UP);
+				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::RIGHT_UP);
+			}
+			if (pos.getBlackHand(Piece::WGOLD) != 0) {
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::DOWN);
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::LEFT);
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::RIGHT);
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::LEFT_UP);
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::UP);
+				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::RIGHT_UP);
+			}
+			if (pos.getBlackHand(Piece::WBISHOP) != 0) {
+				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::LEFT_DOWN);
+				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::RIGHT_DOWN);
+				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::LEFT_UP);
+				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::RIGHT_UP);
+			}
+			if (pos.getBlackHand(Piece::WROOK) != 0) {
+				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::DOWN);
+				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::LEFT);
+				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::RIGHT);
+				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::UP);
 			}
 		}
 	}
 
-	template <bool black, unsigned piece, bool oneStep>
-	void MoveGenerator::generateCheckDropOneStep(Square king, Direction dir) {
+	template <bool black, unsigned piece, bool longRange>
+	void MoveGenerator::generateCheckDropStraight(Direction dir) {
+		Square king = black ? pos.getWKing() : pos.getBKing();
+		// 移動先
+		Square to = king + dir;
+		Piece p = pos.getBoard(to);
+		if (!p.isEmpty()) { return; }
+		// 二歩チェック
+		if (black && piece == Piece::BPAWN && pos.getBPawnFiles().exist(to.getFile())) {
+			return;
+		}
+		if (!black && piece == Piece::WPAWN && pos.getWPawnFiles().exist(to.getFile())) {
+			return;
+		}
+		// 手追加
+		moves[num++] = Move(Square::NON, to, false, true, piece);
+		// 跳び駒
+		if (longRange) {
+			while (true) {
+				to += dir;
+				p = pos.getBoard(to);
+				if (!p.isEmpty()) { break; }
+				// 手追加
+				moves[num++] = Move(Square::NON, to, false, true, piece);
+			}
+		}
 	}
 
 }
