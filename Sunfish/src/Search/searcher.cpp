@@ -76,6 +76,24 @@ namespace Search {
 	}
 
 	/***************************************************************
+	 * mate 1 ply search                                           *
+	 * tree  : 探索木                                              *
+	***************************************************************/
+	bool Searcher::isMate1Ply(Tree& tree) {
+		tree.generateTacticalMoves();
+
+		while (tree.next()) {
+			tree.makeMove();
+			if (tree.isMate()) {
+				tree.makeMove();
+				return true;
+			}
+			tree.unmakeMove();
+		}
+		return false; // 不詰め
+	}
+
+	/***************************************************************
 	 * nega-max search                                             *
 	 * depth : 残り深さ(PLY1倍)                                    *
 	 * alpha : alpha値                                             *

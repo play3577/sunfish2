@@ -27,6 +27,7 @@ namespace Cui {
 		{ "c", "cap", CAPTURES, "show capturing moves." },
 		{ "nc", "ncap", NOCAPTURES, "show not captureing moves." },
 		{ "k", "check", CHECK, "show checks." },
+		{ "1", "mate1", MATE, "search check-mate on 1 ply." },
 #ifndef NDEBUG
 		{ NULL, "see", SEE, "static exchange evaluation test.(DEBUG)" },
 #endif // ifndef NDEBUG
@@ -199,6 +200,13 @@ namespace Cui {
 				break;
 			case CHECK: // 王手
 				showCheck(record.getPosition());
+				break;
+			case MATE: // 1手詰み
+				if (searcher.isMate1Ply(record.getPosition())) {
+					std::cout << "mate.\n";
+				} else {
+					std::cout << "no mate.\n";
+				}
 				break;
 			case SEARCH: // 探索
 				searcher.init(record.getPosition());

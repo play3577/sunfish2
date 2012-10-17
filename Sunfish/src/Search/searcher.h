@@ -61,6 +61,8 @@ namespace Search {
 				Evaluates::Value alpha,
 				Evaluates::Value beta);
 
+		bool isMate1Ply(Tree& tree);
+
 		template <bool pvNode, bool nullMoveNode>
 		Evaluates::Value negaMax(Tree& tree, int depth,
 				Evaluates::Value alpha,
@@ -160,6 +162,15 @@ namespace Search {
 
 		void setSearchConfig(const SearchConfig& config) {
 			this->config = config;
+		}
+
+		bool isMate1Ply(const Shogi::Position& pos) {
+			tree.init(pos);
+			return isMate1Ply(tree);
+		}
+
+		bool isMate1Ply() {
+			return isMate1Ply(tree);
 		}
 
 		bool search(SearchResult& result);

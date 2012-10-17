@@ -142,6 +142,10 @@ namespace Search {
 			return pos;
 		}
 
+		bool isMate() const {
+			return pos.isMate();
+		}
+
 		bool isCheck() const {
 			return pos.isCheck();
 		}
