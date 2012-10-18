@@ -80,12 +80,12 @@ namespace Search {
 	 * tree  : 探索木                                              *
 	***************************************************************/
 	bool Searcher::isMate1Ply(Tree& tree) {
-		tree.generateTacticalMoves();
+		tree.generateCheck();
 
 		while (tree.next()) {
 			tree.makeMove();
 			if (tree.isMate()) {
-				tree.makeMove();
+				tree.unmakeMove();
 				return true;
 			}
 			tree.unmakeMove();

@@ -507,9 +507,9 @@ namespace Shogi {
 		Square king = black ? pos.getWKing() : pos.getBKing();
 		for (Square from = Square::TOP; from.valid(); from.next()) {
 			const Piece& piece = pos.getBoard(from);
-			const Direction pin = pos.pin(from, black).toDirection();
 			if ((black && piece.isBlack()) ||
-					(!black && !piece.isBlack())) {
+					(!black && piece.isWhite())) {
+				const Direction pin = pos.pin(from, black).toDirection();
 				// 直接王手
 				DirectionFlags flags(Attack::check(piece,
 						king.getRank() - from.getRank(),
@@ -540,6 +540,9 @@ namespace Shogi {
 							break;
 						}
 						generateCheck<black, true>(from, to, piece);
+						if (!piece2.isEmpty()) {
+							break;
+						}
 					}
 				}
 				// 開き王手
@@ -574,6 +577,9 @@ namespace Shogi {
 								break;
 							}
 							generateCheck<black, false>(from, to, piece);
+							if (!piece2.isEmpty()) {
+								break;
+							}
 						}
 					}
 				}

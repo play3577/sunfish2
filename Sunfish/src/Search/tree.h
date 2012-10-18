@@ -102,6 +102,10 @@ namespace Search {
 			nodes[depth].generateTacticalMoves();
 		}
 
+		void generateCheck() {
+			nodes[depth].generateCheck();
+		}
+
 		bool next() {
 			return nodes[depth].next();
 		}

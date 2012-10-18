@@ -24,6 +24,8 @@ namespace Search {
 		PHASE_TACTICAL,
 
 		PHASE_CAPTURE_ONLY,
+
+		PHASE_CHECK_ONLY,
 	};
 
 	class PhasedMoveGenerator : public Shogi::MoveGenerator {
@@ -62,6 +64,10 @@ namespace Search {
 
 		void initCap() {
 			init(PHASE_CAPTURE_ONLY);
+		}
+
+		void initChk() {
+			init(PHASE_CHECK_ONLY);
 		}
 
 		const Shogi::Move* next();

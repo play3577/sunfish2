@@ -99,6 +99,11 @@ namespace Search {
 				sortSee(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;
+			case PHASE_CHECK_ONLY:
+				generateCheck();
+				// TODO: sort
+				phase = PHASE_END;
+				break;
 			case PHASE_END:
 				return NULL;
 			}

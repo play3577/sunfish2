@@ -71,6 +71,11 @@ namespace Search {
 			pmove = NULL;
 		}
 
+		void generateCheck() {
+			pgen->initChk();
+			pmove = NULL;
+		}
+
 		void setHashMove(const HashMove& hashMove) {
 			pgen->setHashMove(hashMove);
 		}

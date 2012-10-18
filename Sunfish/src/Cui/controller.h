@@ -28,7 +28,8 @@ namespace Cui {
 			CAPTURES,
 			NOCAPTURES,
 			CHECK,
-			MATE,
+			MATED,
+			MATE1,
 #ifndef NDEBUG
 			SEE,
 #endif // ifndef NDEBUG

@@ -599,14 +599,14 @@ namespace Shogi {
 	bool Position::_isMate() const {
 		DirectionFlags flags = getCheckDirection();
 		// 玉の移動
-		if (isKingMovable<black, DirectionFlags::NON>(Direction::LEFT_UP) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::UP) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT_UP) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::LEFT) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::LEFT_DOWN) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::DOWN) ||
-				isKingMovable<black, DirectionFlags::NON>(Direction::RIGHT_DOWN)
+		if (isKingMovable<black>(Direction::LEFT_UP, flags) ||
+				isKingMovable<black>(Direction::UP, flags) ||
+				isKingMovable<black>(Direction::RIGHT_UP, flags) ||
+				isKingMovable<black>(Direction::LEFT, flags) ||
+				isKingMovable<black>(Direction::RIGHT, flags) ||
+				isKingMovable<black>(Direction::LEFT_DOWN, flags) ||
+				isKingMovable<black>(Direction::DOWN, flags) ||
+				isKingMovable<black>(Direction::RIGHT_DOWN, flags)
 				) {
 			return false;
 		}

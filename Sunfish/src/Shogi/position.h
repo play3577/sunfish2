@@ -119,6 +119,12 @@ namespace Shogi {
 		}
 
 		template <bool black>
+		bool isKingMovable(Direction dir, DirectionFlags flags) const {
+			return !flags.check(dir, true) &&
+				isKingMovable<black, DirectionFlags::NON>(dir);
+		}
+
+		template <bool black>
 		bool _isMate() const;
 
 	public:
