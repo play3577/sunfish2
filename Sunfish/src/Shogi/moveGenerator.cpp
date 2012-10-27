@@ -17,20 +17,20 @@ namespace Shogi {
 	unsigned MoveGenerator::generate() {
 		if (pos.isCheck()) {
 			if (pos.isBlackTurn()) {
-				generateEvasion<true, genCap, genNocap>();
-				generateKing<true, true, genCap, genNocap>();
+				generateEvasion<true, genCap, genNocap, false>();
+				generateKing<true, true, genCap, genNocap, false>();
 			} else {
-				generateEvasion<false, genCap, genNocap>();
-				generateKing<false, true, genCap, genNocap>();
+				generateEvasion<false, genCap, genNocap, false>();
+				generateKing<false, true, genCap, genNocap, false>();
 			}
 		} else {
 			if (pos.isBlackTurn()) {
 				generateOnBoard<true, genCap, genNocap, false>();
-				generateKing<true, false, genCap, genNocap>();
+				generateKing<true, false, genCap, genNocap, false>();
 				if (genNocap) { generateDrop<true>(); }
 			} else {
 				generateOnBoard<false, genCap, genNocap, false>();
-				generateKing<false, false, genCap, genNocap>();
+				generateKing<false, false, genCap, genNocap, false>();
 				if (genNocap) { generateDrop<false>(); }
 			}
 		}
@@ -43,19 +43,19 @@ namespace Shogi {
 	unsigned MoveGenerator::generateTactical() {
 		if (pos.isCheck()) {
 			if (pos.isBlackTurn()) {
-				generateEvasion<true, true, true>();
-				generateKing<true, true, true, true>();
+				generateEvasion<true, true, true, false>();
+				generateKing<true, true, true, true, false>();
 			} else {
-				generateEvasion<false, true, true>();
-				generateKing<false, true, true, true>();
+				generateEvasion<false, true, true, false>();
+				generateKing<false, true, true, true, false>();
 			}
 		} else {
 			if (pos.isBlackTurn()) {
 				generateOnBoard<true, true, false, true>();
-				generateKing<true, false, true, false>();
+				generateKing<true, false, true, false, false>();
 			} else {
 				generateOnBoard<false, true, false, true>();
-				generateKing<false, false, true, false>();
+				generateKing<false, false, true, false, false>();
 			}
 		}
 		return num;
@@ -283,21 +283,21 @@ namespace Shogi {
 		}
 	}
 
-	template <bool black, bool check, bool genCap, bool genNocap>
+	template <bool black, bool check, bool genCap, bool genNocap, bool genCheckOnly>
 	void MoveGenerator::generateKing() {
 		if (black ? pos.getBKing().valid() : pos.getWKing().valid()) {
-			generateKingDirection<black, check, genCap, genNocap>(Direction::LEFT_UP);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::UP);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::RIGHT_UP);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::LEFT);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::RIGHT);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::LEFT_DOWN);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::DOWN);
-			generateKingDirection<black, check, genCap, genNocap>(Direction::RIGHT_DOWN);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::LEFT_UP);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::UP);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::RIGHT_UP);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::LEFT);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::RIGHT);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::LEFT_DOWN);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::DOWN);
+			generateKingDirection<black, check, genCap, genNocap, genCheckOnly>(Direction::RIGHT_DOWN);
 		}
 	}
 
-	template <bool black, bool check, bool genCap, bool genNocap>
+	template <bool black, bool check, bool genCap, bool genNocap, bool genCheckOnly>
 	void MoveGenerator::generateKingDirection(const Direction& dir) {
 		Square from = (black ? pos.getBKing() : pos.getWKing());
 		Square to = from + dir;
@@ -365,7 +365,7 @@ namespace Shogi {
 		}
 	}
 
-	template <bool black, bool genCap, bool genNocap>
+	template <bool black, bool genCap, bool genNocap, bool genCheckOnly>
 	void MoveGenerator::generateEvasion() {
 		DirectionFlags flags = pos.getCheckDirection();
 		if (!flags.isPlural()) { // 両王手でない場合
@@ -373,23 +373,23 @@ namespace Shogi {
 			Square sq = (black ? pos.getBKing() : pos.getWKing());
 			for (sq += dir; pos.getBoard(sq) == Piece::EMPTY; sq += dir) {
 				if (genNocap) { // 駒を取らない手
-					generateEvasionOnBoard<black>(sq);
-					generateEvasionDrop<black, (black ? Piece::BPAWN : Piece::WPAWN)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BLANCE : Piece::WLANCE)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BKNIGHT : Piece::WKNIGHT)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BSILVER : Piece::WSILVER)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BGOLD : Piece::WGOLD)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BBISHOP : Piece::WBISHOP)>(sq);
-					generateEvasionDrop<black, (black ? Piece::BROOK : Piece::WROOK)>(sq);
+					generateEvasionOnBoard<black, genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BPAWN : Piece::WPAWN), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BLANCE : Piece::WLANCE), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BKNIGHT : Piece::WKNIGHT), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BSILVER : Piece::WSILVER), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BGOLD : Piece::WGOLD), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BBISHOP : Piece::WBISHOP), genCheckOnly>(sq);
+					generateEvasionDrop<black, (black ? Piece::BROOK : Piece::WROOK), genCheckOnly>(sq);
 				}
 			}
 			if (genCap) { // 駒を取る手
-				generateEvasionOnBoard<black>(sq);
+				generateEvasionOnBoard<black, genCheckOnly>(sq);
 			}
 		}
 	}
 
-	template <bool black>
+	template <bool black, bool genCheckOnly>
 	void MoveGenerator::generateEvasionOnBoard(Square to) {
 		DirectionFlags flags = pos.getEffect(to, black).getExcludeKing();
 		while (flags.isNonZero()) {
@@ -399,15 +399,18 @@ namespace Shogi {
 				;
 			Piece piece = pos.getBoard(from);
 			if (!piece.isKing<black>() && pos.pin(from, black).isZero()) {
-				if (piece.isPromotable()) {
+				if (piece.isPromotable() && (!genCheckOnly ||
+						pos.isCheckMove(from, to, piece, true))) {
 					generateMoveOneMovePro<black>(piece, from, to);
 				}
-				generateMoveOneMove<black>(piece, from, to);
+				if (!genCheckOnly || pos.isCheckMove(from, to, piece, false)) {
+					generateMoveOneMove<black>(piece, from, to);
+				}
 			}
 		}
 	}
 
-	template <bool black, unsigned piece>
+	template <bool black, unsigned piece, bool genCheckOnly>
 	void MoveGenerator::generateEvasionDrop(Square to) {
 		assert(black != (piece & Piece::TURN));
 		if ((black ? pos.getBlackHand(piece) : pos.getWhiteHand(piece)) != 0) {
@@ -423,6 +426,9 @@ namespace Shogi {
 			if (black && piece == Piece::BPAWN && pos.isPawnDropMate(to, true)) {
 				return;
 			} else if (!black && piece == Piece::WPAWN && pos.isPawnDropMate(to, false)) {
+				return;
+			}
+			if (genCheckOnly && !pos.isCheckMoveDirect(to, piece, false)) {
 				return;
 			}
 			moves[num++] = Move(Square::NON, to, false, true, piece);
@@ -489,7 +495,13 @@ namespace Shogi {
 
 	unsigned MoveGenerator::generateCheck() {
 		if (pos.isCheck()) {
-			// TODO
+			if (pos.isBlackTurn()) {
+				generateEvasion<true, true, true, true>();
+				generateKing<true, true, true, true, true>();
+			} else {
+				generateEvasion<false, true, true, true>();
+				generateKing<false, true, true, true, true>();
+			}
 		} else {
 			if (pos.isBlackTurn()) {
 				generateCheckOnBoard<true>();

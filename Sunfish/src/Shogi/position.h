@@ -287,6 +287,12 @@ namespace Shogi {
 					(!move.isHand() && isCheckMoveDiscovered(move));
 		}
 
+		bool isCheckMove(const Square& from, const Square& to,
+				const Piece& piece, bool pro) const {
+			return isCheckMoveDirect(to, piece, pro)
+					|| isCheckMoveDiscovered(from, to);
+		}
+
 		// 動かした駒による王手
 		bool isCheckMoveDirect(const Move& move) const {
 			return isCheckMoveDirect(move.getTo(),
@@ -312,10 +318,18 @@ namespace Shogi {
 
 		// 開き王手
 		bool isCheckMoveDiscovered(const Move& move) const {
-			DirectionFlags king = effectBoard.get(move.getFrom(), !blackTurn);
-			DirectionFlags attacker = effectBoard.get(move.getFrom(), blackTurn);
+			return isCheckMoveDiscovered(move.getFrom(), move.getTo());
+		}
+
+		bool isCheckMoveDiscovered(const Square& from, const Square& to) const {
+			DirectionFlags king = effectBoard.get(from, !blackTurn);
+			DirectionFlags attacker = effectBoard.get(from, blackTurn);
 			if (king.isAttackedBy(attacker)) {
-				return attacker.toDirection();
+				Direction dir = SquareDiff(from, to).toDirection();
+				Direction atk = attacker.toDirection();
+				if (dir != atk) {
+					return atk;
+				}
 			}
 			return Direction(Direction::NON);
 		}

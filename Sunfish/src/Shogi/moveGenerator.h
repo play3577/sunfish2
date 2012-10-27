@@ -46,10 +46,10 @@ namespace Shogi {
 			}
 		}
 
-		template <bool black, bool check, bool genCap, bool genNocap>
+		template <bool black, bool check, bool genCap, bool genNocap, bool genCheckOnly>
 		void generateKing();
 
-		template <bool black, bool check, bool genCap, bool genNocap>
+		template <bool black, bool check, bool genCap, bool genNocap, bool genCheckOnly>
 		void generateKingDirection(const Direction& dir);
 
 		template <bool black>
@@ -58,13 +58,13 @@ namespace Shogi {
 		template <bool black, unsigned piece>
 		void generateDropPieces();
 
-		template <bool black, bool genCap, bool genNocap>
+		template <bool black, bool genCap, bool genNocap, bool genCheckOnly>
 		void generateEvasion();
 
-		template <bool black>
+		template <bool black, bool genCheckOnly>
 		void generateEvasionOnBoard(Square to);
 
-		template <bool black, unsigned piece>
+		template <bool black, unsigned piece, bool genCheckOnly>
 		void generateEvasionDrop(Square to);
 
 		template <bool black>
