@@ -124,7 +124,7 @@ namespace Cui {
 		}
 
 		// 探索設定
-		searchConfig.depth = 6;
+		searchConfig.depth = 5;
 		searchConfig.pvHandler = this;
 		searchConfig.limitEnable = false;
 		searchConfig.limitSeconds = 5;

@@ -141,6 +141,13 @@ namespace Search {
 			hashOk = true;
 		}
 
+		// mate
+		if (!tree.isCheck()) {
+			if (isMate1Ply(tree)) {
+				return Value::MAX;
+			}
+		}
+
 		// stand-pat
 		Value standPat = Value::MIN;
 #define STAND_PAT		(standPat == Value::MIN ? standPat = tree.negaEvaluate() : standPat)

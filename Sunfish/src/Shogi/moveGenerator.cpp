@@ -314,6 +314,9 @@ namespace Shogi {
 				|| effectTo.longOrShortRange() || (check && effectFrom.getLongRangeOnly().check(dir, true))) {
 			return;
 		}
+		if (genCheckOnly && !pos.isCheckMoveDiscovered(from, to)) {
+			return;
+		}
 		moves[num++] = Move(from, to, false, false, (black ? Piece::BKING : Piece::WKING));
 	}
 

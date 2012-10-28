@@ -327,7 +327,7 @@ namespace Shogi {
 			if (king.isAttackedBy(attacker)) {
 				Direction dir = SquareDiff(from, to).toDirection();
 				Direction atk = attacker.toDirection();
-				if (dir != atk) {
+				if (dir != atk && dir.reverse() != atk) {
 					return atk;
 				}
 			}

@@ -29,11 +29,11 @@ OBJECTS+=$(CHECK_TABLE_SRC:.cpp=.o)
 
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-#override CFLAGS+=-O2
+override CFLAGS+=-O2
 #override CFLAGS+=-O3
 #override CFLAGS+=-NDEBUG
-override CFLAGS+=-g
-#override CFLAGS+=-pg
+#override CFLAGS+=-g
+override CFLAGS+=-pg
 #override LIBS+=-lboost_thread-mt
 #override LIBS+=-lboost_regex-mt
 #override LIBS+=-lboost_program_options-mt
