@@ -32,6 +32,13 @@ namespace Search {
 			return standPat;
 		}
 
+		// mate
+		if (!tree.isCheck()) {
+			if (isMate1Ply(tree)) {
+				return Value::MAX;
+			}
+		}
+
 		Value value = standPat;
 
 		// 合法手の列挙
@@ -105,6 +112,10 @@ namespace Search {
 
 		tree.initNode();
 
+		// TODO: distance pruning
+
+		// TODO: SHEK
+
 		// leaf node
 		if (depth <= 0 || tree.isMaxDepth()) {
 			// quiesence search
@@ -153,12 +164,12 @@ namespace Search {
 #define STAND_PAT		(standPat == Value::MIN ? standPat = tree.negaEvaluate() : standPat)
 
 		// null move pruning
+		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 		bool mate = false;
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
-				depth >= PLY1 * 2 &&
+				tree.getDepth() * PLY1 < nullDepth &&
 				beta <= STAND_PAT){
-			int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
 			if (tree.nullMove()) {
 				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
 				tree.unmakeMove();
