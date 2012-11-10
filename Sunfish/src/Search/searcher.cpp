@@ -14,6 +14,24 @@ namespace Search {
 	using namespace Table;
 
 	/***************************************************************
+	 * mate 1 ply search                                           *
+	 * tree  : 探索木                                              *
+	***************************************************************/
+	bool Searcher::isMate1Ply(Tree& tree) {
+		tree.generateCheck();
+
+		while (tree.next()) {
+			makeMove(false);
+			if (tree.isMate()) {
+				unmakeMove(false);
+				return true;
+			}
+			unmakeMove(false);
+		}
+		return false; // 不詰め
+	}
+
+	/***************************************************************
 	 * quiesence search                                            *
 	 * ply   : 静止探索を開始した地点からの手数                    *
 	 * alpha : alpha値                                             *
@@ -63,9 +81,9 @@ namespace Search {
 			}
 
 			// 子ノードを展開
-			tree.makeMove();
+			makeMove(false);
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
-			tree.unmakeMove();
+			unmakeMove(false);
 			if (interrupt()) { return Value(0); }
 
 			if (newValue > value) {
@@ -83,24 +101,6 @@ namespace Search {
 	}
 
 	/***************************************************************
-	 * mate 1 ply search                                           *
-	 * tree  : 探索木                                              *
-	***************************************************************/
-	bool Searcher::isMate1Ply(Tree& tree) {
-		tree.generateCheck();
-
-		while (tree.next()) {
-			tree.makeMove();
-			if (tree.isMate()) {
-				tree.unmakeMove();
-				return true;
-			}
-			tree.unmakeMove();
-		}
-		return false; // 不詰め
-	}
-
-	/***************************************************************
 	 * nega-max search                                             *
 	 * depth : 残り深さ(PLY1倍)                                    *
 	 * alpha : alpha値                                             *
@@ -114,7 +114,17 @@ namespace Search {
 
 		// TODO: distance pruning
 
-		// TODO: SHEK
+		switch (shekCheck()) {
+		case Shek::NONE:
+			break;
+		case Shek::INCLUDE:
+			return Value::MIN;
+		case Shek::LESS:
+			return Value::MAX;
+		case Shek::EQUAL:
+			// TODO: 千日手判定
+			return Value(0);
+		}
 
 		// leaf node
 		if (depth <= 0 || tree.isMaxDepth()) {
@@ -170,9 +180,9 @@ namespace Search {
 				beta == alpha + 1 &&
 				tree.getDepth() * PLY1 < nullDepth &&
 				beta <= STAND_PAT){
-			if (tree.nullMove()) {
+			if (nullMove()) {
 				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
-				tree.unmakeMove();
+				unmakeMove();
 				if (interrupt()) { return Value(0); }
 				if (newValue >= beta) {
 					return beta;
@@ -258,7 +268,7 @@ namespace Search {
 
 			// make move
 			Value newValue;
-			tree.makeMove();
+			makeMove();
 
 			// new stand-pat
 			Value newStandPat = tree.negaEvaluate();
@@ -266,7 +276,7 @@ namespace Search {
 			// extended futility pruning
 			if (!isHash && !mate && !tree.isCheck() && !tree.isTacticalMove()) {
 				if (newStandPat - getFutMgn(newDepth, moveCount) >= -newAlpha) {
-					tree.unmakeMove();
+					unmakeMove();
 					value = newAlpha; // fail soft
 					continue;
 				}
@@ -289,7 +299,7 @@ namespace Search {
 			}
 
 			// unmake move
-			tree.unmakeMove();
+			unmakeMove();
 
 			if (interrupt()) {
 				return Value(0);
@@ -383,7 +393,7 @@ namespace Search {
 			while (tree.next()) {
 				unsigned moveCount = tree.getMoveIndex();
 				// 手を進める。
-				tree.makeMove();
+				makeMove();
 				Value vtemp;
 revaluation:
 				if (moveCount == 1) {
@@ -400,7 +410,7 @@ revaluation:
 					}
 				}
 				if (interrupt()) {
-					tree.unmakeMove();
+					unmakeMove();
 					goto lab_search_end;
 				}
 				// fail-high
@@ -416,7 +426,7 @@ revaluation:
 					goto revaluation;
 				}
 				// 手を戻す。
-				tree.unmakeMove();
+				unmakeMove();
 
 				// 最初の手かalphaを越えた場合
 				if (moveCount == 1 || vtemp > alpha) {

@@ -37,7 +37,12 @@ namespace Shek {
 		}
 
 		void unset() {
+			assert(cnt > 0);
 			cnt--;
+		}
+
+		void debugPrint(const HandSet&) const {
+			Log::debug << "ShekEntity::cnt=[" << cnt << "]\n";
 		}
 	};
 }

@@ -138,6 +138,23 @@ namespace Search {
 			return nodes[depth].getMove();
 		}
 
+		void debugPrint() const {
+			Log::debug << debugString() << "\n";
+		}
+
+		std::string debugString() const {
+			std::ostringstream oss;
+			for (int i = 0; i < depth; i++) {
+				const Shogi::Move* pmove = nodes[i].getMove();
+				if (pmove != NULL) {
+					oss << pmove->toString() << ' ';
+				} else {
+					oss << "null ";
+				}
+			}
+			return oss.str();
+		}
+
 		const Shogi::Change* getChange() const {
 			return depth > 0 ? &nodes[depth-1].getChange() : NULL;
 		}

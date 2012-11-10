@@ -29,5 +29,11 @@ namespace Shek {
 					? pos.getBlackHand() : pos.getBlackHand();
 			return getEntity(pos.getHash()).check(HandSet(hand));
 		}
+
+		void debugPrint(const Shogi::Position& pos) const {
+			const Shogi::Hand& hand = pos.isBlackTurn()
+					? pos.getBlackHand() : pos.getBlackHand();
+			getEntity(pos.getHash()).debugPrint(HandSet(hand));
+		}
 	};
 }

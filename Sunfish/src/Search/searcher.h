@@ -11,6 +11,7 @@
 #include "tree.h"
 #include "pvHandler.h"
 #include "../Table/tt.h"
+#include "../Shek/shekTable.h"
 #include <algorithm>
 #include <boost/timer.hpp>
 
@@ -48,6 +49,7 @@ namespace Search {
 	private:
 		Tree tree;
 		Table::TT tt;
+		Shek::ShekTable shekTable;
 		History history;
 		SearchConfig config;
 		static const int PLY1 = 4;
@@ -69,6 +71,7 @@ namespace Search {
 				Evaluates::Value beta);
 
 		void before(SearchResult& result) {
+			// TODO: SHEK
 			cntNodes = 0;
 			memset(&result, 0, sizeof(SearchResult));
 			memset(&gain, 0, sizeof(gain));
@@ -77,6 +80,7 @@ namespace Search {
 		}
 
 		bool after(SearchResult& result, Evaluates::Value value) {
+			// TODO: SHEK
 			result.value = value;
 			const Shogi::Move* pmove = tree.getPv().getTop();
 			result.pv.copy(tree.getPv());
@@ -140,6 +144,43 @@ namespace Search {
 			return tree.getPv().getTop() != NULL &&
 					config.limitEnable &&
 					timer.elapsed() >= config.limitSeconds;
+		}
+
+		Shek::ShekStat shekCheck() {
+			return shekTable.check(tree.getPosition());
+		}
+
+		void shekDebug() {
+			shekTable.debugPrint(tree.getPosition());
+			
+		}
+
+		bool nullMove(bool shek = true) {
+			if (shek) {
+				shekTable.set(tree.getPosition());
+			}
+			if (tree.nullMove()) {
+				return true;
+			} else {
+				if (shek) {
+					shekTable.unset(tree.getPosition());
+				}
+				return false;
+			}
+		}
+
+		void makeMove(bool shek = true) {
+			if (shek) {
+				shekTable.set(tree.getPosition());
+			}
+			tree.makeMove();
+		}
+
+		void unmakeMove(bool shek = true) {
+			tree.unmakeMove();
+			if (shek) {
+				shekTable.unset(tree.getPosition());
+			}
 		}
 
 	public:

@@ -194,6 +194,14 @@ namespace Shogi {
 			board.set(square, piece);
 		}
 
+		const Hand& getBlackHand() const {
+			return blackHand;
+		}
+
+		const Hand& getWhiteHand() const {
+			return whiteHand;
+		}
+
 		int getBlackHand(const Piece& piece) const {
 			return blackHand.get(piece);
 		}
