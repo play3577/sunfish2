@@ -10,6 +10,7 @@
 
 #include "tree.h"
 #include "pvHandler.h"
+#include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
 #include <algorithm>
@@ -23,25 +24,35 @@ namespace Search {
 		double limitSeconds;
 	};
 
+	struct SearchCounter {
+		Util::uint64 nodes;
+		Util::uint64 nullMovePruning;
+		Util::uint64 futilityPruning;
+		Util::uint64 exFutilityPruning;
+	};
+
 	struct SearchResult {
 		bool resign;
 		Shogi::Move move;
 		Pv pv;
 		Evaluates::Value value;
-		Util::uint64 nodes;
+		SearchCounter counter;
 		double sec;
 		double nps;
 
 		std::string toString() const {
-			std::ostringstream oss;
-			oss << "* VALUE :" << value << '\n';
-			oss << "* NODES :" << nodes << '\n';
-			oss << "* SEC   :" << sec << '\n';
-			oss << "* NPS   :" << nps << '\n';
+			Util::TableString table("* ", " :", "");
+			table.row() << "VALUE" << value;
+			table.row() << "NODES" << counter.nodes;
+			table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
+			table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
+			table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
+			table.row() << "SEC" << sec;
+			table.row() << "NPS" << nps;
 			if (!resign) {
-				oss << "* " << move.toString() << '\n';
+				table.row() << "MOVE" << move.toString();
 			}
-			return oss.str();
+			return table.get();
 		}
 	};
 
@@ -53,7 +64,7 @@ namespace Search {
 		History history;
 		SearchConfig config;
 		static const int PLY1 = 4;
-		Util::uint64 cntNodes;
+		SearchCounter counter;
 		boost::timer timer;
 		const bool* pinterrupt;
 		int rootDepth;
@@ -72,7 +83,7 @@ namespace Search {
 
 		void before(SearchResult& result) {
 			// TODO: SHEK
-			cntNodes = 0;
+			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
 			memset(&gain, 0, sizeof(gain));
 			tt.init();
@@ -84,9 +95,9 @@ namespace Search {
 			result.value = value;
 			const Shogi::Move* pmove = tree.getPv().getTop();
 			result.pv.copy(tree.getPv());
-			result.nodes = cntNodes;
+			result.counter = counter;
 			result.sec = timer.elapsed();
-			result.nps = result.nodes / result.sec;
+			result.nps = result.counter.nodes / result.sec;
 			if (pmove != NULL) {
 				result.resign = false;
 				result.move = *pmove;

@@ -38,7 +38,7 @@ namespace Search {
 	 * beta  : beta値                                              *
 	 ***************************************************************/
 	Value Searcher::quies(Tree& tree, int ply, Value alpha, Value beta) {
-		cntNodes++;
+		counter.nodes++;
 
 		tree.initNode();
 
@@ -108,7 +108,7 @@ namespace Search {
 	 ***************************************************************/
 	template <bool pvNode, bool nullMoveNode>
 	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta) {
-		cntNodes++;
+		counter.nodes++;
 
 		tree.initNode();
 
@@ -185,6 +185,7 @@ namespace Search {
 				unmakeMove();
 				if (interrupt()) { return Value(0); }
 				if (newValue >= beta) {
+					counter.nullMovePruning++;
 					return beta;
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
@@ -262,6 +263,7 @@ namespace Search {
 						+ getFutMgn(newDepth, moveCount)
 						+ getGain(tree) <= newAlpha) {
 					value = newAlpha; // fail soft
+					counter.futilityPruning++;
 					continue;
 				}
 			}
@@ -278,6 +280,7 @@ namespace Search {
 				if (newStandPat - getFutMgn(newDepth, moveCount) >= -newAlpha) {
 					unmakeMove();
 					value = newAlpha; // fail soft
+					counter.exFutilityPruning++;
 					continue;
 				}
 			}
