@@ -144,15 +144,17 @@ namespace Search {
 			if (ttEntity.getDepth() >= depth) { // 深さ
 				switch (ttEntity.getValueType()) {
 				case TTEntity::EXACT: // 確定
+					counter.hashPruning++;
 					return ttEntity.getValue();
-					break;
 				case TTEntity::LOWER: // 下界値
 					if (ttEntity.getValue() >= beta) {
+						counter.hashPruning++;
 						return ttEntity.getValue();
 					}
 					break;
 				case TTEntity::UPPER: // 上界値
 					if (ttEntity.getValue() <= alpha) {
+						counter.hashPruning++;
 						return ttEntity.getValue();
 					}
 					break;

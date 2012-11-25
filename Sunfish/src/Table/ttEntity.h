@@ -38,22 +38,20 @@ namespace Table {
 			valueType = UNKNOWN;
 		}
 
-		bool update(Util::uint64 hash,
-				Evaluates::Value value,
-				int valueType,
-				int depth,
+		bool update(Util::uint64 newHash,
+				Evaluates::Value newValue,
+				int newValueType,
+				int newDepth,
 				const Shogi::Move* pmove) {
-			if (this->valueType == UNKNOWN) {
+			if (valueType == UNKNOWN) {
 				hashMove.init();
-			} else if (hash != this->hash || depth > this->depth ||
-					(this->valueType != EXACT && valueType == EXACT)) {
-			} else {
+			} else if (newDepth < depth) {
 				return false;
 			}
-			this->hash = hash;
-			this->value = value;
-			this->valueType = valueType;
-			this->depth = depth;
+			hash = newHash;
+			value = newValue;
+			valueType = newValueType;
+			depth = newDepth;
 			if (pmove != NULL) { hashMove.update(*pmove); }
 			return true;
 		}

@@ -26,6 +26,7 @@ namespace Search {
 
 	struct SearchCounter {
 		Util::uint64 nodes;
+		Util::uint64 hashPruning;
 		Util::uint64 nullMovePruning;
 		Util::uint64 futilityPruning;
 		Util::uint64 exFutilityPruning;
@@ -44,6 +45,7 @@ namespace Search {
 			Util::TableString table("* ", " :", "");
 			table.row() << "VALUE" << value;
 			table.row() << "NODES" << counter.nodes;
+			table.row() << "HASH PRUNING" << counter.hashPruning;
 			table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
 			table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
 			table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
