@@ -446,7 +446,7 @@ revaluation:
 
 			if (config.pvHandler != NULL) {
 				config.pvHandler->pvHandler(tree.getPv(), value,
-						counter.nodes, depth);
+						counter.nodes, depth + 1, timer.elapsed());
 			}
 
 			// 詰み
@@ -458,7 +458,7 @@ lab_search_end:
 
 		if (config.pvHandler != NULL) {
 			config.pvHandler->pvHandler(tree.getPv(), value,
-					counter.nodes, config.depth);
+					counter.nodes, config.depth, timer.elapsed());
 		}
 
 		// 後処理

@@ -45,12 +45,12 @@ namespace Search {
 			Util::TableString table("* ", " :", "");
 			table.row() << "VALUE" << value;
 			table.row() << "NODES" << counter.nodes;
+			table.row() << "SEC" << sec;
+			table.row() << "NPS" << nps;
 			table.row() << "HASH PRUNING" << counter.hashPruning;
 			table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
 			table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
 			table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
-			table.row() << "SEC" << sec;
-			table.row() << "NPS" << nps;
 			if (!resign) {
 				table.row() << "MOVE" << move.toString();
 			}

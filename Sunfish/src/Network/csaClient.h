@@ -171,9 +171,10 @@ namespace Network {
 		bool execute();
 
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
-				Util::uint64 nodes, int depth) {
-			Log::message << std::setw(2) << depth << std::setw(8) << nodes
-					<< ' ' << pv.toString() << ':' << value << '\n';
+				Util::uint64 nodes, int depth, double seconds) {
+			Log::message << std::setw(2) << depth << std::setw(10) << nodes
+					<< ' ' << pv.toString() << ':' << value
+					<< " (" << seconds << "sec)\n";
 		}
 	};
 }

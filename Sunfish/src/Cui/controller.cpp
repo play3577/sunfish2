@@ -124,10 +124,10 @@ namespace Cui {
 		}
 
 		// 探索設定
-		searchConfig.depth = 5;
+		searchConfig.depth = config.depth;
 		searchConfig.pvHandler = this;
-		searchConfig.limitEnable = false;
-		searchConfig.limitSeconds = 5;
+		searchConfig.limitEnable = (config.limit > 0);
+		searchConfig.limitSeconds = config.limit;
 		searcher.setSearchConfig(searchConfig);
 
 		std::cout << record.toString();

@@ -44,6 +44,8 @@ int main(int argc, char* argv[]) {
 			("network,n", "CSA client moode.")
 			("auto-black,b", "auto move on black turn.")
 			("auto-white,w", "auto move on white turn.")
+			("depth,d", value<int>(), "search depth.")
+			("limit,l", value<int>(), "search limit.(sec)")
 			("file,f", value<std::string>(), "CSA file name to read.")
 			;
 	variables_map argmap;
@@ -84,6 +86,12 @@ int main(int argc, char* argv[]) {
 	}
 	if (argmap.count("auto-white")) {
 		controller.setAutoWhite(true);
+	}
+	if (argmap.count("depth")) {
+		controller.setDepth(argmap["depth"].as<int>());
+	}
+	if (argmap.count("limit")) {
+		controller.setLimit(argmap["limit"].as<int>());
 	}
 	if (argmap.count("file")) {
 		controller.setFilename(argmap["file"].as<std::string>().c_str());

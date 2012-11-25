@@ -68,6 +68,8 @@ namespace Cui {
 			const char* filename;
 			bool autoBlack;
 			bool autoWhite;
+			int depth;
+			int limit;
 		} config;
 
 		Command inputCommand(const char* str);
@@ -92,6 +94,8 @@ namespace Cui {
 			config.filename = NULL;
 			config.autoBlack = false;
 			config.autoWhite = false;
+			config.depth = 32;
+			config.limit = 10;
 		}
 
 		void setFilename(const char* filename) {
@@ -106,10 +110,19 @@ namespace Cui {
 			config.autoWhite = autoWhite;
 		}
 
+		void setDepth(int depth) {
+			config.depth = depth;
+		}
+
+		void setLimit(int limit) {
+			config.limit = limit;
+		}
+
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
-				Util::uint64 nodes, int depth) {
-			std::cout << std::setw(2) << depth << std::setw(8) << nodes
-					<< ' ' << pv.toString() << ':' << value << '\n';
+				Util::uint64 nodes, int depth, double seconds) {
+			std::cout << std::setw(2) << depth << std::setw(10) << nodes
+					<< ' ' << pv.toString() << ':' << value
+					<< " (" << seconds << "sec)\n";
 		}
 
 		bool play();
