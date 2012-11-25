@@ -14,6 +14,7 @@
 #include "../Records/record.h"
 #include "../Shogi/moveGenerator.h"
 #include "../Log/logger.h"
+#include <iomanip>
 
 namespace Cui {
 	class Controller : public Search::PvHandler {
@@ -105,8 +106,10 @@ namespace Cui {
 			config.autoWhite = autoWhite;
 		}
 
-		void pvHandler(const Search::Pv& pv, Evaluates::Value value) {
-			std::cout << pv.toString() << ':' << value << '\n';
+		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
+				Util::uint64 nodes, int depth) {
+			std::cout << std::setw(2) << depth << std::setw(8) << nodes
+					<< ' ' << pv.toString() << ':' << value << '\n';
 		}
 
 		bool play();

@@ -176,7 +176,7 @@ namespace Search {
 #define STAND_PAT		(standPat == Value::MIN ? standPat = tree.negaEvaluate() : standPat)
 
 		// null move pruning
-		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= 4 ? depth/2 : PLY1*1));
+		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= PLY1*4 ? depth/2 : PLY1*1));
 		bool mate = false;
 		if (nullMoveNode &&
 				beta == alpha + 1 &&
@@ -445,7 +445,8 @@ revaluation:
 			}
 
 			if (config.pvHandler != NULL) {
-				config.pvHandler->pvHandler(tree.getPv(), value);
+				config.pvHandler->pvHandler(tree.getPv(), value,
+						counter.nodes, depth);
 			}
 
 			// 詰み
@@ -456,7 +457,8 @@ revaluation:
 lab_search_end:
 
 		if (config.pvHandler != NULL) {
-			config.pvHandler->pvHandler(tree.getPv(), value);
+			config.pvHandler->pvHandler(tree.getPv(), value,
+					counter.nodes, config.depth);
 		}
 
 		// 後処理

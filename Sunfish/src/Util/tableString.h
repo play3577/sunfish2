@@ -10,6 +10,7 @@
 
 #include <string>
 #include <sstream>
+#include <iomanip>
 #include <list>
 
 namespace Util{
@@ -91,14 +92,10 @@ namespace Util{
 				t_rows::iterator r;
 				for (r = table.begin(); r != table.end(); r++) {
 					t_columns::iterator c = (*r).begin();
-					oss << prefix;
-					oss.width(length[0]);
-					oss << (*c);
+					oss << prefix << std::setw(length[0]) << (*c);
 					int index = 1;
 					for (c++; c != (*r).end(); c++) {
-						oss << separator;
-						oss.width(length[index]);
-						oss << (*c);
+						oss << separator << std::setw(length[index]) << (*c);
 						index++;
 					}
 					oss << suffix << '\n';

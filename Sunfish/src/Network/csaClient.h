@@ -15,6 +15,7 @@
 #include "../Records/record.h"
 #include "../Search/pvHandler.h"
 #include "connection.h"
+#include <iomanip>
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
 #define BOOST_REGEX_USE_LIB
@@ -169,8 +170,10 @@ namespace Network {
 
 		bool execute();
 
-		void pvHandler(const Search::Pv& pv, Evaluates::Value value) {
-			Log::message << pv.toString() << ':' << value << '\n';
+		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
+				Util::uint64 nodes, int depth) {
+			Log::message << std::setw(2) << depth << std::setw(8) << nodes
+					<< ' ' << pv.toString() << ':' << value << '\n';
 		}
 	};
 }

@@ -15,7 +15,9 @@ namespace Search {
 	private:
 
 	public:
-		virtual void pvHandler(const Pv& pv, Evaluates::Value value) = 0;
+		virtual void pvHandler(const Pv& pv,
+				Evaluates::Value value,
+				Util::uint64 nodes, int depth) = 0;
 	};
 }
 
