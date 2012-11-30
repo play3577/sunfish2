@@ -35,6 +35,9 @@ namespace Cui {
 	};
 
 	Controller::Command Controller::inputCommand(const char* str) {
+		if (str[0] == '\0') {
+			return EMPTY;
+		}
 		for (int i = 0; i < CMD_NUM; i++) {
 			const char* s = commandSet[i].shortStr;
 			const char* l = commandSet[i].longStr;
@@ -110,7 +113,7 @@ namespace Cui {
 
 	bool Controller::play() {
 		char line[1024];
-		Command prevCommand = UNKNOWN;
+		Command prevCommand = EMPTY;
 		Records::Record record;
 		Searcher searcher(*pparam);
 		SearchConfig searchConfig;
@@ -166,7 +169,10 @@ namespace Cui {
 			if (std::cin.eof()) { break; }
 			Command command = line[0] != '\0' ? inputCommand(line) : prevCommand;
 			if (command == QUIT) { break; }
-			switch(prevCommand = command) {
+			prevCommand = EMPTY;
+			switch(command) {
+			case EMPTY:
+				break;
 			case HELP:
 				showHelp();
 				break;
@@ -179,6 +185,7 @@ namespace Cui {
 				if (config.autoBlack || config.autoWhite) {
 					record.prev();
 				}
+				prevCommand = PREV;
 				break;
 			case NEXT: // 1手戻る。
 				if (record.next()) {
@@ -189,6 +196,7 @@ namespace Cui {
 				if (config.autoBlack || config.autoWhite) {
 					record.next();
 				}
+				prevCommand = NEXT;
 				break;
 			case MOVES: // 指し手列挙
 				showLegalMoves(record.getPosition());

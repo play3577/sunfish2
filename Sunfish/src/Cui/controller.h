@@ -20,7 +20,8 @@ namespace Cui {
 	class Controller : public Search::PvHandler {
 	private:
 		enum Command {
-			QUIT = 0,
+			EMPTY = 0,
+			QUIT,
 			HELP,
 			PREV,
 			NEXT,
