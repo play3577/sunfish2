@@ -197,16 +197,18 @@ namespace Search {
 		}
 
 		if (!hashOk && depth >= PLY1 * 3) {
-			// recursive iterative-deepening search
-			int newDepth = pvNode ? depth - PLY1 * 3 : depth / 2;
-			if (newDepth < PLY1 * 2) {
-				newDepth = PLY1 * 2;
-			}
-			negaMax<true, true>(tree, newDepth, alpha, beta);
-			if (interrupt()) { return Value(0); }
-			const TTEntity& tte = tt.getEntity(hash);
-			if (tte.is(hash)) {
-				tree.setHashMove(tte.getHashMove());
+#if 0
+			if (pvNode || (!tree.isCheck() && STAND_PAT + 80 >= beta))
+#endif
+			{
+				// recurcive iterative-deepening search
+				int newDepth = pvNode ? depth - PLY1 * 2 : depth / 2;
+				negaMax<true, true>(tree, newDepth, alpha, beta);
+				if (interrupt()) { return Value(0); }
+				const TTEntity& tte = tt.getEntity(hash);
+				if (tte.is(hash)) {
+					tree.setHashMove(tte.getHashMove());
+				}
 			}
 		}
 
@@ -379,7 +381,8 @@ namespace Search {
 		// TODO: 指し手がない場合
 		// TODO: 確定手
 		// 反復進化探索
-		for (unsigned depth = 0; depth < config.depth; depth++) {
+		unsigned depth;
+		for (depth = 0; depth < config.depth; depth++) {
 			// 基本深さ
 			rootDepth = depth;
 			// 段階的に広がる探索窓 (aspiration search)
@@ -458,7 +461,7 @@ lab_search_end:
 
 		if (config.pvHandler != NULL) {
 			config.pvHandler->pvHandler(tree.getPv(), value,
-					counter.nodes, config.depth, timer.elapsed());
+					counter.nodes, depth + 1, timer.elapsed());
 		}
 
 		// 後処理
