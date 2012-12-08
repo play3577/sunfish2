@@ -106,10 +106,9 @@ namespace Search {
 	 * alpha : alpha値                                             *
 	 * beta  : beta値                                              *
 	 ***************************************************************/
-	template <bool pvNode, bool nullMoveNode>
-	Value Searcher::negaMax(Tree& tree, int depth, Value alpha, Value beta) {
-		counter.nodes++;
-
+	template <bool pvNode>
+	Value Searcher::negaMax(Tree& tree, int depth,
+			Value alpha, Value beta, unsigned stat) {
 		tree.initNode();
 
 		// TODO: distance pruning
@@ -131,6 +130,8 @@ namespace Search {
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
 		}
+
+		counter.nodes++;
 
 		// 局面ハッシュ
 		Util::uint64 hash = tree.getPosition().getHash();
@@ -178,12 +179,12 @@ namespace Search {
 		// null move pruning
 		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= PLY1*4 ? depth/2 : PLY1*1));
 		bool mate = false;
-		if (nullMoveNode &&
+		if (stat & NULL_MOVE &&
 				beta == alpha + 1 &&
 				tree.getDepth() * PLY1 < nullDepth &&
 				beta <= STAND_PAT){
 			if (nullMove()) {
-				Value newValue = -negaMax<false, false>(tree, nullDepth, -beta, -beta+1);
+				Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, DEF_STAT & ~NULL_MOVE);
 				unmakeMove();
 				if (interrupt()) { return Value(0); }
 				if (newValue >= beta) {
@@ -203,7 +204,7 @@ namespace Search {
 			{
 				// recurcive iterative-deepening search
 				int newDepth = pvNode ? depth - PLY1 * 2 : depth / 2;
-				negaMax<true, true>(tree, newDepth, alpha, beta);
+				negaMax<true>(tree, newDepth, alpha, beta, DEF_STAT);
 				if (interrupt()) { return Value(0); }
 				const TTEntity& tte = tt.getEntity(hash);
 				if (tte.is(hash)) {
@@ -218,6 +219,9 @@ namespace Search {
 		Value value = Value::MIN;
 		const Move* best = NULL;
 		while (tree.next()) {
+			// node status
+			unsigned newStat = DEF_STAT;
+
 			unsigned moveCount = tree.getMoveIndex();
 			bool isHash = tree.isHashMove();
 
@@ -230,8 +234,9 @@ namespace Search {
 			// extensions
 			if (tree.isCheckMove()) {
 				newDepth += extension(tree);
-			} else if (tree.isRecapture()) {
+			} else if (stat & RECAPTURE && tree.isRecapture()) {
 				newDepth += extension(tree) * 3 / 4;
+				newStat &= ~RECAPTURE;
 			} else if (mate) {
 				newDepth += extension(tree) / 2;
 			}
@@ -242,21 +247,21 @@ namespace Search {
 				// late move reduction
 				unsigned hist = history.get(*tree.getCurrentMove());
 				if (beta != alpha + 1) {
-					if        (hist * 20U < History::SCALE) {
+					if        (hist * 32U < History::SCALE) {
+						reduction = PLY1 * 3 / 2;
+					} else if (hist * 16U < History::SCALE) {
+						reduction = PLY1;
+					} else if (hist *  4U < History::SCALE) {
+						reduction = PLY1 / 2;
+					}
+				} else {
+					if        (hist * 32U < History::SCALE) {
+						reduction = PLY1 * 2;
+					} else if (hist * 20U < History::SCALE) {
 						reduction = PLY1 * 3 / 2;
 					} else if (hist *  8U < History::SCALE) {
 						reduction = PLY1;
 					} else if (hist *  2U < History::SCALE) {
-						reduction = PLY1 / 2;
-					}
-				} else {
-					if        (hist * 16U < History::SCALE) {
-						reduction = PLY1 * 2;
-					} else if (hist *  8U < History::SCALE) {
-						reduction = PLY1 * 3 / 2;
-					} else if (hist *  3U < History::SCALE) {
-						reduction = PLY1;
-					} else if (hist *  1U < History::SCALE) {
 						reduction = PLY1 / 2;
 					}
 				}
@@ -293,15 +298,15 @@ namespace Search {
 
 			// recurcive search
 			if (moveCount == 1 && reduction == 0) {
-				newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
+				newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
 			} else {
 				// nega-scout
-				newValue = -negaMax<false, true>(tree, newDepth, -newAlpha-1, -newAlpha);
+				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
 				// 値がalpha値を超えて、かつnull windowでないかあるいはreductionが効いていたとき
 				if (!interrupt() && newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
 					// reductionをなくして再探索
 					newDepth += reduction;
-					newValue = -negaMax<pvNode, true>(tree, newDepth, -beta, -newAlpha);
+					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
 				}
 			}
 
@@ -335,10 +340,10 @@ namespace Search {
 
 		return value;
 	}
-	template Value Searcher::negaMax<true, true>(Tree& tree, int depth, Value alpha, Value beta);
-	template Value Searcher::negaMax<true, false>(Tree& tree, int depth, Value alpha, Value beta);
-	template Value Searcher::negaMax<false, true>(Tree& tree, int depth, Value alpha, Value beta);
-	template Value Searcher::negaMax<false, false>(Tree& tree, int depth, Value alpha, Value beta);
+	template Value Searcher::negaMax<true>(Tree& tree, int depth,
+			Value alpha, Value beta, unsigned stat);
+	template Value Searcher::negaMax<false>(Tree& tree, int depth,
+			Value alpha, Value beta, unsigned stat);
 
 	/***************************************************************
 	 * 探索(反復深化を行わない。)                                  *
@@ -348,17 +353,18 @@ namespace Search {
 	bool Searcher::search(SearchResult& result) {
 		// 前処理
 		before(result);
-		// 探索
 		// 基本深さ
 		rootDepth = config.depth;
 
 		// 探索
-		Value value = negaMax<true, true>(tree, config.depth * PLY1,
+		Value value = negaMax<true>(tree, config.depth * PLY1,
 				Value::MIN, Value::MAX);
 
 		// 後処理
 		return after(result, value);
 	}
+
+#define NODE_DEBUG				1
 
 	/***************************************************************
 	 * 反復深化探索                                                *
@@ -377,46 +383,66 @@ namespace Search {
 		// ノード初期化
 		tree.initNode();
 		// 合法手生成
+		Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 		tree.generateMoves();
+		Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 		// TODO: 指し手がない場合
 		// TODO: 確定手
 		// 反復進化探索
 		unsigned depth;
 		for (depth = 0; depth < config.depth; depth++) {
 			// 基本深さ
-			rootDepth = depth;
+			rootDepth = depth + 1;
 			// 段階的に広がる探索窓 (aspiration search)
 			AspWindow<-1> aspAlpha;
 			AspWindow<1> aspBeta;
 			// 初回ではない場合のみ前回の評価値を元にウィンドウを決定
+			Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 			if (depth != 0) {
 				tree.sort(values); // 前回深さの結果で並べ替え
 				aspAlpha.init(values[0]);
 				aspBeta.init(values[0]);
 			}
+			Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 			// alpha値
 			Value alpha = (int)aspAlpha;
 			// 合法手を順に調べる。
 			tree.setMoveIndex(0);
 			while (tree.next()) {
+#if NODE_DEBUG
+				// debug
+				bool isHash = tree.isHashMove();
+				Util::uint64 beforeNodes= counter.nodes;
+#endif // NODE_DEBUG
 				unsigned moveCount = tree.getMoveIndex();
+				Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 				// 手を進める。
 				makeMove();
 				Value vtemp;
+
 revaluation:
 				if (moveCount == 1) {
-					vtemp = -negaMax<true, true>(tree,
+					vtemp = -negaMax<true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
 				} else {
 					// null window searchを試みる。
-					vtemp = -negaMax<false, true>(tree,
+					vtemp = -negaMax<false>(tree,
 							depth * PLY1, -alpha - 1, -alpha);
 					if (!interrupt() && vtemp >= alpha) {
 						// 再探索
-						vtemp = -negaMax<true, true>(tree,
+						vtemp = -negaMax<true>(tree,
 								depth * PLY1, -aspBeta, -alpha);
 					}
 				}
+#if NODE_DEBUG
+				// debug
+				Util::uint64 afterNodes= counter.nodes;
+				Util::uint64 nodes = afterNodes - beforeNodes;
+				if (isHash) {
+					Log::debug << "*";
+				}
+				Log::debug << tree.getPrevMove()->toString() << "[" << nodes << "] ";
+#endif // NODE_DEBUG
 				if (interrupt()) {
 					unmakeMove();
 					goto lab_search_end;
@@ -424,12 +450,14 @@ revaluation:
 				// fail-high
 				if (vtemp >= aspBeta && aspBeta.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
+					Log::debug << "fail-high ";
 					alpha = vtemp;
 					goto revaluation;
 				}
 				// fail-low
 				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
+					Log::debug << "fail-low ";
 					alpha = (int)aspAlpha;
 					goto revaluation;
 				}
@@ -448,6 +476,10 @@ revaluation:
 			}
 
 			if (config.pvHandler != NULL) {
+#if NODE_DEBUG
+				// debug
+				Log::debug << '\n';
+#endif // NODE_DEBUG
 				config.pvHandler->pvHandler(tree.getPv(), value,
 						counter.nodes, depth + 1, timer.elapsed());
 			}
@@ -460,8 +492,13 @@ revaluation:
 lab_search_end:
 
 		if (config.pvHandler != NULL) {
+#if NODE_DEBUG
+			// debug
+			Log::debug << '\n';
+#endif // NODE_DEBUG
+			int lastDepth = depth < config.depth ? depth + 1 : config.depth;
 			config.pvHandler->pvHandler(tree.getPv(), value,
-					counter.nodes, depth + 1, timer.elapsed());
+					counter.nodes, lastDepth, timer.elapsed());
 		}
 
 		// 後処理

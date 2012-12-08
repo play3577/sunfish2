@@ -60,6 +60,13 @@ namespace Search {
 
 	class Searcher {
 	private:
+		enum {
+			NULL_MOVE = 0x0001,
+			RECAPTURE = 0x0002,
+
+			DEF_STAT = NULL_MOVE | RECAPTURE
+		};
+
 		Tree tree;
 		Table::TT tt;
 		Shek::ShekTable shekTable;
@@ -78,10 +85,11 @@ namespace Search {
 
 		bool isMate1Ply(Tree& tree);
 
-		template <bool pvNode, bool nullMoveNode>
+		template <bool pvNode>
 		Evaluates::Value negaMax(Tree& tree, int depth,
 				Evaluates::Value alpha,
-				Evaluates::Value beta);
+				Evaluates::Value beta,
+				unsigned stat = DEF_STAT);
 
 		void before(SearchResult& result) {
 			// TODO: SHEK
@@ -144,9 +152,9 @@ namespace Search {
 		int extension(Tree& tree) const {
 			if (tree.getDepth() < rootDepth) {
 				return PLY1;
-			} else if (tree.getDepth() < rootDepth * 3 / 2) {
-				return PLY1 * 3 / 4;
 			} else if (tree.getDepth() < rootDepth * 2) {
+				return PLY1 * 3 / 4;
+			} else if (tree.getDepth() < rootDepth * 3) {
 				return PLY1 / 2;
 			} else {
 				return PLY1 / 4;

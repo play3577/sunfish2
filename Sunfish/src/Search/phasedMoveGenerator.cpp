@@ -27,6 +27,16 @@ namespace Search {
 		}
 	}
 
+	void PhasedMoveGenerator::removeHashMove(int begin, int num) {
+		for (int i = 0; i < num; i++) {
+			const Move& move = get(begin + i);
+			if (move == hashMove.getHash1() ||
+					move == hashMove.getHash2()) {
+				fastRemove(i--);
+			}
+		}
+	}
+
 	void PhasedMoveGenerator::sortSee(int begin, int num) {
 		Value values[num];
 		for (int i = 0; i < num; i++) {
@@ -81,11 +91,13 @@ namespace Search {
 				break;
 			case PHASE_CAPTURE:
 				generateCapture();
+				removeHashMove(prevNum, getNumber()-prevNum);
 				sortSee(prevNum, getNumber()-prevNum);
 				phase = PHASE_NOCAPTURE;
 				break;
 			case PHASE_NOCAPTURE:
 				generateNocapture();
+				removeHashMove(prevNum, getNumber()-prevNum);
 				sortHistory(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;

@@ -92,6 +92,10 @@ namespace Search {
 			return pgen->getCurrent();
 		}
 
+		int getNumberOfMoves() const {
+			return pgen->getNumber();
+		}
+
 		bool next() {
 			return (pmove = pgen->next()) != NULL;
 		}

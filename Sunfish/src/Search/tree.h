@@ -237,6 +237,10 @@ namespace Search {
 			return nodes[depth].getMoveIndex();
 		}
 
+		int getNumberOfMoves() const {
+			return nodes[depth].getNumberOfMoves();
+		}
+
 		void getHistory(History& history, int depth) const {
 			nodes[this->depth].getHistory(history, depth);
 		}

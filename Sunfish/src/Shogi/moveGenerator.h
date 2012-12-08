@@ -32,6 +32,7 @@ namespace Shogi {
 		template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap, bool genPro>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
+		// TODO: rename 'generateOneMove'
 		template <bool black>
 		void generateMoveOneMove(const Piece piece, const Square from, const Square to) {
 			if (!to.isCompulsoryPromotion(piece)) {
@@ -39,6 +40,7 @@ namespace Shogi {
 			}
 		}
 
+		// TODO: rename 'generateOneMovePro'
 		template <bool black>
 		void generateMoveOneMovePro(const Piece piece, const Square from, const Square to) {
 			if (to.isPromotableRank(black) || from.isPromotableRank(black)) {
@@ -144,6 +146,11 @@ namespace Shogi {
 				moves[i] = moves[i-1];
 			}
 			moves[to] = move;
+		}
+
+		void fastRemove(int index) {
+			moves[index] = moves[num-1];
+			num--;
 		}
 
 		bool swapTop(Move move) {

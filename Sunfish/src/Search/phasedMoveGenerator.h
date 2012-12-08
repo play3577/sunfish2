@@ -36,6 +36,8 @@ namespace Search {
 		const History& history;
 		unsigned hashNum;
 
+		void removeHashMove(int begin, int num);
+
 		void sortSee(int begin, int num);
 
 		void sortHistory(int begin, int num);
