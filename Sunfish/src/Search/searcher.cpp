@@ -303,7 +303,7 @@ namespace Search {
 				// nega-scout
 				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
 				// 値がalpha値を超えて、かつnull windowでないかあるいはreductionが効いていたとき
-				if (!interrupt() && newValue >= newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
+				if (!interrupt() && newValue > newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
 					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
@@ -424,14 +424,26 @@ revaluation:
 				if (moveCount == 1) {
 					vtemp = -negaMax<true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
+#if NODE_DEBUG
+					Log::debug << "f";
+#endif // NODE_DEBUG
 				} else {
 					// null window searchを試みる。
 					vtemp = -negaMax<false>(tree,
 							depth * PLY1, -alpha - 1, -alpha);
-					if (!interrupt() && vtemp >= alpha) {
+#if NODE_DEBUG
+					Log::debug << "n";
+#endif // NODE_DEBUG
+					if (!interrupt() && vtemp > alpha) {
+#if NODE_DEBUG
+						Log::debug << "[" << vtemp << "]";
+#endif // NODE_DEBUG
 						// 再探索
 						vtemp = -negaMax<true>(tree,
 								depth * PLY1, -aspBeta, -alpha);
+#if NODE_DEBUG
+						Log::debug << "f";
+#endif // NODE_DEBUG
 					}
 				}
 #if NODE_DEBUG
@@ -450,6 +462,7 @@ revaluation:
 				// fail-high
 				if (vtemp >= aspBeta && aspBeta.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
+					// TODO: fail-softだから上げ幅が少なすぎるケースを検出すべき?
 					Log::debug << "fail-high ";
 					alpha = vtemp;
 					goto revaluation;
@@ -457,6 +470,7 @@ revaluation:
 				// fail-low
 				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
+					// TODO: fail-softだから下げ幅が少なすぎるケースを検出すべき?
 					Log::debug << "fail-low ";
 					alpha = (int)aspAlpha;
 					goto revaluation;
