@@ -372,10 +372,10 @@ namespace Search {
 	 * 深さ毎にresult.pvHandler()を呼び出す。                      *
 	 ***************************************************************/
 	bool Searcher::idSearch(SearchResult& result) {
+		// 最善手の評価値
+		Value maxValue = Value::MIN;
 		// 各指し手毎の評価値
 		Value values[MoveGenerator::MAX_MOVES_NUM];
-		// 最善手の評価値
-		Value value = Value::MIN;
 
 		// 前処理
 		before(result);
@@ -391,6 +391,7 @@ namespace Search {
 		// 反復進化探索
 		unsigned depth;
 		for (depth = 0; depth < config.depth; depth++) {
+			Value minValue = Value::MIN;
 			// 基本深さ
 			rootDepth = depth + 1;
 			// 段階的に広がる探索窓 (aspiration search)
@@ -453,7 +454,7 @@ revaluation:
 				if (isHash) {
 					Log::debug << "*";
 				}
-				Log::debug << tree.getPrevMove()->toString() << "[" << nodes << "] ";
+				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")[" << nodes << "] ";
 #endif // NODE_DEBUG
 				if (interrupt()) {
 					unmakeMove();
@@ -481,12 +482,18 @@ revaluation:
 				// 最初の手かalphaを越えた場合
 				if (moveCount == 1 || vtemp > alpha) {
 					// 最善手の評価値とalpha値を更新
-					value = alpha = vtemp;
+					maxValue = alpha = vtemp;
 					// PVを更新
 					tree.updatePv();
+					// 評価値を記憶する。
+					values[moveCount-1] = vtemp;
+				} else {
+					if (minValue > vtemp) {
+						minValue = vtemp;
+					}
+					// 評価値を記憶する。
+					values[moveCount-1] = minValue;
 				}
-				// 評価値を記憶する。
-				values[moveCount-1] = vtemp;
 			}
 
 			if (config.pvHandler != NULL) {
@@ -494,12 +501,12 @@ revaluation:
 				// debug
 				Log::debug << '\n';
 #endif // NODE_DEBUG
-				config.pvHandler->pvHandler(tree.getPv(), value,
+				config.pvHandler->pvHandler(tree.getPv(), maxValue,
 						counter.nodes, depth + 1, timer.elapsed());
 			}
 
 			// 詰み
-			if (value >= Value::MATE || value <= -Value::MATE) {
+			if (maxValue >= Value::MATE || maxValue <= -Value::MATE) {
 				break;
 			}
 		}
@@ -511,11 +518,11 @@ lab_search_end:
 			Log::debug << '\n';
 #endif // NODE_DEBUG
 			int lastDepth = depth < config.depth ? depth + 1 : config.depth;
-			config.pvHandler->pvHandler(tree.getPv(), value,
+			config.pvHandler->pvHandler(tree.getPv(), maxValue,
 					counter.nodes, lastDepth, timer.elapsed());
 		}
 
 		// 後処理
-		return after(result, value);
+		return after(result, maxValue);
 	}
 }
