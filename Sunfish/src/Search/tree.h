@@ -99,7 +99,7 @@ namespace Search {
 		}
 
 		void generateCaptures() {
-			nodes[depth].generateTacticalMoves();
+			nodes[depth].generateCaptures();
 		}
 
 		void generateCheck() {

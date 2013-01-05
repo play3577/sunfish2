@@ -38,6 +38,7 @@ namespace Search {
 
 		void removeHashMove(int begin, int num);
 
+		template <bool plusOnly>
 		void sortSee(int begin, int num);
 
 		void sortHistory(int begin, int num);

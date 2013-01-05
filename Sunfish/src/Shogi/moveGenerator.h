@@ -153,6 +153,10 @@ namespace Shogi {
 			num--;
 		}
 
+		void removeAfter(int index) {
+			num = index;
+		}
+
 		bool swapTop(Move move) {
 			if (num > 0 && moves[0] == move) {
 				return true;

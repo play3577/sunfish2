@@ -383,9 +383,7 @@ namespace Search {
 		// ノード初期化
 		tree.initNode();
 		// 合法手生成
-		Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 		tree.generateMoves();
-		Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 		// TODO: 指し手がない場合
 		// TODO: 確定手
 		// 反復進化探索
@@ -398,25 +396,23 @@ namespace Search {
 			AspWindow<-1> aspAlpha;
 			AspWindow<1> aspBeta;
 			// 初回ではない場合のみ前回の評価値を元にウィンドウを決定
-			Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 			if (depth != 0) {
 				tree.sort(values); // 前回深さの結果で並べ替え
 				aspAlpha.init(values[0]);
 				aspBeta.init(values[0]);
 			}
-			Log::debug << __LINE__ << ':' << tree.getNumberOfMoves() << '\n';
 			// alpha値
 			Value alpha = (int)aspAlpha;
 			// 合法手を順に調べる。
 			tree.setMoveIndex(0);
 			while (tree.next()) {
+				unsigned moveCount = tree.getMoveIndex();
 #if NODE_DEBUG
 				// debug
 				bool isHash = tree.isHashMove();
 				Util::uint64 beforeNodes= counter.nodes;
-#endif // NODE_DEBUG
-				unsigned moveCount = tree.getMoveIndex();
 				Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
+#endif // NODE_DEBUG
 				// 手を進める。
 				makeMove();
 				Value vtemp;
@@ -464,7 +460,9 @@ revaluation:
 				if (vtemp >= aspBeta && aspBeta.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
 					// TODO: fail-softだから上げ幅が少なすぎるケースを検出すべき?
+#if NODE_DEBUG
 					Log::debug << "fail-high ";
+#endif // NODE_DEBUG
 					alpha = vtemp;
 					goto revaluation;
 				}
@@ -472,7 +470,9 @@ revaluation:
 				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
 					// TODO: fail-softだから下げ幅が少なすぎるケースを検出すべき?
+#if NODE_DEBUG
 					Log::debug << "fail-low ";
+#endif // NODE_DEBUG
 					alpha = (int)aspAlpha;
 					goto revaluation;
 				}

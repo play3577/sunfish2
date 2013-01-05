@@ -8,7 +8,7 @@
 #ifndef BASETABLE_H_
 #define BASETABLE_H_
 
-#define DEF_BITS			22
+#define DEF_BITS			21
 
 namespace Table {
 	template <class Entity>

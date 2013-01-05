@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 	Log::message.addStream(std::cerr);
 	Log::send.addStream(std::cerr, "\x1b[34m", "\x1b[39m");
 	Log::receive.addStream(std::cerr, "\x1b[35m", "\x1b[39m");
-	Log::debug.addStream(std::cerr);
+	Log::debug.addStream(std::cerr, "\x1b[36m", "\x1b[39m");
 
 	// hash
 	Shogi::PositionHash hash(Shogi::PositionHash::FILE_NAME);

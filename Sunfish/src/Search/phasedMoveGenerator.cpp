@@ -37,6 +37,7 @@ namespace Search {
 		}
 	}
 
+	template <bool plusOnly>
 	void PhasedMoveGenerator::sortSee(int begin, int num) {
 		Value values[num];
 		for (int i = 0; i < num; i++) {
@@ -51,6 +52,15 @@ namespace Search {
 			}
 			values[j] = value;
 			insertBefore(begin + i, begin + j);
+		}
+		if (plusOnly) {
+			// see が正の値のものに限定
+			for (int i = 0; i < num; i++) {
+				if (values[i] <= 0) {
+					removeAfter(i);
+					break;
+				}
+			}
 		}
 	}
 
@@ -92,7 +102,7 @@ namespace Search {
 			case PHASE_CAPTURE:
 				generateCapture();
 				removeHashMove(prevNum, getNumber()-prevNum);
-				sortSee(prevNum, getNumber()-prevNum);
+				sortSee<false>(prevNum, getNumber()-prevNum);
 				phase = PHASE_NOCAPTURE;
 				break;
 			case PHASE_NOCAPTURE:
@@ -103,12 +113,12 @@ namespace Search {
 				break;
 			case PHASE_TACTICAL:
 				generateTactical();
-				sortSee(prevNum, getNumber()-prevNum);
+				sortSee<true>(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;
 			case PHASE_CAPTURE_ONLY:
 				generateCapture();
-				sortSee(prevNum, getNumber()-prevNum);
+				sortSee<true>(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;
 			case PHASE_CHECK_ONLY:

@@ -49,8 +49,10 @@ namespace Evaluates {
 				error = KING_ERROR;
 			} else {
 				Kings kings(pos);
-				value1 -= pparam->getKKP(kings,
-					move.getPiece(), move.getFrom());
+				if (!move.isHand()) {
+					value1 -= pparam->getKKP(kings,
+						move.getPiece(), move.getFrom());
+				}
 				Shogi::Piece piece = move.isPromotion() ?
 					move.getPiece().getPromoted() : move.getPiece();
 				value1 += pparam->getKKP(kings, piece, move.getTo());
