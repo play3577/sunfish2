@@ -1,0 +1,34 @@
+- DEBUG01
+
+- USI
++ CSAプロトコル
+	- 相手番千日手による対局停止
+
+- 王手生成
+- CSA入出力
+- 千日手
+- 玉がいない場合
+- USI
+- ハッシュ表サイズ管理
+- 探索
+	* 静止探索
+	- ordering
+		* static exchange evaluation
+		* history heuristic
+		- killer move
+	- pruning
+		* null move pruning
+		* futility pruning
+		- move count pruning
+		- static null move pruning
+		- distance pruning
+	+ extensions
+	* late move reduction
+	+ mate 1ply
+	- mate 3ply
+	- singular extension
+	+ SHEK
+	* recursive iterative-deepening search
+	* aspiration search
+	- parallel search
+		- lockless hash

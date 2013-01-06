@@ -143,7 +143,7 @@ namespace Search {
 			return Evaluates::Value(0);
 		}
 
-		Evaluates::Value getGain(Shogi::Piece piece, Shogi::Square square) const {
+		Evaluates::Value getGain(const Shogi::Piece& piece, const Shogi::Square& square) const {
 			assert((unsigned)piece <= Shogi::Piece::WDRAGON);
 			assert((unsigned)square <= Shogi::Square::END);
 			return gain[piece][square];

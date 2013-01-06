@@ -179,6 +179,14 @@ namespace Search {
 			return false;
 		}
 
+		bool isCapture() const {
+			const Shogi::Move* pmove = getCurrentMove();
+			if (pmove != NULL) {
+				pos.isCapturingMove(*pmove);
+			}
+			return false;
+		}
+
 		bool isRecapture() const {
 			const Shogi::Move* pmove;
 			const Shogi::Move* pprev;

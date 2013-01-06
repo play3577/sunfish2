@@ -231,10 +231,16 @@ namespace Search {
 
 			int newDepth = depth - PLY1;
 
+			// TODO: クラスにまとめる。
+			bool isCheckMove = tree.isCheckMove();
+			bool isTacticalMove = tree.isTacticalMove();
+			bool isCapture = tree.isCapture();
+			bool isRecapture = tree.isRecapture();
+
 			// extensions
-			if (tree.isCheckMove()) {
+			if (isCheckMove) {
 				newDepth += extension(tree);
-			} else if (stat & RECAPTURE && tree.isRecapture()) {
+			} else if (stat & RECAPTURE && isRecapture) {
 				newDepth += extension(tree) * 3 / 4;
 				newStat &= ~RECAPTURE;
 			} else if (mate) {
@@ -243,7 +249,7 @@ namespace Search {
 
 			Estimate<Value> estimate = tree.negaEstimate();
 			int reduction = 0;
-			if (!isHash && !mate && !tree.isCheck() && !tree.isCheckMove() && !tree.isTacticalMove()) {
+			if (!isHash && !mate && !tree.isCheck() && !isCheckMove && !isTacticalMove) {
 				// late move reduction
 				unsigned hist = history.get(*tree.getCurrentMove());
 				if (beta != alpha + 1) {
@@ -285,7 +291,7 @@ namespace Search {
 			Value newStandPat = tree.negaEvaluate();
 
 			// extended futility pruning
-			if (!isHash && !mate && !tree.isCheck() && !tree.isTacticalMove()) {
+			if (!isHash && !mate && !isCheckMove && !isTacticalMove) {
 				if (newStandPat - getFutMgn(newDepth, moveCount) >= -newAlpha) {
 					unmakeMove();
 					value = newAlpha; // fail soft
@@ -322,6 +328,8 @@ namespace Search {
 				tree.updatePv();
 				best = tree.getCurrentMove();
 				tree.getHistory(history, depth);
+				if (isCapture) {
+				}
 
 				// beta cut
 				if (value >= beta) {
@@ -450,7 +458,9 @@ revaluation:
 				if (isHash) {
 					Log::debug << "*";
 				}
-				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")[" << nodes << "] ";
+				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")"
+						<< "[" << nodes << "]"
+						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";
 #endif // NODE_DEBUG
 				if (interrupt()) {
 					unmakeMove();
