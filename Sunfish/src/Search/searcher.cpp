@@ -234,7 +234,6 @@ namespace Search {
 			// TODO: クラスにまとめる。
 			bool isCheckMove = tree.isCheckMove();
 			bool isTacticalMove = tree.isTacticalMove();
-			bool isCapture = tree.isCapture();
 			bool isRecapture = tree.isRecapture();
 
 			// extensions
@@ -328,8 +327,7 @@ namespace Search {
 				tree.updatePv();
 				best = tree.getCurrentMove();
 				tree.getHistory(history, depth);
-				if (isCapture) {
-				}
+				tree.addKiller(newValue - STAND_PAT);
 
 				// beta cut
 				if (value >= beta) {

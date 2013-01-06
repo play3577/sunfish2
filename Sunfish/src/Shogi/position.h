@@ -54,7 +54,7 @@ namespace Shogi {
 			return pPositionHash->getBlack();
 		}
 
-		template <bool black, bool cuick>
+		template <bool black, bool quick>
 		bool isLegalMove(const Move& move) const;
 
 		template <bool black, bool chNotNull, bool evNotNull>
@@ -378,6 +378,8 @@ namespace Shogi {
 			blackTurn = !blackTurn;
 		}
 
+		// quick が true の場合は MoveGenerator が生成し得ない手
+		// (成れない位置、行き所のない駒など)のチェックを省略する。
 		bool isLegalMove(const Move& move, bool quick = false) const {
 			if (quick) {
 				return (blackTurn ? isLegalMove<true, true>(move) : isLegalMove<false, true>(move));

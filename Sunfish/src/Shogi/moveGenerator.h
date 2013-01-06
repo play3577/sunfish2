@@ -148,7 +148,7 @@ namespace Shogi {
 			moves[to] = move;
 		}
 
-		void fastRemove(int index) {
+		void removeUnstable(int index) {
 			moves[index] = moves[num-1];
 			num--;
 		}
@@ -176,6 +176,14 @@ namespace Shogi {
 		const Move* next() {
 			if (curr < num) {
 				return &moves[curr++];
+			} else {
+				return NULL;
+			}
+		}
+
+		const Move* get() const {
+			if (curr > 0) {
+				return &moves[curr-1];
 			} else {
 				return NULL;
 			}

@@ -11,7 +11,6 @@
 #include "pv.h"
 #include "phasedMoveGenerator.h"
 #include "history.h"
-#include "killer.h"
 
 namespace Search {
 	class Node {
@@ -21,7 +20,6 @@ namespace Search {
 		Shogi::Change change;
 		Evaluates::Value baseValue;
 		Pv pv;
-		Killer killer;
 
 	public:
 		Node() : pgen(NULL), pmove(NULL) {
@@ -48,7 +46,14 @@ namespace Search {
 
 		void arrive() {
 			pv.init();
-			killer.init();
+		}
+
+		void initKiller() {
+			pgen->getKiller().init();
+		}
+
+		void addKiller(const Shogi::Move& move, const Evaluates::Value& value) {
+			pgen->getKiller().add(move, value);
 		}
 
 		int setPv(const Node& node) {

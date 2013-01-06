@@ -8,6 +8,7 @@
 #ifndef KILLER_H_
 #define KILLER_H_
 
+#include "../Evaluates/param.h"
 #include "../Shogi/move.h"
 
 namespace Search {
@@ -26,14 +27,44 @@ namespace Search {
 
 		void add(const Shogi::Move& move, const Evaluates::Value& value) {
 			if (value > value1) {
-				killer2 = killer1;
+				if (move != killer1) {
+					killer2 = killer1;
+					killer1 = move;
+				}
 				value2 = value1;
-				killer1 = move;
 				value1 = value;
 			} else if (value > value2) {
 				killer2 = move;
 				value2 = value;
 			}
+		}
+
+		const Shogi::Move& get1() const {
+			return killer1;
+		}
+
+		const Shogi::Move& get2() const {
+			return killer2;
+		}
+
+		const Evaluates::Value& getValue1() const {
+			return value1;
+		}
+
+		const Evaluates::Value& getValue2() const {
+			return value2;
+		}
+
+		static Evaluates::Value calcCurrentChange(
+				const Shogi::Position& pos,
+				const Shogi::Move& move,
+				const Evaluates::Param& param) {
+			Shogi::Piece cap = pos.getBoard(move.getTo());
+			Evaluates::Value value = (int)param.getPieceExchange(cap);
+			if (move.isPromotion()) {
+				value += param.getPiecePromote(move.getPiece());
+			}
+			return value;
 		}
 	};
 }

@@ -142,20 +142,20 @@ namespace Shogi {
 		return _hash;
 	}
 
-	template <bool black, bool cuick>
+	template <bool black, bool quick>
 	bool Position::isLegalMove(const Move& move) const {
 		if (move.isEmpty()) {
 			return false;
 		}
 		Piece piece = move.getPiece();
-		if (!cuick && black && !piece.isBlack()) {
+		if (!quick && black && !piece.isBlack()) {
 			return false;
 		}
-		if (!cuick && !black && !piece.isWhite()) {
+		if (!quick && !black && !piece.isWhite()) {
 			return false;
 		}
 		if (move.isHand()) { // 持ち駒を打つ場合
-			if (!cuick && (piece.getTurnedBlack() < Piece::BPAWN ||
+			if (!quick && (piece.getTurnedBlack() < Piece::BPAWN ||
 					piece.getTurnedBlack() > Piece::BROOK)){
 				return false; // 不正な駒番号
 			}
@@ -172,7 +172,7 @@ namespace Shogi {
 			if (!black && piece == Piece::WPAWN && wpawns.exist(file)) {
 				return false; // 二歩
 			}
-			if (!cuick && move.getTo().isCompulsoryPromotion(piece)) {
+			if (!quick && move.getTo().isCompulsoryPromotion(piece)) {
 				return false; // 行きどころのない駒
 			}
 			Piece pieceTo = board.get(move.getTo());
@@ -202,11 +202,11 @@ namespace Shogi {
 			if (piece != getBoard(move.getFrom())) {
 				return false; // 不正な駒
 			}
-			if (!cuick && move.isPromotion() && (!piece.isPromotable() || 
+			if (!quick && move.isPromotion() && (!piece.isPromotable() || 
 					(!move.getTo().isPromotableRank(black) && !move.getFrom().isPromotableRank(black)))) {
 				return false; // 成れない駒
 			}
-			if (!cuick && !move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
+			if (!quick && !move.isPromotion() && move.getTo().isCompulsoryPromotion(piece)) {
 				return false; // 行きどころのない駒
 			}
 			SquareDiff diff = SquareDiff(move.getFrom(), move.getTo());
@@ -281,6 +281,7 @@ namespace Shogi {
 	template <bool black, bool chNotNull, bool evNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change,
 			Evaluates::Evaluate* eval) {
+		assert((isLegalMove<black, false>(move)));
 		if (chNotNull) {
 			change->setHash(hash); // hash
 			change->setBlackKing(bking); // black king's square

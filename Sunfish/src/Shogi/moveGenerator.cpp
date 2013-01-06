@@ -666,24 +666,24 @@ namespace Shogi {
 				generateCheckDropStraight<true, Piece::BROOK, true>(Direction::DOWN);
 			}
 		} else {
-			if (pos.getBlackHand(Piece::WPAWN) != 0) {
+			if (pos.getWhiteHand(Piece::WPAWN) != 0) {
 				generateCheckDropStraight<false, Piece::WPAWN, false>(Direction::UP);
 			}
-			if (pos.getBlackHand(Piece::WLANCE) != 0) {
+			if (pos.getWhiteHand(Piece::WLANCE) != 0) {
 				generateCheckDropStraight<false, Piece::WLANCE, true>(Direction::UP);
 			}
-			if (pos.getBlackHand(Piece::WKNIGHT) != 0) {
+			if (pos.getWhiteHand(Piece::WKNIGHT) != 0) {
 				generateCheckDropStraight<false, Piece::WKNIGHT, false>(Direction::LEFT_UP2);
 				generateCheckDropStraight<false, Piece::WKNIGHT, false>(Direction::RIGHT_UP2);
 			}
-			if (pos.getBlackHand(Piece::WSILVER) != 0) {
+			if (pos.getWhiteHand(Piece::WSILVER) != 0) {
 				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::LEFT_DOWN);
 				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::RIGHT_DOWN);
 				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::LEFT_UP);
 				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::UP);
 				generateCheckDropStraight<false, Piece::WSILVER, false>(Direction::RIGHT_UP);
 			}
-			if (pos.getBlackHand(Piece::WGOLD) != 0) {
+			if (pos.getWhiteHand(Piece::WGOLD) != 0) {
 				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::DOWN);
 				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::LEFT);
 				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::RIGHT);
@@ -691,13 +691,13 @@ namespace Shogi {
 				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::UP);
 				generateCheckDropStraight<false, Piece::WGOLD, false>(Direction::RIGHT_UP);
 			}
-			if (pos.getBlackHand(Piece::WBISHOP) != 0) {
+			if (pos.getWhiteHand(Piece::WBISHOP) != 0) {
 				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::LEFT_DOWN);
 				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::RIGHT_DOWN);
 				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::LEFT_UP);
 				generateCheckDropStraight<false, Piece::WBISHOP, true>(Direction::RIGHT_UP);
 			}
-			if (pos.getBlackHand(Piece::WROOK) != 0) {
+			if (pos.getWhiteHand(Piece::WROOK) != 0) {
 				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::DOWN);
 				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::LEFT);
 				generateCheckDropStraight<false, Piece::WROOK, true>(Direction::RIGHT);

@@ -27,22 +27,22 @@ namespace Search {
 		}
 	}
 
-	void PhasedMoveGenerator::removeHashMove(int begin, int num) {
-		for (int i = 0; i < num; i++) {
-			const Move& move = get(begin + i);
-			if (move == hashMove.getHash1() ||
-					move == hashMove.getHash2()) {
-				fastRemove(i--);
-			}
-		}
-	}
-
 	template <bool plusOnly>
 	void PhasedMoveGenerator::sortSee(int begin, int num) {
 		Value values[num];
 		for (int i = 0; i < num; i++) {
-			Attackers attackers(param, getPosition(), get(begin + i));
+			const Move& move = get(begin + i);
+			Attackers attackers(param, getPosition(), move);
 			Value value = attackers.see();
+			if (killer.get1() == move) {
+				Value kvalue = killer.getValue1() +
+						Killer::calcCurrentChange(getPosition(), move, param);
+				value = Value::max(value, kvalue);
+			} else if (killer.get2() == move) {
+				Value kvalue = killer.getValue2() +
+						Killer::calcCurrentChange(getPosition(), move, param);
+				value = Value::max(value, kvalue);
+			}
 			int j;
 			for (j = i; j > 0; j--) {
 				if (values[j-1] >= value) {
@@ -80,6 +80,28 @@ namespace Search {
 		}
 	}
 
+	void PhasedMoveGenerator::removeKillerMove(int begin, int num) {
+		for (int i = 0; i < num; i++) {
+			const Move& move = get(begin + i);
+			if (move == killer.get1() ||
+					move == killer.get2()) {
+				removeUnstable(i--);
+				num--;
+			}
+		}
+	}
+
+	void PhasedMoveGenerator::removeHashMove(int begin, int num) {
+		for (int i = 0; i < num; i++) {
+			const Move& move = get(begin + i);
+			if (move == hashMove.getHash1() ||
+					move == hashMove.getHash2()) {
+				removeUnstable(i--);
+				num--;
+			}
+		}
+	}
+
 	const Move* PhasedMoveGenerator::next() {
 		while (true) {
 			const Move* pmove = Super::next();
@@ -101,12 +123,20 @@ namespace Search {
 				break;
 			case PHASE_CAPTURE:
 				generateCapture();
+				removeKillerMove(prevNum, getNumber()-prevNum);
+				if (getPosition().isLegalMove(killer.get1(), true)) {
+					add(killer.get1());
+				}
+				if (getPosition().isLegalMove(killer.get2(), true)) {
+					add(killer.get2());
+				}
 				removeHashMove(prevNum, getNumber()-prevNum);
 				sortSee<false>(prevNum, getNumber()-prevNum);
 				phase = PHASE_NOCAPTURE;
 				break;
 			case PHASE_NOCAPTURE:
 				generateNocapture();
+				removeKillerMove(prevNum, getNumber()-prevNum);
 				removeHashMove(prevNum, getNumber()-prevNum);
 				sortHistory(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;

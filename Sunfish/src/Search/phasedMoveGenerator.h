@@ -10,12 +10,13 @@
 
 #include "../Shogi/moveGenerator.h"
 #include "../Evaluates/param.h"
+#include "killer.h"
 #include "hashMove.h"
 #include "history.h"
 
 namespace Search {
 	enum PHASE {
-		PHASE_BEGIN = 0,
+		PHASE_BEGIN = 0, // hash
 		PHASE_END,
 
 		PHASE_CAPTURE,
@@ -35,6 +36,9 @@ namespace Search {
 		const Evaluates::Param& param;
 		const History& history;
 		unsigned hashNum;
+		Killer killer;
+
+		void removeKillerMove(int begin, int num);
 
 		void removeHashMove(int begin, int num);
 
@@ -80,10 +84,18 @@ namespace Search {
 		}
 
 		bool isHashMove() const {
-			return getCurrent() <= hashNum;
+			const Shogi::Move* pmove = get();
+			assert(pmove != NULL);
+			return getCurrent() <= hashNum ||
+					*pmove == killer.get1() ||
+					*pmove == killer.get2();
 		}
 
 		void sort(Evaluates::Value values[]);
+
+		Killer& getKiller() {
+			return killer;
+		}
 	};
 }
 

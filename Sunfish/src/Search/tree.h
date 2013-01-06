@@ -80,6 +80,7 @@ namespace Search {
 
 		void initNode() {
 			nodes[depth].arrive();
+			nodes[depth+1].initKiller();
 		}
 
 		int updatePv() {
@@ -182,7 +183,7 @@ namespace Search {
 		bool isCapture() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
-				pos.isCapturingMove(*pmove);
+				return pos.isCapturingMove(*pmove);
 			}
 			return false;
 		}
@@ -235,6 +236,14 @@ namespace Search {
 
 		bool isHashMove() const {
 			return nodes[depth].isHashMove();
+		}
+
+		void addKiller(Evaluates::Value value) const {
+			const Shogi::Move* pmove = getCurrentMove();
+			if (pmove != NULL) {
+				value -= Killer::calcCurrentChange(pos, *pmove, eval.getParam());
+				nodes[depth].addKiller(*pmove, value);
+			}
 		}
 
 		void setMoveIndex(int index) {
