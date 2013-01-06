@@ -370,7 +370,7 @@ namespace Search {
 		return after(result, value);
 	}
 
-#define NODE_DEBUG				1
+#define NODE_DEBUG				0
 
 	/***************************************************************
 	 * 反復深化探索                                                *
