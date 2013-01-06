@@ -15,7 +15,7 @@
 	- ordering
 		* static exchange evaluation
 		* history heuristic
-		- killer move
+		* killer move
 	- pruning
 		* null move pruning
 		* futility pruning
