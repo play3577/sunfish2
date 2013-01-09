@@ -87,6 +87,9 @@ namespace Network {
 				searcher.setSearchConfig(searchConfig);
 
 				while (1) {
+#ifndef NDEBUG
+					CsaWriter::write("debug.csa", record);
+#endif
 					Log::message << record.toString();
 					if (black == record.getPosition().isBlackTurn()) {
 						// my turn

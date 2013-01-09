@@ -28,23 +28,25 @@ namespace Develop {
 				oss << "{";
 				for (int file1 = -8; file1 <= 8; file1++) {
 					DirectionFlags flags;
-					// 移動先
-					for (int rank2 = -8; rank2 <= 8; rank2++) {
-						for (int file2 = -8; file2 <= 8; file2++) {
-							int rank = rank1 - rank2;
-							int file = file1 - file2;
-							if (rank >= -8 && rank <= 8 && file >= -8 && file <= 8 &&
-									Attack::attack(piece, rank2, file2) != 0 && // 移動先に動けるか
-									(Attack::attack(piece, rank, file) != 0 ||
-									Attack::attack(piece.getPromoted(), rank, file) != 0)) { // 王手し得る位置か
-								SquareDiff diff(file2+(rank2<<Square::SHIFT_RANK));
-								Direction dir = diff.toDirection();
-								if (piece.getMovableDirection().check(DirectionFlags(dir))) {
-									flags.add(dir);
-								} else if (piece.getMovableDirection().check(DirectionFlags(dir, true))) {
-									flags.add(DirectionFlags(dir, true));
-								} else {
-									assert(false);
+					if (piece != Piece::BKING && piece != Piece::WKING) {
+						// 移動先
+						for (int rank2 = -8; rank2 <= 8; rank2++) {
+							for (int file2 = -8; file2 <= 8; file2++) {
+								int rank = rank1 - rank2;
+								int file = file1 - file2;
+								if (rank >= -8 && rank <= 8 && file >= -8 && file <= 8 &&
+										Attack::attack(piece, rank2, file2) != 0 && // 移動先に動けるか
+										(Attack::attack(piece, rank, file) != 0 ||
+										Attack::attack(piece.getPromoted(), rank, file) != 0)) { // 王手し得る位置か
+									SquareDiff diff(file2+(rank2<<Square::SHIFT_RANK));
+									Direction dir = diff.toDirection();
+									if (piece.getMovableDirection().check(DirectionFlags(dir))) {
+										flags.add(dir);
+									} else if (piece.getMovableDirection().check(DirectionFlags(dir, true))) {
+										flags.add(DirectionFlags(dir, true));
+									} else {
+										assert(false);
+									}
 								}
 							}
 						}

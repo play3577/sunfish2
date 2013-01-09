@@ -281,7 +281,14 @@ namespace Shogi {
 	template <bool black, bool chNotNull, bool evNotNull>
 	void Position::moveUnsafe(const Move& move, Change* change,
 			Evaluates::Evaluate* eval) {
-		assert((isLegalMove<black, false>(move)));
+#ifndef NDEBUG
+		if (!isLegalMove<black, false>(move)) {
+			Log::debug << "ERROR " << __FILE__ << '(' << __LINE__ << ") : ILEGAL MOVE!!";
+			Log::debug << toString();
+			Log::debug << move.toString();
+			abort();
+		}
+#endif
 		if (chNotNull) {
 			change->setHash(hash); // hash
 			change->setBlackKing(bking); // black king's square
