@@ -23,29 +23,31 @@ namespace Shogi {
 		unsigned curr;
 		Move moves[MAX_MOVES_NUM];
 
-		template <bool genCap, bool genNocap>
+		template <bool genCap, bool genNocap, bool full>
 		unsigned generate();
 
-		template <bool black, bool genCap, bool genNocap, bool genPro>
+		template <bool black, bool genCap, bool genNocap, bool genPro, bool full>
 		void generateOnBoard();
 
-		template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap, bool genPro>
+		template <bool black, bool oneStep, bool promotable, bool genCap, bool genNocap, bool genPro, bool full>
 		void generateStraight(const Piece piece, const Square from, const Direction dir, const Direction pin);
 
-		// TODO: rename 'generateOneMove'
 		template <bool black>
-		void generateMoveOneMove(const Piece piece, const Square from, const Square to) {
+		bool generateOneMove(const Piece piece, const Square from, const Square to) {
 			if (!to.isCompulsoryPromotion(piece)) {
 				moves[num++] = Move(from, to, false, false, piece);
+				return true;
 			}
+			return false;
 		}
 
-		// TODO: rename 'generateOneMovePro'
 		template <bool black>
-		void generateMoveOneMovePro(const Piece piece, const Square from, const Square to) {
+		bool generateOneMovePro(const Piece piece, const Square from, const Square to) {
 			if (to.isPromotableRank(black) || from.isPromotableRank(black)) {
 				moves[num++] = Move(from, to, true, false, piece);
+				return true;
 			}
+			return false;
 		}
 
 		template <bool black, bool check, bool genCap, bool genNocap, bool genCheckOnly>
@@ -96,17 +98,29 @@ namespace Shogi {
 		}
 
 		unsigned generate() {
-			return generate<true, true>();
+			return generate<true, true, false>();
+		}
+
+		unsigned generateFull() {
+			return generate<true, true, true>();
 		}
 
 		unsigned generateTardy();
 
 		unsigned generateCapture() {
-			return generate<true, false>();
+			return generate<true, false, false>();
+		}
+
+		unsigned generateCaptureFull() {
+			return generate<true, false, true>();
 		}
 
 		unsigned generateNocapture() {
-			return generate<false, true>();
+			return generate<false, true, false>();
+		}
+
+		unsigned generateNocaptureFull() {
+			return generate<false, true, true>();
 		}
 
 		unsigned generateTactical();
