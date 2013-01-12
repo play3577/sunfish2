@@ -22,6 +22,8 @@ namespace Cui {
 		{ "h", "help", HELP, "show this help." },
 		{ "p", "prev", PREV, "go to a previous position." },
 		{ "n", "next", NEXT, "go to a next position." },
+		{ "t", "top", TOP, "go to a top of this record." },
+		{ "e", "end", END, "go to a end of this record." },
 		{ "s", "search", SEARCH, "search from current position." },
 		{ "m", "moves", MOVES, "show legal moves." },
 		{ "c", "cap", CAPTURES, "show capturing moves." },
@@ -197,6 +199,22 @@ namespace Cui {
 					record.next();
 				}
 				prevCommand = NEXT;
+				break;
+			case TOP:
+				while (record.prev()) {
+					printBoard = true;
+				}
+				if (!printBoard) {
+					std::cout << "There is no previous move.\n";
+				}
+				break;
+			case END:
+				while (record.next()) {
+					printBoard = true;
+				}
+				if (!printBoard) {
+					std::cout << "There is no next move.\n";
+				}
 				break;
 			case MOVES: // 指し手列挙
 				showLegalMoves(record.getPosition());

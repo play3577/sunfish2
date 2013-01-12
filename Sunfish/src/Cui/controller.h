@@ -25,6 +25,8 @@ namespace Cui {
 			HELP,
 			PREV,
 			NEXT,
+			TOP,
+			END,
 			SEARCH,
 			MOVES,
 			CAPTURES,

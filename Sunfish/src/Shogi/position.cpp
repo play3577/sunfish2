@@ -285,7 +285,7 @@ namespace Shogi {
 		if (!isLegalMove<black, false>(move)) {
 			Log::debug << "ERROR " << __FILE__ << '(' << __LINE__ << ") : ILEGAL MOVE!!";
 			Log::debug << toString();
-			Log::debug << move.toString();
+			Log::debug << move.toString() << '\n';
 			abort();
 		}
 #endif

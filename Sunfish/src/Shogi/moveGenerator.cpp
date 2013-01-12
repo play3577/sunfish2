@@ -533,7 +533,7 @@ namespace Shogi {
 				while (f.isNonZero()) {
 					Direction dir = f.pop().toDirection();
 					if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
-						return;
+						continue;
 					}
 					Square to = from + dir;
 					Piece piece2 = pos.getBoard(to);
@@ -546,7 +546,7 @@ namespace Shogi {
 				while (f.isNonZero()) {
 					Direction dir = f.pop().toDirection();
 					if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
-						return;
+						continue;
 					}
 					for (Square to = from + dir; ; to += dir) {
 						Piece piece2 = pos.getBoard(to);
@@ -563,16 +563,21 @@ namespace Shogi {
 				// 開き王手
 				DirectionFlags effectKing = pos.getEffect(from, !black);
 				DirectionFlags attacker = pos.getEffect(from, black);
-				if (effectKing.isAttackedBy(attacker)) {
+				if ((attacker = effectKing.isAttackedBy(attacker))) {
 					DirectionFlags flags = piece.getMovableDirection();
-					flags.remove(attacker.toDirection());
+					Direction attackDir = attacker.toDirection();
+					flags.remove(attackDir);
+					flags.remove(attackDir.reverse());
 					f = flags.getShortRangeOnly();
 					while (f.isNonZero()) {
 						Direction dir = f.pop().toDirection();
-						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
-							return;
-						}
 						Square to = from + dir;
+						if (piece.isKing() && pos.getEffect(to, !black).longOrShortRange()) {
+							continue;
+						}
+						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
+							continue;
+						}
 						Piece piece2 = pos.getBoard(to);
 						if ((black && piece2.isBlackMovable()) ||
 								(!black && piece2.isWhiteMovable())) {
@@ -583,7 +588,7 @@ namespace Shogi {
 					while (f.isNonZero()) {
 						Direction dir = f.pop().toDirection();
 						if (pin != Direction::NON && dir != pin && dir != pin.reverse()) {
-							return;
+							continue;
 						}
 						for (Square to = from + dir; ; to += dir) {
 							Piece piece2 = pos.getBoard(to);
@@ -718,6 +723,12 @@ namespace Shogi {
 			return;
 		}
 		if (!black && piece == Piece::WPAWN && pos.getWPawnFiles().exist(to.getFile())) {
+			return;
+		}
+		// 打ち歩詰めチェック
+		if (black && piece == Piece::BPAWN && pos.isPawnDropMate(to, true)) {
+			return;
+		} else if (!black && piece == Piece::WPAWN && pos.isPawnDropMate(to, false)) {
 			return;
 		}
 		// 手追加
