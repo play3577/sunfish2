@@ -13,6 +13,7 @@
 #include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
+#include "../Records/record.h"
 #include <algorithm>
 #include <boost/timer.hpp>
 #define BOOST_THREAD_USE_LIB
@@ -69,16 +70,18 @@ namespace Search {
 			DEF_STAT = NULL_MOVE | RECAPTURE
 		};
 
+		static const int PLY1 = 4;
+
 		Tree tree;
 		Table::TT tt;
 		Shek::ShekTable shekTable;
 		History history;
 		SearchConfig config;
-		static const int PLY1 = 4;
 		SearchCounter counter;
 		boost::timer timer;
 		int rootDepth;
 		Evaluates::Value gain[Shogi::Piece::WDRAGON+1][Shogi::Square::END+1];
+		const Records::HashStack* pHashStack;
 
 		//flags 
 		bool running;
@@ -105,7 +108,11 @@ namespace Search {
 				signalInterrupt = false;
 				signalForceInterrupt = false;
 			}
-			// TODO: SHEK
+			if (pHashStack != NULL) {
+				for (int i = 0; i < pHashStack->size; i++) {
+					shekTable.set(pHashStack->stack[i]);
+				}
+			}
 			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
 			memset(&gain, 0, sizeof(gain));
@@ -114,7 +121,11 @@ namespace Search {
 		}
 
 		bool after(SearchResult& result, Evaluates::Value value) {
-			// TODO: SHEK
+			if (pHashStack != NULL) {
+				for (int i = 0; i < pHashStack->size; i++) {
+					shekTable.unset(pHashStack->stack[i]);
+				}
+			}
 			result.value = value;
 			const Shogi::Move* pmove = tree.getPv().getTop();
 			result.pv.copy(tree.getPv());
@@ -229,21 +240,29 @@ namespace Search {
 		}
 
 	public:
-		Searcher(const Evaluates::Param& param) :
-			tree(param, history), running(false),
+		Searcher(const Evaluates::Param& param,
+				Records::HashStack* pHashStack = NULL) :
+			tree(param, history),
+			pHashStack(pHashStack),
+			running(false),
 			signalInterrupt(false),
 			signalForceInterrupt(false) {
 		}
 
 		Searcher(const Evaluates::Param& param,
-				const Shogi::Position& pos) :
-			tree(param, pos, history), running(false),
+				const Shogi::Position& pos,
+				Records::HashStack* pHashStack = NULL) :
+			tree(param, pos, history),
+			pHashStack(pHashStack),
+			running(false),
 			signalInterrupt(false),
 			signalForceInterrupt(false) {
 		}
 
-		void init(const Shogi::Position& pos) {
+		void init(const Shogi::Position& pos,
+				const Records::HashStack* pHashStack = NULL) {
 			tree.init(pos);
+			this->pHashStack = pHashStack;
 		}
 
 		const SearchConfig& getSearchConfig() const {

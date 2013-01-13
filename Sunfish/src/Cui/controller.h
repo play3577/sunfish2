@@ -77,7 +77,7 @@ namespace Cui {
 
 		Command inputCommand(const char* str);
 
-		void printMate(const Shogi::Position& pos) const;
+		void printStatus(const Records::Record& record) const;
 
 	public:
 		Controller() {

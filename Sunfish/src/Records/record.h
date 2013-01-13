@@ -11,6 +11,15 @@
 #include "../Shogi/position.h"
 
 namespace Records {
+	struct HashStack {
+		const Util::uint64* stack;
+		int size;
+		HashStack(const Util::uint64* stack, int size) {
+			this->stack = stack;
+			this->size = size;
+		}
+	};
+
 	class Record {
 	private:
 		static const int STACK_SIZE = 1024;
@@ -19,6 +28,7 @@ namespace Records {
 		int cur;
 		Shogi::Move moveStack[STACK_SIZE];
 		Shogi::Change changeStack[STACK_SIZE];
+		Util::uint64 hashStack[STACK_SIZE];
 
 	public:
 		Record() {
@@ -36,6 +46,7 @@ namespace Records {
 		void initStack() {
 			num = 0;
 			cur = 0;
+			hashStack[0] = pos.getHash();
 		}
 
 		void init(const Shogi::Position& pos) {
@@ -49,6 +60,7 @@ namespace Records {
 				moveStack[cur] = move;
 				changeStack[cur] = change;
 				num = ++cur;
+				hashStack[cur] = pos.getHash();
 				return true;
 			}
 			return false;
@@ -116,6 +128,16 @@ namespace Records {
 				return true;
 			}
 			return false;
+		}
+
+		Util::uint64 getHash(int index) {
+			return hashStack[index];
+		}
+
+		bool isRepetition(bool full = true) const;
+
+		const HashStack getHashStack() const {
+			return HashStack(hashStack, cur);
 		}
 
 		std::string toString() const {

@@ -9,12 +9,13 @@
 - 確定手
 * 王手生成
 * CSA入出力
-- 千日手
+* 千日手
 ? 玉がいない場合
 ? USI
 - 相手番思考
-- ハッシュ表サイズ管理
+? ハッシュ表サイズ管理
 - 探索
+	- 差分計算
 	* 静止探索
 	- ordering
 		* static exchange evaluation
@@ -23,15 +24,15 @@
 	- pruning
 		* null move pruning
 		* futility pruning
-		- move count pruning
-		- static null move pruning
-		- distance pruning
+		? move count pruning
+		? static null move pruning
+		? distance pruning
 	+ extensions
 	* late move reduction
 	+ mate 1ply
 	- mate 3ply
-	- singular extension
-	+ SHEK
+	? singular extension
+	* SHEK
 	* recursive iterative-deepening search
 	* aspiration search
 	- parallel search

@@ -15,6 +15,7 @@ namespace Cui {
 	using namespace Shogi;
 	using namespace Search;
 	using namespace Evaluates;
+	using namespace Records;
 	using namespace Csa;
 
 	const Controller::CommandSet Controller::commandSet[CMD_NUM] = {
@@ -107,16 +108,19 @@ namespace Cui {
 		}
 	}
 
-	void Controller::printMate(const Position& pos) const {
-		if (pos.isMate()) {
+	void Controller::printStatus(const Record& record) const {
+		if (record.getPosition().isMate()) {
 			std::cout << "mate!!\n";
+		}
+		if (record.isRepetition()) {
+			std::cout << "repetition!!\n";
 		}
 	}
 
 	bool Controller::play() {
 		char line[1024];
 		Command prevCommand = EMPTY;
-		Records::Record record;
+		Record record;
 		Searcher searcher(*pparam);
 		SearchConfig searchConfig;
 		SearchResult result;
@@ -136,7 +140,7 @@ namespace Cui {
 		searcher.setSearchConfig(searchConfig);
 
 		std::cout << record.toString();
-		printMate(record.getPosition());
+		printStatus(record);
 
 		while (true) {
 			bool printBoard = false;
@@ -273,7 +277,7 @@ namespace Cui {
 			// 盤面の表示
 			if (printBoard) {
 				std::cout << record.toString();
-				printMate(record.getPosition());
+				printStatus(record);
 			}
 		}
 
