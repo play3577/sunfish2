@@ -8,7 +8,6 @@
 #include "csaClient.h"
 #include "../Csa/csaReader.h"
 #include "../Csa/csaWriter.h"
-#include "../Search/searcher.h"
 
 #include <sstream>
 #include <boost/bind.hpp>
@@ -79,12 +78,14 @@ namespace Network {
 				Record record(pos);
 				Searcher searcher(*pparam);
 				SearchConfig searchConfig;
+				SearchConfig searchConfigEnemy;
 
 				searchConfig.depth = config.getDepth();
 				searchConfig.pvHandler = this;
 				searchConfig.limitEnable = config.getLimit() != 0;
 				searchConfig.limitSeconds = config.getLimit();
-				searcher.setSearchConfig(searchConfig);
+				searchConfigEnemy = searchConfig;
+				searchConfigEnemy.limitEnable = false;
 
 				while (1) {
 #ifndef NDEBUG
@@ -94,6 +95,7 @@ namespace Network {
 					if (black == record.getPosition().isBlackTurn()) {
 						// my turn
 						SearchResult result;
+						searcher.setSearchConfig(searchConfig);
 						searcher.init(record.getPosition());
 						searcher.idSearch(result);
 						if (!result.resign && record.move(result.move)) {
@@ -106,8 +108,13 @@ namespace Network {
 						}
 					} else {
 						// enemy's turn
+						boost::thread enemyTurnSearchThread(
+								boost::bind(&CsaClient::enemyTurnSearch,
+								this, &searcher, record, searchConfigEnemy));
 						unsigned mask = black ? RECV_MOVE_W : RECV_MOVE_B;
 						unsigned flags = waitReceive(mask | RECV_END_MSK);
+						searcher.forceInterrupt();
+						enemyTurnSearchThread.join();
 						if (flags & mask) {
 							if (!CsaReader::parseLineMove(moveStr.c_str(), record)) {
 								Log::error << "ERROR :illegal move!!\n";
@@ -299,5 +306,15 @@ lab_end:
 		path << config.getKifu();
 		path << gameId << ".csa";
 		CsaWriter::write(path.str().c_str(), record);
+	}
+
+	void CsaClient::enemyTurnSearch(Search::Searcher* psearcher,
+			const Record& record, const SearchConfig& searchConfig) {
+		if (config.getEnemy()) {
+			SearchResult result;
+			psearcher->setSearchConfig(searchConfig);
+			psearcher->init(record.getPosition());
+			psearcher->idSearch(result);
+		}
 	}
 }

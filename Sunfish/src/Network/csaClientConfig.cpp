@@ -12,6 +12,27 @@
 #include <boost/lexical_cast.hpp>
 
 namespace Network {
+	CsaClientConfig::CsaClientConfig(const char* filename) {
+		int i = 0;
+		items[i++] = ConfigItem("host", STRING, &host);
+		items[i++] = ConfigItem("port", INTEGER, &port);
+		items[i++] = ConfigItem("user", STRING, &user);
+		items[i++] = ConfigItem("pass", STRING, &pass);
+		items[i++] = ConfigItem("depth", INTEGER, &depth);
+		items[i++] = ConfigItem("limit", INTEGER, &limit);
+		items[i++] = ConfigItem("repeat", INTEGER, &repeat);
+		items[i++] = ConfigItem("enemy", BOOL, &enemy);
+		items[i++] = ConfigItem("keepalive", INTEGER, &keepalive);
+		items[i++] = ConfigItem("keepidle", INTEGER, &keepidle);
+		items[i++] = ConfigItem("keepintvl", INTEGER, &keepintvl);
+		items[i++] = ConfigItem("keepcnt", INTEGER, &keepcnt);
+		items[i++] = ConfigItem("kifu", STRING, &kifu);
+
+		if (filename != NULL) {
+			read(filename);
+		}
+	}
+
 	bool CsaClientConfig::read(const char* filename) {
 		std::ifstream fin(filename);
 		if (!fin) {
@@ -43,33 +64,20 @@ namespace Network {
 		if (tokens.size() != 2) {
 			return false;
 		}
-		if (tokens[0] == "host") {
-			host = tokens[1];
-		} else if (tokens[0] == "port") {
-			port = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "user") {
-			user = tokens[1];
-		} else if (tokens[0] == "pass") {
-			pass = tokens[1];
-		} else if (tokens[0] == "depth") {
-			depth = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "limit") {
-			limit = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "repeat") {
-			repeat = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "keepalive") {
-			keepalive = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "keepidle") {
-			keepidle = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "keepintvl") {
-			keepintvl = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "keepcnt") {
-			keepcnt = boost::lexical_cast<int>(tokens[1]);
-		} else if (tokens[0] == "kifu") {
-			kifu = tokens[1];
-		} else {
-			return false;
+		for (unsigned i = 0; i < sizeof(items)/sizeof(items[0]); i++){
+			if (tokens[0] == items[i].name) {
+				if (items[i].type == STRING) {
+					*(std::string*)items[i].data = tokens[1];
+				} else if (items[i].type == INTEGER) {
+					*(int*)items[i].data = boost::lexical_cast<int>(tokens[1]);
+				} else if (items[i].type == BOOL) {
+					*(bool*)items[i].data = boost::lexical_cast<bool>(tokens[1]);
+				} else {
+					Log::error << "Unknown Error.." << __FILE__ << "(" << __LINE__ << ")\n";
+				}
+				return true;
+			}
 		}
-		return true;
+		return false;
 	}
 }

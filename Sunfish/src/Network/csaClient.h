@@ -13,7 +13,7 @@
 #include "../Evaluates/param.h"
 #include "../Evaluates/initializer.h"
 #include "../Records/record.h"
-#include "../Search/pvHandler.h"
+#include "../Search/searcher.h"
 #include "connection.h"
 #include <iomanip>
 #define BOOST_THREAD_USE_LIB
@@ -149,6 +149,10 @@ namespace Network {
 		}
 
 		void writeResult(Records::Record record);
+
+		void enemyTurnSearch(Search::Searcher* psearcher,
+			const Records::Record& record,
+			const Search::SearchConfig& searchConfig);
 
 	public:
 		static const char* DEFAULT_CONFIG_FILE;

@@ -15,6 +15,8 @@
 #include "../Shek/shekTable.h"
 #include <algorithm>
 #include <boost/timer.hpp>
+#define BOOST_THREAD_USE_LIB
+#include <boost/thread.hpp>
 
 namespace Search {
 	struct SearchConfig {
@@ -75,9 +77,14 @@ namespace Search {
 		static const int PLY1 = 4;
 		SearchCounter counter;
 		boost::timer timer;
-		const bool* pinterrupt;
 		int rootDepth;
 		Evaluates::Value gain[Shogi::Piece::WDRAGON+1][Shogi::Square::END+1];
+
+		//flags 
+		bool running;
+		bool signalInterrupt;
+		bool signalForceInterrupt;
+		boost::mutex flagMutex;
 
 		Evaluates::Value quies(Tree& tree, int ply,
 				Evaluates::Value alpha,
@@ -92,6 +99,12 @@ namespace Search {
 				unsigned stat = DEF_STAT);
 
 		void before(SearchResult& result) {
+			{
+				boost::mutex::scoped_lock lock(flagMutex);
+				running = true;
+				signalInterrupt = false;
+				signalForceInterrupt = false;
+			}
 			// TODO: SHEK
 			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
@@ -115,6 +128,12 @@ namespace Search {
 			} else {
 				result.resign = true;
 				return false;
+			}
+			{
+				boost::mutex::scoped_lock lock(flagMutex);
+				running = false;
+				signalInterrupt = false;
+				signalForceInterrupt = false;
 			}
 		}
 
@@ -161,10 +180,15 @@ namespace Search {
 			}
 		}
 
-		bool interrupt() const {
-			return tree.getPv().getTop() != NULL &&
-					config.limitEnable &&
-					timer.elapsed() >= config.limitSeconds;
+		bool isInterrupted() const {
+			if (signalForceInterrupt) {
+				return true;
+			}
+			if (tree.getPv().getTop() != NULL) {
+				return signalInterrupt || (config.limitEnable
+					&& timer.elapsed() >= config.limitSeconds);
+			}
+			return false;
 		}
 
 		Shek::ShekStat shekCheck() {
@@ -206,12 +230,16 @@ namespace Search {
 
 	public:
 		Searcher(const Evaluates::Param& param) :
-			tree(param, history) {
+			tree(param, history), running(false),
+			signalInterrupt(false),
+			signalForceInterrupt(false) {
 		}
 
 		Searcher(const Evaluates::Param& param,
 				const Shogi::Position& pos) :
-			tree(param, pos, history) {
+			tree(param, pos, history), running(false),
+			signalInterrupt(false),
+			signalForceInterrupt(false) {
 		}
 
 		void init(const Shogi::Position& pos) {
@@ -239,6 +267,26 @@ namespace Search {
 
 		// iterative-deepening search
 		bool idSearch(SearchResult& result);
+
+		bool interrupt() {
+			boost::mutex::scoped_lock lock(flagMutex);
+			if (running) {
+				bool ret = !signalInterrupt;
+				signalInterrupt = true;
+				return ret;
+			}
+			return false;
+		}
+
+		bool forceInterrupt() {
+			boost::mutex::scoped_lock lock(flagMutex);
+			if (running) {
+				bool ret = !signalForceInterrupt;
+				signalForceInterrupt = true;
+				return ret;
+			}
+			return false;
+		}
 	};
 }
 

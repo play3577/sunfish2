@@ -84,7 +84,7 @@ namespace Search {
 			makeMove(false);
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
 			unmakeMove(false);
-			if (interrupt()) { return Value(0); }
+			if (isInterrupted()) { return Value(0); }
 
 			if (newValue > value) {
 				value = newValue;
@@ -186,7 +186,7 @@ namespace Search {
 			if (nullMove()) {
 				Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, DEF_STAT & ~NULL_MOVE);
 				unmakeMove();
-				if (interrupt()) { return Value(0); }
+				if (isInterrupted()) { return Value(0); }
 				if (newValue >= beta) {
 					counter.nullMovePruning++;
 					return beta;
@@ -205,7 +205,7 @@ namespace Search {
 				// recurcive iterative-deepening search
 				int newDepth = pvNode ? depth - PLY1 * 2 : depth / 2;
 				negaMax<true>(tree, newDepth, alpha, beta, DEF_STAT);
-				if (interrupt()) { return Value(0); }
+				if (isInterrupted()) { return Value(0); }
 				const TTEntity& tte = tt.getEntity(hash);
 				if (tte.is(hash)) {
 					tree.setHashMove(tte.getHashMove());
@@ -308,7 +308,7 @@ namespace Search {
 				// nega-scout
 				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
 				// 値がalpha値を超えて、かつnull windowでないかあるいはreductionが効いていたとき
-				if (!interrupt() && newValue > newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
+				if (!isInterrupted() && newValue > newAlpha && (beta > newAlpha + 1 || reduction != 0)) {
 					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
@@ -318,7 +318,7 @@ namespace Search {
 			// unmake move
 			unmakeMove();
 
-			if (interrupt()) {
+			if (isInterrupted()) {
 				return Value(0);
 			}
 
@@ -437,7 +437,7 @@ revaluation:
 #if NODE_DEBUG
 					Log::debug << "n";
 #endif // NODE_DEBUG
-					if (!interrupt() && vtemp > alpha) {
+					if (!isInterrupted() && vtemp > alpha) {
 #if NODE_DEBUG
 						Log::debug << "[" << vtemp << "]";
 #endif // NODE_DEBUG
@@ -460,7 +460,7 @@ revaluation:
 						<< "[" << nodes << "]"
 						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";
 #endif // NODE_DEBUG
-				if (interrupt()) {
+				if (isInterrupted()) {
 					unmakeMove();
 					goto lab_search_end;
 				}

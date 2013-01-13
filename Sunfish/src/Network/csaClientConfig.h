@@ -9,11 +9,35 @@
 #define CSACLIENTCONFIG_H_
 
 #include <string>
+#include <typeinfo>
 
 namespace Network {
+	enum ItemType {
+		BOOL,
+		INTEGER,
+		STRING,
+	};
+
+	struct ConfigItem {
+		const char* name;
+		ItemType type;
+		void* data;
+		ConfigItem() {
+		}
+		ConfigItem(const char* name,
+				ItemType type, void* data) {
+			this->name = name;
+			this->type = type;
+			this->data = data;
+		}
+	};
+
 	class CsaClientConfig {
 	private:
 		static const int LINE_BUFFER_SIZE = 1024;
+
+		ConfigItem items[13];
+
 		std::string host;
 		int port;
 		std::string user;
@@ -22,6 +46,7 @@ namespace Network {
 		int depth;
 		int limit;
 		int repeat;
+		bool enemy;
 
 		int keepalive;
 		int keepidle;
@@ -33,12 +58,8 @@ namespace Network {
 		bool readLine(const char* line);
 
 	public:
-		CsaClientConfig(const char* filename = NULL) {
-			if (filename != NULL) {
-				read(filename);
-			}
-		}
-
+		CsaClientConfig(const char* filename = NULL);
+		
 		bool read(const char* filename);
 
 		const std::string& getHost() const {
@@ -67,6 +88,10 @@ namespace Network {
 
 		int getRepeat() const {
 			return repeat;
+		}
+
+		bool getEnemy() const {
+			return enemy;
 		}
 
 		int getKeepalive() const {
