@@ -27,7 +27,8 @@ namespace Shogi {
 	class Position {
 	private:
 		static PositionHash* pPositionHash;
-		Util::uint64 hash;
+		Util::uint64 boardHash;
+		Util::uint64 handHash;
 		Board board;
 		Hand blackHand;
 		Hand whiteHand;
@@ -141,8 +142,8 @@ namespace Shogi {
 			update();
 		}
 
-		Position(const Position& position) : hash(position.hash),
-				board(position.board),
+		Position(const Position& position) : boardHash(position.boardHash),
+				handHash(position.handHash), board(position.board),
 				blackHand(position.blackHand), whiteHand(position.whiteHand),
 				effectBoard(position.effectBoard),
 				bking(position.bking), wking(position.wking),
@@ -157,7 +158,19 @@ namespace Shogi {
 		}
 
 		Util::uint64 getHash() const {
-			return hash;
+			return boardHash ^ handHash ^ (blackTurn ? hashBlack() : U64(0));
+		}
+
+		Util::uint64 getBoardHash() const {
+			return boardHash;
+		}
+
+		Util::uint64 getHandHash() const {
+			return handHash;
+		}
+
+		Util::uint64 getTurnHash() const {
+			return blackTurn ? hashBlack() : U64(0);
 		}
 
 		void initNoUpdate() {
@@ -181,10 +194,13 @@ namespace Shogi {
 		}
 
 		void updateHash() {
-			hash = generateHash();
+			boardHash = generateBoardHash();
+			handHash = generateHandHash();
 		}
 
-		Util::uint64 generateHash() const;
+		Util::uint64 generateBoardHash() const;
+
+		Util::uint64 generateHandHash() const;
 
 		const Piece& getBoard(const Square& square) const {
 			return board.get(square);

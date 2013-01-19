@@ -108,7 +108,7 @@ namespace Search {
 	 ***************************************************************/
 	template <bool pvNode>
 	Value Searcher::negaMax(Tree& tree, int depth,
-			Value alpha, Value beta, unsigned stat) {
+			Value alpha, Value beta, NodeStat stat) {
 		tree.initNode();
 
 		// TODO: distance pruning
@@ -116,12 +116,14 @@ namespace Search {
 		switch (shekCheck()) {
 		case Shek::NONE:
 			break;
-		case Shek::INCLUDE:
-			return Value::MIN;
-		case Shek::LESS:
+		case Shek::SUPERIOR:
+			counter.shekPruning++;
 			return Value::MAX;
+		case Shek::INFERIOR:
+			counter.shekPruning++;
+			return Value::MIN;
 		case Shek::EQUAL:
-			// TODO: 千日手判定
+			counter.shekPruning++;
 			return Value(0);
 		}
 
@@ -142,7 +144,7 @@ namespace Search {
 		Move hash2;
 		bool hashOk = false;
 		if (ttEntity.is(hash)) { // 局面が一致したら
-			if (ttEntity.getDepth() >= depth) { // 深さ
+			if (ttEntity.isSuperior(depth)) {
 				switch (ttEntity.getValueType()) {
 				case TTEntity::EXACT: // 確定
 					counter.hashPruning++;
@@ -161,6 +163,7 @@ namespace Search {
 					break;
 				}
 			}
+			// TODO: ハッシュの手があまりに浅い場合は不採用
 			tree.setHashMove(ttEntity.getHashMove());
 			hashOk = true;
 		}
@@ -168,6 +171,7 @@ namespace Search {
 		// mate
 		if (!tree.isCheck()) {
 			if (isMate1Ply(tree)) {
+				// TODO: 深さの考慮
 				return Value::MAX;
 			}
 		}
@@ -179,13 +183,13 @@ namespace Search {
 		// null move pruning
 		int nullDepth = depth - (depth >= PLY1*8 ? depth*2/3 : (depth >= PLY1*4 ? depth/2 : PLY1*1));
 		bool mate = false;
-		if (stat & NULL_MOVE &&
+		if (stat.isNullMove() &&
 				beta == alpha + 1 &&
 				tree.getDepth() * PLY1 < nullDepth &&
 				beta <= STAND_PAT){
-			if (nullMove()) {
-				Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, DEF_STAT & ~NULL_MOVE);
-				unmakeMove();
+			if (nullMove(false)) {
+				Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, NodeStat().unsetNullMove());
+				unmakeMove(false);
 				if (isInterrupted()) { return Value(0); }
 				if (newValue >= beta) {
 					counter.nullMovePruning++;
@@ -204,7 +208,7 @@ namespace Search {
 			{
 				// recurcive iterative-deepening search
 				int newDepth = pvNode ? depth - PLY1 * 2 : depth / 2;
-				negaMax<true>(tree, newDepth, alpha, beta, DEF_STAT);
+				negaMax<true>(tree, newDepth, alpha, beta, NodeStat());
 				if (isInterrupted()) { return Value(0); }
 				const TTEntity& tte = tt.getEntity(hash);
 				if (tte.is(hash)) {
@@ -220,7 +224,7 @@ namespace Search {
 		const Move* best = NULL;
 		while (tree.next()) {
 			// node status
-			unsigned newStat = DEF_STAT;
+			NodeStat newStat;
 
 			unsigned moveCount = tree.getMoveIndex();
 			bool isHash = tree.isHashMove();
@@ -239,9 +243,9 @@ namespace Search {
 			// extensions
 			if (isCheckMove) {
 				newDepth += extension(tree);
-			} else if (stat & RECAPTURE && isRecapture) {
+			} else if (stat.isRecapture() && isRecapture) {
 				newDepth += extension(tree) * 3 / 4;
-				newStat &= ~RECAPTURE;
+				newStat.unsetRecapture();
 			} else if (mate) {
 				newDepth += extension(tree) / 2;
 			}
@@ -342,14 +346,14 @@ namespace Search {
 		}
 
 		// TT entry
-		tt.entry(hash, alpha, beta, value, depth, best);
+		tt.entry(hash, alpha, beta, value, depth, stat, best);
 
 		return value;
 	}
 	template Value Searcher::negaMax<true>(Tree& tree, int depth,
-			Value alpha, Value beta, unsigned stat);
+			Value alpha, Value beta, NodeStat stat);
 	template Value Searcher::negaMax<false>(Tree& tree, int depth,
-			Value alpha, Value beta, unsigned stat);
+			Value alpha, Value beta, NodeStat stat);
 
 	/***************************************************************
 	 * 探索(反復深化を行わない。)                                  *

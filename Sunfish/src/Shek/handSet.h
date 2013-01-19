@@ -49,10 +49,10 @@ namespace Shek {
 				if ((~handSet) & h.handSet) {
 					return NONE;
 				} else {
-					return INCLUDE;
+					return SUPERIOR;
 				}
 			} else {
-				return LESS;
+				return INFERIOR;
 			}
 		}
 	};

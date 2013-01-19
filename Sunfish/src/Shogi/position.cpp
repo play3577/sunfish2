@@ -93,7 +93,8 @@ namespace Shogi {
 	}
 
 	void Position::copy(const Position& position) {
-		hash = position.hash;
+		boardHash = position.boardHash;
+		handHash = position.handHash;
 		board.init(position.board);
 		blackHand.init(position.blackHand);
 		whiteHand.init(position.whiteHand);
@@ -122,7 +123,7 @@ namespace Shogi {
 		return oss.str();
 	}
 
-	Util::uint64 Position::generateHash() const {
+	Util::uint64 Position::generateBoardHash() const {
 		Util::uint64 _hash = U64(0);
 		for (Square square = Square::TOP; square.valid(); square.next()) {
 			Piece piece = board.get(square);
@@ -130,6 +131,11 @@ namespace Shogi {
 				_hash ^= hashBoard(piece, square);
 			}
 		}
+		return _hash;
+	}
+
+	Util::uint64 Position::generateHandHash() const {
+		Util::uint64 _hash = U64(0);
 		for (Piece piece = Piece::PAWN; piece != Piece::KING; piece.toNext()) {
 			for (int h = 0; h < blackHand.get(piece); h++) {
 				_hash ^= hashHand(piece, h, true);
@@ -138,7 +144,6 @@ namespace Shogi {
 				_hash ^= hashHand(piece, h, false);
 			}
 		}
-		_hash ^= blackTurn ? hashBlack() : U64(0);
 		return _hash;
 	}
 
@@ -290,7 +295,8 @@ namespace Shogi {
 		}
 #endif
 		if (chNotNull) {
-			change->setHash(hash); // hash
+			change->setBoardHash(boardHash); // board hash
+			change->setHandHash(handHash); // hand hash
 			change->setBlackKing(bking); // black king's square
 			change->setWhiteKing(wking); // white king's square
 			change->setBlackPawns(bpawns); // black pawns
@@ -305,9 +311,9 @@ namespace Shogi {
 				if (chNotNull) { change->setHandPiece(piece); } // dropping piece
 				if (chNotNull) { change->setToSquare(move.getTo()); } // dropping square
 				blackHand.dec(piece); // hand
-				hash ^= hashHand(piece, blackHand.get(piece), true); // hash
+				handHash ^= hashHand(piece, blackHand.get(piece), true); // hand hash
 				board.set(move.getTo(), piece); // board
-				hash ^= hashBoard(piece, move.getTo()); // hash
+				boardHash ^= hashBoard(piece, move.getTo()); // board hash
 				if (piece == Piece::BPAWN) {
 					bpawns.set(move.getTo().getFile());
 				}
@@ -318,9 +324,9 @@ namespace Shogi {
 				if (chNotNull) { change->setHandPiece(piece); } // dropping piece
 				if (chNotNull) { change->setToSquare(move.getTo()); } // dropping square
 				whiteHand.dec(piece); // hand
-				hash ^= hashHand(piece, whiteHand.get(piece), false); // hash
+				handHash ^= hashHand(piece, whiteHand.get(piece), false); // hand hash
 				board.set(move.getTo(), piece); // board
-				hash ^= hashBoard(piece, move.getTo()); // hash
+				boardHash ^= hashBoard(piece, move.getTo()); // board hash
 				if (piece == Piece::WPAWN) {
 					wpawns.set(move.getTo().getFile());
 				}
@@ -328,7 +334,7 @@ namespace Shogi {
 			}
 		} else { // 盤上の駒
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY); // board
-			hash ^= hashBoard(piece, move.getFrom()); // hash
+			boardHash ^= hashBoard(piece, move.getFrom()); // board hash
 			if (chNotNull) { change->setFromSquare(move.getFrom()); } // move from
 			if (chNotNull) { change->setFromPiece(piece); } // moved piece
 			if (black) { // 先手
@@ -350,7 +356,7 @@ namespace Shogi {
 				wking = move.getTo();
 			}
 			Piece capture = board.set(move.getTo(), piece); // board
-			hash ^= hashBoard(piece, move.getTo()); // hash
+			boardHash ^= hashBoard(piece, move.getTo()); // board hash
 			if (chNotNull) { change->setToSquare(move.getTo()); } // move to
 			if (chNotNull) { change->setToPiece(capture); } // captured piece
 			assert(capture != Piece::BKING);
@@ -358,14 +364,14 @@ namespace Shogi {
 			if (!capture.isEmpty()) {
 				assert(capture != Piece::BKING);
 				assert(capture != Piece::WKING);
-				hash ^= hashBoard(capture, move.getTo()); // hash
+				boardHash ^= hashBoard(capture, move.getTo()); // board hash
 				if (chNotNull) { change->setType(Change::CAPTURE); } // type of change
 				if (evNotNull) { eval->subBaseValueEx(capture); } // evaluate
 				Piece captureUP = capture.getUnPromoted();
 				if (black) {
 					if (chNotNull) { change->setHandNum(blackHand.get(captureUP)); } // number of pieces
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
-					hash ^= hashHand(captureUP, blackHand.get(captureUP), true); // hash
+					handHash ^= hashHand(captureUP, blackHand.get(captureUP), true); // hand hash
 					blackHand.inc(captureUP); // hand
 					effectBoard.change<false, false>(move.getTo(), capture.getMovableDirection(), board); // effect
 					if (capture == Piece::WPAWN) { // 後手の歩
@@ -374,7 +380,7 @@ namespace Shogi {
 				} else {
 					if (chNotNull) { change->setHandNum(whiteHand.get(captureUP)); } // number of pieces
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
-					hash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hash
+					handHash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hand hash
 					whiteHand.inc(capture.getUnPromoted()); // hand
 					effectBoard.change<true, false>(move.getTo(), capture.getMovableDirection(), board); // effect
 					if (capture == Piece::BPAWN) { // 先手の歩
@@ -391,7 +397,6 @@ namespace Shogi {
 			}
 		}
 		turn();
-		hash ^= hashBlack();
 	}
 	template void Position::moveUnsafe<true, true, true>
 			(const Move& move, Change* change,
@@ -427,7 +432,6 @@ namespace Shogi {
 			change->setType(Change::NULL_MOVE); // type of change
 		}
 		turn();
-		hash ^= hashBlack();
 		return true;
 	}
 	template bool Position::nullMove<true>(Change* change);
@@ -444,7 +448,6 @@ namespace Shogi {
 		switch (change.getType()) {
 		case Change::NULL_MOVE:
 			turn();
-			hash ^= hashBlack();
 			return;
 		case Change::DROP:
 			handPiece = change.getHandPiece();
@@ -507,7 +510,8 @@ namespace Shogi {
 			break;
 		}
 		turn();
-		hash = change.getHash();
+		boardHash = change.getBoardHash();
+		handHash = change.getHandHash();
 		bking = change.getBlackKing();
 		wking = change.getWhiteKing();
 		bpawns = change.getBlackPawns();

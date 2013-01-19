@@ -23,8 +23,9 @@ namespace Table {
 				Evaluates::Value beta,
 				Evaluates::Value value,
 				int depth,
+				const Search::NodeStat& stat,
 				const Shogi::Move* pmove) {
-			return table[hash&mask].update(hash, alpha, beta, value, depth, pmove);
+			return table[hash&mask].update(hash, alpha, beta, value, depth, stat, pmove);
 		}
 	};
 }

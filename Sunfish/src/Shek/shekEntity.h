@@ -14,6 +14,7 @@ namespace Shek {
 	class ShekEntity {
 	private:
 		HandSet handSet;
+		bool blackTurn;
 		unsigned cnt;
 
 	public:
@@ -21,17 +22,26 @@ namespace Shek {
 			cnt = 0;
 		}
 
-		ShekStat check(const HandSet& handSet) const {
+		ShekStat check(const HandSet& handSet, bool blackTurn) const {
 			if (cnt == 0) {
 				return NONE;
 			} else {
-				return this->handSet.compareTo(handSet);
+				ShekStat stat = handSet.compareTo(this->handSet);
+				if (this->blackTurn != blackTurn) {
+					if (stat == EQUAL) {
+						stat = SUPERIOR;
+					} else if (stat == INFERIOR) {
+						stat = NONE;
+					}
+				}
+				return stat;
 			}
 		}
 
-		void set(const HandSet& handSet) {
+		void set(const HandSet& handSet, bool blackTurn) {
 			if (cnt == 0) {
 				this->handSet = handSet;
+				this->blackTurn = blackTurn;
 			}
 			cnt++;
 		}
@@ -39,6 +49,10 @@ namespace Shek {
 		void unset() {
 			assert(cnt > 0);
 			cnt--;
+		}
+
+		unsigned getCount() const {
+			return cnt;
 		}
 
 		void debugPrint(const HandSet&) const {

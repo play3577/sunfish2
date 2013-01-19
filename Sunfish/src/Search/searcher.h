@@ -33,6 +33,7 @@ namespace Search {
 		Util::uint64 nullMovePruning;
 		Util::uint64 futilityPruning;
 		Util::uint64 exFutilityPruning;
+		Util::uint64 shekPruning;
 	};
 
 	struct SearchResult {
@@ -54,6 +55,7 @@ namespace Search {
 			table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
 			table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
 			table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
+			table.row() << "SHEK PRUNING" << counter.shekPruning;
 			if (!resign) {
 				table.row() << "MOVE" << move.toString();
 			}
@@ -63,18 +65,12 @@ namespace Search {
 
 	class Searcher {
 	private:
-		enum {
-			NULL_MOVE = 0x0001,
-			RECAPTURE = 0x0002,
-
-			DEF_STAT = NULL_MOVE | RECAPTURE
-		};
-
 		static const int PLY1 = 4;
 
 		Tree tree;
 		Table::TT tt;
 		Shek::ShekTable shekTable;
+
 		History history;
 		SearchConfig config;
 		SearchCounter counter;
@@ -99,7 +95,7 @@ namespace Search {
 		Evaluates::Value negaMax(Tree& tree, int depth,
 				Evaluates::Value alpha,
 				Evaluates::Value beta,
-				unsigned stat = DEF_STAT);
+				NodeStat stat = NodeStat());
 
 		void before(SearchResult& result) {
 			{
@@ -204,6 +200,10 @@ namespace Search {
 
 		Shek::ShekStat shekCheck() {
 			return shekTable.check(tree.getPosition());
+		}
+
+		unsigned getShekCount() {
+			return shekTable.getCount(tree.getPosition());
 		}
 
 		void shekDebug() {

@@ -27,9 +27,10 @@ namespace Tools{
 
 	bool Debug::PositionOk(const Position pos) {
 		// hash
-		if (pos.getHash() != pos.generateHash()) {
+		Util::uint64 hash = pos.generateBoardHash() ^ pos.generateHandHash() ^ pos.getTurnHash();
+		if (pos.getHash() != hash) {
 			std::cout << "***** HASH CODE ERROR!!! *****\n";
-			std::cout << std::hex << pos.generateHash() << '\n';
+			std::cout << std::hex << hash << '\n';
 			DEBUG_PRINT_LINE;
 			std::cout.flush();
 			return false;

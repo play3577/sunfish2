@@ -31,11 +31,15 @@ int main(int argc, char* argv[]) {
 	Log::message.addStream(std::cerr);
 	Log::send.addStream(std::cerr, "\x1b[34m", "\x1b[39m");
 	Log::receive.addStream(std::cerr, "\x1b[35m", "\x1b[39m");
+#ifndef NDEBUG
 	Log::debug.addStream(std::cerr, "\x1b[36m", "\x1b[39m");
+#endif
 
 	// hash
-	Shogi::PositionHash hash(Shogi::PositionHash::FILE_NAME);
-	Shogi::Position::setPositionHash(&hash);
+	unsigned hashSize = Shogi::PositionHash::getRequireSize();
+	Util::Hash hash(hashSize);
+	Shogi::PositionHash posHash(hash);
+	Shogi::Position::setPositionHash(&posHash);
 
 	// program options
 	options_description opt("Option");
@@ -72,7 +76,9 @@ int main(int argc, char* argv[]) {
 			Log::message.addStream(fout);
 			Log::send.addStream(fout);
 			Log::receive.addStream(fout);
+#ifndef NDEBUG
 			Log::debug.addStream(fout);
+#endif
 		}
 
 		Network::CsaClient csaClient;

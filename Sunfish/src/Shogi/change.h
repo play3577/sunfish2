@@ -16,7 +16,8 @@ namespace Shogi {
 	class Change {
 	private:
 		struct {
-			Util::uint64 hash;
+			Util::uint64 boardHash;
+			Util::uint64 handHash;
 			unsigned type : 2;
 			unsigned handPiece : 3;
 			unsigned handNum : 5;
@@ -101,12 +102,20 @@ namespace Shogi {
 			c.toPiece = piece.getInteger();
 		}
 
-		Util::uint64 getHash() const {
-			return c.hash;
+		Util::uint64 getBoardHash() const {
+			return c.boardHash;
 		}
 
-		void setHash(Util::uint64 hash) {
-			c.hash = hash;
+		void setBoardHash(Util::uint64 boardHash) {
+			c.boardHash = boardHash;
+		}
+
+		Util::uint64 getHandHash() const {
+			return c.handHash;
+		}
+
+		void setHandHash(Util::uint64 handHash) {
+			c.handHash = handHash;
 		}
 
 		Square getBlackKing() const {
@@ -147,7 +156,8 @@ namespace Shogi {
 
 		std::string toString() const {
 			std::ostringstream oss;
-			oss << "hash=[" << c.hash << "], ";
+			oss << "boardHash=[" << c.boardHash << "], ";
+			oss << "handHash=[" << c.handHash << "], ";
 			oss << "type=[" << c.type << "], ";
 			oss << "handPiece=[" << c.handPiece << "], ";
 			oss << "handNum=[" << c.handNum << "], ";

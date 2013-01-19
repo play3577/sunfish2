@@ -12,8 +12,8 @@ namespace Shek {
 	enum ShekStat {
 		NONE = 0,
 		EQUAL,
-		INCLUDE,
-		LESS,
+		SUPERIOR,
+		INFERIOR,
 	};
 }
 	

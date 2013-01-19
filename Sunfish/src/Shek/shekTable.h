@@ -17,23 +17,29 @@ namespace Shek {
 		void set(const Shogi::Position& pos) {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			_getEntity(pos.getHash()).set(HandSet(hand));
+			_getEntity(pos.getBoardHash())
+					.set(HandSet(hand), pos.isBlackTurn());
 		}
 
 		void unset(const Shogi::Position& pos) {
-			_getEntity(pos.getHash()).unset();
+			_getEntity(pos.getBoardHash()).unset();
 		}
 
 		ShekStat check(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			return getEntity(pos.getHash()).check(HandSet(hand));
+			return getEntity(pos.getBoardHash())
+					.check(HandSet(hand), pos.isBlackTurn());
+		}
+
+		unsigned getCount(const Shogi::Position& pos) const {
+			return getEntity(pos.getBoardHash()).getCount();
 		}
 
 		void debugPrint(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			getEntity(pos.getHash()).debugPrint(HandSet(hand));
+			getEntity(pos.getBoardHash()).debugPrint(HandSet(hand));
 		}
 	};
 }
