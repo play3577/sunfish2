@@ -8,6 +8,8 @@
 #include "aspWindow.h"
 #include "searcher.h"
 
+#define NODE_DEBUG				1
+
 namespace Search {
 	using namespace Shogi;
 	using namespace Evaluates;
@@ -373,8 +375,6 @@ namespace Search {
 		// 後処理
 		return after(result, value);
 	}
-
-#define NODE_DEBUG				0
 
 	/***************************************************************
 	 * 反復深化探索                                                *
