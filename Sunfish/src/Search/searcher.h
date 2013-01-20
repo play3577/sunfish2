@@ -112,6 +112,7 @@ namespace Search {
 			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
 			memset(&gain, 0, sizeof(gain));
+			history.clear();
 			tt.init();
 			timer.restart();
 		}
