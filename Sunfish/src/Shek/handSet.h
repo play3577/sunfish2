@@ -42,17 +42,18 @@ namespace Shek {
 			setPiece(hand, Shogi::Piece::ROOK, 2);
 		}
 
-		ShekStat compareTo(const HandSet& h) const {
+		ShekStat compareTo(const HandSet& h, bool selfTurn) const {
 			if (handSet == h.handSet) {
 				return EQUAL;
-			} else if (handSet & (~h.handSet)) {
-				if ((~handSet) & h.handSet) {
-					return NONE;
-				} else {
-					return SUPERIOR;
-				}
+			}
+			bool sup = handSet & (~h.handSet); 
+			bool inf = (~handSet) & h.handSet;
+			if (sup && !inf) {
+				return selfTurn ? SUPERIOR : INFERIOR;
+			} else if (!sup && inf) {
+				return selfTurn ? INFERIOR : SUPERIOR;
 			} else {
-				return INFERIOR;
+				return NONE;
 			}
 		}
 	};

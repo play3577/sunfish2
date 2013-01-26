@@ -26,6 +26,7 @@ namespace Network {
 		items[i++] = ConfigItem("keepidle", INTEGER, &keepidle);
 		items[i++] = ConfigItem("keepintvl", INTEGER, &keepintvl);
 		items[i++] = ConfigItem("keepcnt", INTEGER, &keepcnt);
+		items[i++] = ConfigItem("floodgate", BOOL, &floodgate);
 		items[i++] = ConfigItem("kifu", STRING, &kifu);
 
 		if (filename != NULL) {
@@ -34,6 +35,7 @@ namespace Network {
 	}
 
 	bool CsaClientConfig::read(const char* filename) {
+		// TODO: 初期値のセット
 		std::ifstream fin(filename);
 		if (!fin) {
 			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";

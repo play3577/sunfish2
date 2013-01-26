@@ -70,6 +70,7 @@ namespace Network {
 			boost::regex regex;
 			RECV_FLAG flag;
 			void (*func)(CsaClient*);
+			const char* name;
 		};
 		static const ReceiveFlagSet flagSets[RECV_NUM];
 
@@ -98,7 +99,7 @@ namespace Network {
 
 		bool agree();
 
-		bool sendMove(const Shogi::Move& move);
+		bool sendMove(const Search::SearchResult& result);
 
 		bool sendResign();
 
@@ -125,7 +126,7 @@ namespace Network {
 			p->moveStr = p->recvStr;
 		}
 
-		static void st_recvGameSummary(CsaClient* p) {
+		static void _recvGameSummary(CsaClient* p) {
 			p->recvGameSummary();
 		}
 

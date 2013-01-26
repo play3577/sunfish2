@@ -63,10 +63,18 @@ namespace Search {
 			return moves[depth];
 		}
 
-		std::string toString() const {
+		std::string toString(int beginIndex = 0) const {
 			std::ostringstream oss;
-			for (int i = 0; i < num; i++) {
+			for (int i = beginIndex; i < num; i++) {
 				oss << moves[i].toString() << ' ';
+			}
+			return oss.str();
+		}
+
+		std::string toStringCsa(int beginIndex = 0) const {
+			std::ostringstream oss;
+			for (int i = beginIndex; i < num; i++) {
+				oss << moves[i].toStringCsa() << ' ';
 			}
 			return oss.str();
 		}

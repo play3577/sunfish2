@@ -26,7 +26,7 @@ namespace Shek {
 			if (cnt == 0) {
 				return NONE;
 			} else {
-				ShekStat stat = handSet.compareTo(this->handSet);
+				ShekStat stat = handSet.compareTo(this->handSet, blackTurn);
 				if (this->blackTurn != blackTurn) {
 					if (stat == EQUAL) {
 						stat = SUPERIOR;

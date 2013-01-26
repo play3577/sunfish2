@@ -36,7 +36,7 @@ namespace Network {
 	private:
 		static const int LINE_BUFFER_SIZE = 1024;
 
-		ConfigItem items[13];
+		ConfigItem items[14];
 
 		std::string host;
 		int port;
@@ -52,6 +52,8 @@ namespace Network {
 		int keepidle;
 		int keepintvl;
 		int keepcnt;
+
+		bool floodgate;
 
 		std::string kifu;
 
@@ -108,6 +110,10 @@ namespace Network {
 
 		int getKeepcnt() const {
 			return keepcnt;
+		}
+
+		bool getFloodgate() const {
+			return floodgate;
 		}
 
 		std::string getKifu() const {

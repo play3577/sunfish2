@@ -12,10 +12,13 @@ namespace Search {
 	class NodeStat {
 	private:
 		enum {
-			NULL_MOVE = 0x0001,
-			RECAPTURE = 0x0002,
+			NULL_MOVE = 1 << 0,
+			RECAPTURE = 1 << 1,
+			MATE      = 1 << 2,
+			HASH_CUT  = 1 << 3,
 
-			DEF_STAT = NULL_MOVE | RECAPTURE
+			DEF_STAT = NULL_MOVE | RECAPTURE |
+					MATE | HASH_CUT,
 		};
 
 		unsigned stat;
@@ -26,6 +29,10 @@ namespace Search {
 
 		void unset(unsigned flag) {
 			stat &= ~flag;
+		}
+
+		bool is(unsigned flag) const {
+			return stat & flag;
 		}
 
 	public:
@@ -49,7 +56,7 @@ namespace Search {
 		}
 
 		bool isNullMove() const {
-			return stat & NULL_MOVE;
+			return is(NULL_MOVE);
 		}
 
 		NodeStat& setRecapture() {
@@ -63,7 +70,35 @@ namespace Search {
 		}
 
 		bool isRecapture() const {
-			return stat & RECAPTURE;
+			return is(RECAPTURE);
+		}
+
+		NodeStat& setMate() {
+			set(MATE);
+			return *this;
+		}
+
+		NodeStat& unsetMate() {
+			unset(MATE);
+			return *this;
+		}
+
+		bool isMate() const {
+			return is(MATE);
+		}
+
+		NodeStat& setHashCut() {
+			set(HASH_CUT);
+			return *this;
+		}
+
+		NodeStat& unsetHashCut() {
+			unset(HASH_CUT);
+			return *this;
+		}
+
+		bool isHashCut() const {
+			return is(HASH_CUT);
 		}
 	};
 }

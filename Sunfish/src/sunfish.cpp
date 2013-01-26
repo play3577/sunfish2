@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 		// --network or -n => CSA client
 
 		// log
-		std::ofstream fout("network.log");
+		std::ofstream fout("network.log", std::ios::out | std::ios::app);
 		if (fout) {
 			Log::error.addStream(fout);
 			Log::warning.addStream(fout);
@@ -83,6 +83,7 @@ int main(int argc, char* argv[]) {
 
 		Network::CsaClient csaClient;
 		csaClient.execute();
+		fout.close();
 		return 0;
 	}
 

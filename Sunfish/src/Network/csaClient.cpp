@@ -9,6 +9,7 @@
 #include "../Csa/csaReader.h"
 #include "../Csa/csaWriter.h"
 
+#include <fstream>
 #include <sstream>
 #include <boost/bind.hpp>
 #include <boost/algorithm/string.hpp>
@@ -23,25 +24,25 @@ namespace Network {
 	const char* CsaClient::DEFAULT_CONFIG_FILE = "nconf";
 
 	const CsaClient::ReceiveFlagSet CsaClient::flagSets[RECV_NUM] = {
-		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL },
-		{ boost::regex("^LOGIN:incorect$"), RECV_LOGIN_INC, NULL },
-		{ boost::regex("^LOGOUT:completed$"), RECV_LOGOUT, NULL },
-		{ boost::regex("^%.*"), RECV_MOVE_EX, recvMove },
-		{ boost::regex("^\\+.*"), RECV_MOVE_B, recvMove },
-		{ boost::regex("^-.*"), RECV_MOVE_W, recvMove },
-		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, st_recvGameSummary },
-		{ boost::regex("^START:.*"), RECV_START, NULL },
-		{ boost::regex("^REJECT:.* by .*"), RECV_REJECT, NULL },
-		{ boost::regex("^#WIN$"), RECV_WIN, NULL },
-		{ boost::regex("^#LOSE$"), RECV_LOSE, NULL },
-		{ boost::regex("^#DRAW$"), RECV_DRAW, NULL },
-		{ boost::regex("^#CHUDAN$"), RECV_INTERRUPT, NULL },
-		{ boost::regex("^#SENNICHITE$"), RECV_REPEAT, NULL },
-		{ boost::regex("^#OUTE_SENNICHITE$"), RECV_CHECK_REP, NULL },
-		{ boost::regex("^#ILLEGAL_MOVE$"), RECV_ILLEGAL, NULL },
-		{ boost::regex("^#TIME_UP$"), RECV_TIME_UP, NULL },
-		{ boost::regex("^#RESIGN$"), RECV_RESIGN, NULL },
-		{ boost::regex("^#JISHOGI$"), RECV_JISHOGI, NULL },
+		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL, NULL },
+		{ boost::regex("^LOGIN:incorect$"), RECV_LOGIN_INC, NULL, NULL },
+		{ boost::regex("^LOGOUT:completed$"), RECV_LOGOUT, NULL, NULL },
+		{ boost::regex("^%.*"), RECV_MOVE_EX, recvMove, NULL },
+		{ boost::regex("^\\+.*"), RECV_MOVE_B, recvMove, NULL },
+		{ boost::regex("^-.*"), RECV_MOVE_W, recvMove, NULL },
+		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, _recvGameSummary, NULL },
+		{ boost::regex("^START:.*"), RECV_START, NULL, NULL },
+		{ boost::regex("^REJECT:.* by .*"), RECV_REJECT, NULL, NULL },
+		{ boost::regex("^#WIN$"), RECV_WIN, NULL, "win" },
+		{ boost::regex("^#LOSE$"), RECV_LOSE, NULL, "lose" },
+		{ boost::regex("^#DRAW$"), RECV_DRAW, NULL, "draw" },
+		{ boost::regex("^#CHUDAN$"), RECV_INTERRUPT, NULL, "chudan" },
+		{ boost::regex("^#SENNICHITE$"), RECV_REPEAT, NULL, "sennichite" },
+		{ boost::regex("^#OUTE_SENNICHITE$"), RECV_CHECK_REP, NULL, "oute sennichite" },
+		{ boost::regex("^#ILLEGAL_MOVE$"), RECV_ILLEGAL, NULL, "illegal move" },
+		{ boost::regex("^#TIME_UP$"), RECV_TIME_UP, NULL, "time up" },
+		{ boost::regex("^#RESIGN$"), RECV_RESIGN, NULL, "resign" },
+		{ boost::regex("^#JISHOGI$"), RECV_JISHOGI, NULL, "jishogi" },
 	};
 
 	bool CsaClient::execute() {
@@ -99,7 +100,9 @@ namespace Network {
 						searcher.init(record.getPosition());
 						searcher.idSearch(result);
 						if (!result.resign && record.move(result.move)) {
-							if (!sendMove(result.move)) {
+							if (!sendMove(result)) {
+								// TODO: ここでログアウトするのは危険
+								Log::error << "ERROR :could not send a move\n";
 								break;
 							}
 						} else {
@@ -123,7 +126,7 @@ namespace Network {
 						} else if (flags & RECV_END_MSK) {
 							break;
 						} else {
-							Log::error << "ERROR :see receive-log.\n";
+							Log::error << "ERROR :unknown error. :" << __FILE__ << '(' << __LINE__ << ")\n";
 							break;
 						}
 					}
@@ -145,15 +148,15 @@ lab_end:
 		std::ostringstream os;
 		os << "LOGIN " << config.getUser() << ' ' << config.getPass();
 		if (!send(os.str().c_str())) { return false; }
-		unsigned result = waitReceive(RECV_LOGIN_MSK);
-		return (result & RECV_LOGIN_OK) != 0U;
+		unsigned response = waitReceive(RECV_LOGIN_MSK);
+		return (response & RECV_LOGIN_OK) != 0U;
 	}
 
 	bool CsaClient::logout() {
 		if (!send("LOGOUT")) { return false; }
 #if 0
-		unsigned result = waitReceive(RECV_LOGOUT);
-		return (result & RECV_LOGOUT) != 0U;
+		unsigned response = waitReceive(RECV_LOGOUT);
+		return (response & RECV_LOGOUT) != 0U;
 #else
 		// floodgateがLOGOUT:completedを送信してくれない。
 		return true;
@@ -162,21 +165,30 @@ lab_end:
 
 	bool CsaClient::agree() {
 		if (!send("AGREE")) { return false; }
-		unsigned result = waitReceive(RECV_AGREE_MSK);
-		return (result & RECV_START) != 0U;
+		unsigned response = waitReceive(RECV_AGREE_MSK);
+		return (response & RECV_START) != 0U;
 	}
 
-	bool CsaClient::sendMove(const Shogi::Move& move) {
-		if (!send((move.toStringCsa()).c_str())) { return false; }
+	bool CsaClient::sendMove(const Search::SearchResult& result) {
+		std::ostringstream oss;
+		oss << result.move.toStringCsa();
+		if (config.getFloodgate()) {
+			// 評価値
+			int sign = black ? 1 : -1;
+			oss << ",\'* " << (result.value * sign);
+			// 読み筋
+			oss << ' ' << result.pv.toStringCsa(1);
+		}
+		if (!send(oss.str().c_str())) { return false; }
 		unsigned mask = black ? RECV_MOVE_B : RECV_MOVE_W;
-		unsigned result = waitReceive(mask | RECV_END_MSK);
-		return (result & mask) != 0U;
+		unsigned response = waitReceive(mask | RECV_END_MSK);
+		return (response & mask) != 0U;
 	}
 
 	bool CsaClient::sendResign() {
 		if (!send("%TORYO")) { return false; }
-		unsigned result = waitReceive(RECV_END_MSK);
-		return (result & RECV_END_MSK) != 0U;
+		unsigned response = waitReceive(RECV_END_MSK);
+		return (response & RECV_END_MSK) != 0U;
 	}
 
 	unsigned CsaClient::waitReceive(unsigned flags) {
@@ -300,6 +312,16 @@ lab_end:
 
 	void CsaClient::writeResult(Record record) {
 		// 結果の保存
+		// TODO: ファイル名を指定可能に
+		std::ofstream fout("csaClient.csv", std::ios::out | std::ios::app);
+		std::ostringstream endStatus;
+		for (int i = 0; i < RECV_NUM; i++) {
+			if (endFlags & flagSets[i].flag) {
+				endStatus << flagSets[i].name << ' ';
+			}
+		}
+		fout << gameId << ',' << blackName << ',' << whiteName << ',' << endStatus.str() << '\n';
+		fout.close();
 
 		// 棋譜の保存
 		std::ostringstream path;
