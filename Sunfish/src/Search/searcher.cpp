@@ -117,8 +117,6 @@ namespace Search {
 	template <bool pvNode>
 	Value Searcher::negaMax(Tree& tree, int depth,
 			Value alpha, Value beta, NodeStat stat) {
-		tree.initNode();
-
 #if NODE_DEBUG
 		bool debugNode = false;
 		if (tree.is("-0046FU")) {
@@ -148,10 +146,12 @@ namespace Search {
 		}
 
 		// leaf node
-		if (depth <= 0 || tree.isMaxDepth()) {
+		if (depth < PLY1 || tree.isMaxDepth()) {
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
 		}
+
+		tree.initNode();
 
 		counter.nodes++;
 

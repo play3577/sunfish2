@@ -146,6 +146,9 @@ namespace Search {
 		}
 
 		static Evaluates::Value getFutMgn(int depth, int count) {
+				if (depth < PLY1) {
+					return 0;
+				}
 				return 120 * depth / PLY1 + 4 * count;
 		}
 
