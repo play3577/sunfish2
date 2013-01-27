@@ -8,8 +8,9 @@
 #include "aspWindow.h"
 #include "searcher.h"
 
-#define NODE_DEBUG				1
-#define VARIATION_DEBUG			0
+#define ROOT_NODE_DEBUG				0
+#define NODE_DEBUG					0
+#define VARIATION_DEBUG				0
 
 namespace Search {
 	using namespace Shogi;
@@ -118,6 +119,14 @@ namespace Search {
 			Value alpha, Value beta, NodeStat stat) {
 		tree.initNode();
 
+#if NODE_DEBUG
+		bool debugNode = false;
+		if (tree.is("-0046FU")) {
+			Log::debug << " ***** ";
+			debugNode = true;
+		}
+#endif // NODE_DEBUG
+
 #if VARIATION_DEBUG
 		tree.debugPrint();
 #endif
@@ -129,7 +138,6 @@ namespace Search {
 			break;
 		case Shek::SUPERIOR:
 			counter.shekPruning++;
-			assert(depth <= 0 || tree.getPosition().getBoardHash() != 7557787519975744835ULL);
 			return Value::MAX;
 		case Shek::INFERIOR:
 			counter.shekPruning++;
@@ -251,6 +259,12 @@ namespace Search {
 
 			assert(tree.getCurrentMove() != NULL);
 
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ' ' << tree.getCurrentMove()->toString();
+			}
+#endif // NODE_DEBUG
+
 			Value newAlpha = Value::max(alpha, value);
 
 			int newDepth = depth - PLY1;
@@ -302,6 +316,16 @@ namespace Search {
 						+ getGain(tree) <= newAlpha) {
 					value = newAlpha; // fail soft
 					counter.futilityPruning++;
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+				if (tree.getCurrentMove()->toStringCsa() == "+4748KI") {
+					Log::debug << ",fut_mgn=[" << getFutMgn(newDepth, moveCount) << "]"
+							<< " gain=[" << getGain(tree) << "]"
+							<< " depth=[" << newDepth << "]";
+				}
+			}
+#endif // NODE_DEBUG
 					continue;
 				}
 			}
@@ -319,6 +343,11 @@ namespace Search {
 					unmakeMove();
 					value = newAlpha; // fail soft
 					counter.exFutilityPruning++;
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 					continue;
 				}
 			}
@@ -328,17 +357,37 @@ namespace Search {
 			// recurcive search
 			if (moveCount == 1) {
 				newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 			} else {
 				// nega-scout
 				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 				if (!isInterrupted() && newValue > newAlpha && reduction != 0) {
 					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 				}
 				if (!isInterrupted() && newValue > newAlpha && beta > newAlpha + 1) {
 					// windowを広げて再探索
 					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 				}
 			}
 
@@ -350,6 +399,11 @@ namespace Search {
 			}
 
 			if (newValue > value) {
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 				value = newValue;
 				tree.updatePv();
 				best = tree.getCurrentMove();
@@ -358,6 +412,11 @@ namespace Search {
 
 				// beta cut
 				if (value >= beta) {
+#if NODE_DEBUG
+			if (debugNode) {
+				Log::debug << ',' << __LINE__;
+			}
+#endif // NODE_DEBUG
 					break;
 				}
 			}
@@ -438,12 +497,12 @@ namespace Search {
 			tree.setMoveIndex(0);
 			while (tree.next()) {
 				unsigned moveCount = tree.getMoveIndex();
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 				// debug
 				bool isHash = tree.isHashMove();
 				Util::uint64 beforeNodes= counter.nodes;
 				Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 
 revaluation:
 				// 手を進める。
@@ -452,30 +511,30 @@ revaluation:
 				if (moveCount == 1) {
 					vtemp = -negaMax<true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 					Log::debug << "f";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 				} else {
 					// null window searchを試みる。
 					vtemp = -negaMax<false>(tree,
 							depth * PLY1, -alpha - 1, -alpha);
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 					Log::debug << "n";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 					if (!isInterrupted() && vtemp > alpha && vtemp < Value::MATE) {
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 						Log::debug << "[" << vtemp << "]";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 						// 再探索
 						vtemp = -negaMax<true>(tree,
 								depth * PLY1, -aspBeta, -alpha,
 								NodeStat().unsetNullMove());
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 						Log::debug << "f";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 					}
 				}
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 				// debug
 				Util::uint64 afterNodes= counter.nodes;
 				Util::uint64 nodes = afterNodes - beforeNodes;
@@ -485,7 +544,7 @@ revaluation:
 				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")"
 						<< "[" << nodes << "]"
 						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 				// 手を戻す。
 				unmakeMove();
 				if (isInterrupted()) {
@@ -495,9 +554,9 @@ revaluation:
 				if (vtemp < Value::MATE && vtemp >= aspBeta && aspBeta.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
 					// TODO: fail-softだから上げ幅が少なすぎるケースを検出すべき?
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 					Log::debug << "fail-high ";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 					// 最善手の評価値とalpha値を更新
 					maxValue = alpha = vtemp - 1;
 					// PVを更新
@@ -508,9 +567,9 @@ revaluation:
 				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
 					// TODO: fail-softだから下げ幅が少なすぎるケースを検出すべき?
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 					Log::debug << "fail-low ";
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 					alpha = (int)aspAlpha;
 					goto revaluation;
 				}
@@ -538,10 +597,10 @@ revaluation:
 			}
 
 			if (config.pvHandler != NULL) {
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 				// debug
 				Log::debug << '\n';
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 				config.pvHandler->pvHandler(tree.getPv(), maxValue,
 						counter.nodes, depth + 1, timer.elapsed());
 			}
@@ -554,10 +613,10 @@ revaluation:
 lab_search_end:
 
 		if (config.pvHandler != NULL) {
-#if NODE_DEBUG
+#if ROOT_NODE_DEBUG
 			// debug
 			Log::debug << '\n';
-#endif // NODE_DEBUG
+#endif // ROOT_NODE_DEBUG
 			int lastDepth = depth < config.depth ? depth + 1 : config.depth;
 			config.pvHandler->pvHandler(tree.getPv(), maxValue,
 					counter.nodes, lastDepth, timer.elapsed());

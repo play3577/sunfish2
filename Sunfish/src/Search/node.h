@@ -19,14 +19,15 @@ namespace Search {
 		const Shogi::Move* pmove;
 		Shogi::Change change;
 		Evaluates::Value baseValue;
+		bool isNullMoveMaked;
 		Pv pv;
 
 	public:
-		Node() : pgen(NULL), pmove(NULL) {
+		Node() : pgen(NULL), pmove(NULL), isNullMoveMaked(false) {
 		}
 
 		Node(const Shogi::Position& pos, const Evaluates::Param& param,
-				const History& history) : pgen(NULL), pmove(NULL) {
+				const History& history) : pgen(NULL), pmove(NULL), isNullMoveMaked(false) {
 			init(pos, param, history);
 		}
 
@@ -42,6 +43,7 @@ namespace Search {
 			if (pgen != NULL) { delete pgen; }
 			pgen = new PhasedMoveGenerator(pos, param, history);
 			pmove = NULL;
+			isNullMoveMaked = false;
 		}
 
 		void arrive() {
@@ -116,18 +118,24 @@ namespace Search {
 
 		bool nullMove(Shogi::Position& pos,
 				Evaluates::Evaluate& eval) {
+			isNullMoveMaked = true;
 			baseValue = eval.getBaseValue();
 			return pos.nullMove(change);
 		}
 
 		void unmakeMove(Shogi::Position& pos,
 				Evaluates::Evaluate& eval) {
+			isNullMoveMaked = false;
 			eval.setBaseValue(baseValue);
 			pos.back(change);
 		}
 
 		const Shogi::Move* getMove() const {
 			return pmove;
+		}
+
+		bool isNullMove() const {
+			return isNullMoveMaked;
 		}
 
 		const Shogi::Change& getChange() const {

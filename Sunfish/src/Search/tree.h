@@ -10,6 +10,7 @@
 
 #include "../Evaluates/evaluate.h"
 #include "node.h"
+#include <boost/algorithm/string.hpp>
 
 namespace Search {
 	class Tree {
@@ -268,6 +269,27 @@ namespace Search {
 
 		std::string toString() const {
 			return pos.toString();
+		}
+
+		bool is(const char* route) const {
+			std::vector<std::string> tokens;
+			boost::algorithm::split(tokens, route, boost::is_any_of(" "));
+			if (tokens.size() != (unsigned)depth) {
+				return false;
+			}
+			for (int i = 0; i < depth; i++) {
+				if (nodes[i].isNullMove()) {
+					if (tokens[i] != "null") {
+						return false;
+					}
+				} else {
+					const Shogi::Move* pmove = nodes[i].getMove();
+					if (pmove == NULL || tokens[i] != pmove->toStringCsa()){
+						return false;
+					}
+				}
+			}
+			return true;
 		}
 	};
 }
