@@ -119,7 +119,7 @@ namespace Search {
 
 		bool after(SearchResult& result, Evaluates::Value value) {
 			if (pHashStack != NULL) {
-				for (int i = 0; i < pHashStack->size; i++) {
+				for (int i = pHashStack->size - 1; i >= 0; i--) {
 					shekTable.unset(pHashStack->stack[i]);
 				}
 			}

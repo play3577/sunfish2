@@ -35,6 +35,7 @@ namespace Csa {
 
 			static bool parseLineBoard(const char* line, unsigned rank, Shogi::Position& pos);
 			static bool parseLineHand(const char* line, Shogi::Position& pos, bool black);
+			static bool parseLineMove(const char* line, const Shogi::Position& pos, Shogi::Move& move);
 			static bool parseLineMove(const char* line, Records::Record& record);
 			static LineStat parseLine(const char* line, Shogi::Position& pos);
 			static LineStat parseLine(const char* line, Records::Record& record);

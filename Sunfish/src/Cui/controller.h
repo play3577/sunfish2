@@ -77,6 +77,10 @@ namespace Cui {
 
 		Command inputCommand(const char* str);
 
+		bool inputMove(const char* str, const Shogi::Position& pos, Shogi::Move& move) const;
+
+		void printPosition(const Records::Record& record) const;
+
 		void printStatus(const Records::Record& record) const;
 
 	public:

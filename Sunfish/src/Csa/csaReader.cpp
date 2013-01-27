@@ -49,9 +49,55 @@ namespace Csa {
 		return true;
 	}
 
+	bool CsaReader::parseLineMove(const char* line, const Position& pos, Move& move) {
+		if (strlen(line) < 7) {
+			return false;
+		}
+		bool black;
+		if (line[0] == CHAR_BLK) {
+			black = true;
+		} else if (line[0] == CHAR_WHT) {
+			black = false;
+		} else {
+			return false;
+		}
+		Square from = Square::parse(&line[1]);
+		Square to = Square::parse(&line[3]);
+		if (!from.valid() || !to.valid()) {
+			return false;
+		}
+		bool hand = (from == Square::NON);
+		Piece piece = Piece::parseCsa(&line[5]);
+		if (piece == Piece::EMPTY) {
+			return false;
+		}
+		black ? piece.turnBlack() : piece.turnWhite();
+		if (hand) {
+			if (!(pos.getHand(piece) > 0)) {
+				return false;
+			}
+			move.setPromotion(false);
+		} else {
+			Piece pieceB = pos.getBoard(Square(from));
+			if (piece == pieceB) {
+				move.setPromotion(false);
+			} else if (piece == pieceB.getPromoted()) {
+				piece = pieceB;
+				move.setPromotion(true);
+			} else {
+				return false;
+			}
+		}
+		move.setFrom(from);
+		move.setTo(to);
+		move.setHand(hand);
+		move.setPiece(piece);
+		return true;
+	}
+
 	bool CsaReader::parseLineMove(const char* line, Records::Record& record) {
 		Move move;
-		return record.getPosition().inputMoveCsa(line, move) && record.move(move);
+		return parseLineMove(line, record.getPosition(), move) && record.move(move);
 	}
 
 	CsaReader::LineStat CsaReader::parseLine(const char* line, Records::Record& record) {

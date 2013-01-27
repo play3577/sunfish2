@@ -6,6 +6,7 @@
  */
 
 #include "controller.h"
+#include "../Util/tableString.h"
 #include "../Search/searcher.h"
 #include "../Search/attackers.h"
 #include "../Csa/csaReader.h"
@@ -50,6 +51,37 @@ namespace Cui {
 			}
 		}
 		return UNKNOWN;
+	}
+
+	bool Controller::inputMove(const char* str, const Position& pos, Move& move) const {
+		if (strlen(str) < 4) {
+			return false;
+		}
+		Square to = Square::parse(&str[2]);
+		if (!to.valid()) {
+			return false;
+		}
+		Square from = Square::parse(&str[0]);
+		if (from.valid()) {
+			Piece piece = pos.getBoard(Square(from));
+			move.setPromotion(str[4] == 'n');
+			move.setFrom(from);
+			move.setTo(to);
+			move.setHand(false);
+			move.setPiece(piece);
+			return true;
+		} else {
+			Piece piece = Piece::parseCsa(&str[0]);
+			if (piece >= Piece::PAWN && piece <= Piece::ROOK) {
+				move.setPromotion(false);
+				move.setFrom(Square::NON);
+				move.setTo(to);
+				move.setHand(true);
+				move.setPiece(pos.isBlackTurn() ? piece : piece.getTurnedWhite());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void Controller::showHelp() {
@@ -108,6 +140,18 @@ namespace Cui {
 		}
 	}
 
+	void Controller::printPosition(const Record& record) const {
+		std::cout << record.toString();
+#ifndef NDEBUG
+		Util::TableString table("", "=", "");
+		table.row() << "POSITION_HASH" << record.getPosition().getHash();
+		table.row() << "BOARD_HASH" << record.getPosition().getBoardHash();
+		table.row() << "HAND_HASH" << record.getPosition().getHandHash();
+		table.row() << "TURN_HASH" << record.getPosition().getTurnHash();
+		Log::debug << table.get();
+#endif
+	}
+
 	void Controller::printStatus(const Record& record) const {
 		if (record.getPosition().isMate()) {
 			std::cout << "mate!!\n";
@@ -139,11 +183,11 @@ namespace Cui {
 		searchConfig.limitSeconds = config.limit;
 		searcher.setSearchConfig(searchConfig);
 
-		std::cout << record.toString();
+		printPosition(record);
 		printStatus(record);
 
 		while (true) {
-			bool printBoard = false;
+			bool print = false;
 			Move move;
 
 #ifndef NDEBUG
@@ -184,7 +228,7 @@ namespace Cui {
 				break;
 			case PREV: // 1手進む。
 				if (record.prev()) {
-					printBoard = true;
+					print = true;
 				} else {
 					std::cout << "There is no previous move.\n";
 				}
@@ -195,7 +239,7 @@ namespace Cui {
 				break;
 			case NEXT: // 1手戻る。
 				if (record.next()) {
-					printBoard = true;
+					print = true;
 				} else {
 					std::cout << "There is no next move.\n";
 				}
@@ -206,17 +250,17 @@ namespace Cui {
 				break;
 			case TOP:
 				while (record.prev()) {
-					printBoard = true;
+					print = true;
 				}
-				if (!printBoard) {
+				if (!print) {
 					std::cout << "There is no previous move.\n";
 				}
 				break;
 			case END:
 				while (record.next()) {
-					printBoard = true;
+					print = true;
 				}
-				if (!printBoard) {
+				if (!print) {
 					std::cout << "There is no next move.\n";
 				}
 				break;
@@ -260,12 +304,12 @@ namespace Cui {
 				break;
 #endif // ifndef NDEBUG
 			default: // 指し手入力
-				if ((record.getPosition().inputMoveCsa(line, move)) ||
-						(record.getPosition().inputMove(line, move))) {
+				if (CsaReader::parseLineMove(line, record.getPosition(), move) ||
+						inputMove(line, record.getPosition(), move)) {
 					// 合法手チェック
 					if (record.move(move)) {
 						std::cout << move.toString() << '\n';
-						printBoard = true;
+						print = true;
 					} else {
 						std::cout << "illegal move!!\n";
 					}
@@ -275,8 +319,8 @@ namespace Cui {
 			}
 
 			// 盤面の表示
-			if (printBoard) {
-				std::cout << record.toString();
+			if (print) {
+				printPosition(record);
 				printStatus(record);
 			}
 		}

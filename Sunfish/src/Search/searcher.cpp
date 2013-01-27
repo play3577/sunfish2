@@ -8,7 +8,7 @@
 #include "aspWindow.h"
 #include "searcher.h"
 
-#define NODE_DEBUG				0
+#define NODE_DEBUG				1
 #define VARIATION_DEBUG			0
 
 namespace Search {
@@ -129,6 +129,7 @@ namespace Search {
 			break;
 		case Shek::SUPERIOR:
 			counter.shekPruning++;
+			assert(depth <= 0 || tree.getPosition().getBoardHash() != 7557787519975744835ULL);
 			return Value::MAX;
 		case Shek::INFERIOR:
 			counter.shekPruning++;
