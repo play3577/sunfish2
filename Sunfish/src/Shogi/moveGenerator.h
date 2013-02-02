@@ -148,11 +148,11 @@ namespace Shogi {
 			sort(0, num);
 		}
 
-		void sort(unsigned begin) {
+		void sort(int begin) {
 			sort(begin, num - begin);
 		}
 
-		void sort(unsigned begin, unsigned size);
+		void sort(int begin, int size);
 
 		void insertBefore(int from, int to) {
 			Move move = moves[from];

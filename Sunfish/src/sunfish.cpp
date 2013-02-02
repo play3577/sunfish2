@@ -13,12 +13,17 @@
 #include "sunfish.h"
 #include "Network/csaClient.h"
 #include "Log/logger.h"
+#include "Test/shogiTest.h"
 
 using boost::program_options::options_description;
 using boost::program_options::variables_map;
 using boost::program_options::value;
 using boost::program_options::store;
 using boost::program_options::parse_command_line;
+
+#ifndef NDEBUG
+bool test();
+#endif //NDEBUG
 
 int main(int argc, char* argv[]) {
 	std::cout << SUNFISH_NAME << ' ';
@@ -27,12 +32,13 @@ int main(int argc, char* argv[]) {
 
 	// log
 	Log::error.addStream(std::cerr, "\x1b[31m", "\x1b[39m");
-	Log::warning.addStream(std::cerr, "\x1b[31m", "\x1b[39m");
+	Log::warning.addStream(std::cerr, "\x1b[33m", "\x1b[39m");
 	Log::message.addStream(std::cerr);
 	Log::send.addStream(std::cerr, "\x1b[34m", "\x1b[39m");
 	Log::receive.addStream(std::cerr, "\x1b[35m", "\x1b[39m");
 #ifndef NDEBUG
 	Log::debug.addStream(std::cerr, "\x1b[36m", "\x1b[39m");
+	Log::test.addStream(std::cerr, "\x1b[32m", "\x1b[39m");
 #endif
 
 	// hash
@@ -45,6 +51,9 @@ int main(int argc, char* argv[]) {
 	options_description opt("Option");
 	opt.add_options()
 			("help,h", "show help.")
+#ifndef NDEBUG
+			("test", "unit test mode.")
+#endif //NDEBUG
 			("network,n", "CSA client moode.")
 			("auto-black,b", "search will be begun automatically on black turn.")
 			("auto-white,w", "search will be begun automatically on white turn.")
@@ -65,6 +74,10 @@ int main(int argc, char* argv[]) {
 		// --help or -h => show help
 		std::cerr << opt << std::endl;
 		return 0;
+#ifndef NDEBUG
+	} else if (argmap.count("test")) {
+		return test() ? 0 : 1;
+#endif // NDEBUG
 	} else if (argmap.count("network")) {
 		// --network or -n => CSA client
 
@@ -107,3 +120,26 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
+#ifndef NDEBUG
+bool test() {
+	using namespace Tests;
+
+	std::ofstream fout("test.log", std::ios::out | std::ios::app);
+	if (fout) {
+		Log::error.addStream(fout);
+		Log::warning.addStream(fout);
+		Log::message.addStream(fout);
+		Log::send.addStream(fout);
+		Log::receive.addStream(fout);
+		Log::debug.addStream(fout);
+		Log::test.addStream(fout);
+	}
+
+	if (!ShogiTest().test()) {
+		return false;
+	}
+
+	return true;
+}
+#endif //NDEBUG

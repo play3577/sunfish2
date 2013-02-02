@@ -449,11 +449,15 @@ namespace Shogi {
 			Piece piece = pos.getBoard(from);
 			if (!piece.isEmpty() && piece.isBlack() == pos.isBlackTurn()) {
 				for (Square to = Square::TOP; to.valid(); to.next()) {
-					Move move(from, to, false, false, piece);
+					Move move(from, to, true, false, piece);
 					if (pos.isLegalMove(move)) {
 						moves[num++] = move;
+						if (piece == Piece::BPAWN || piece == Piece::BBISHOP || piece == Piece::BROOK ||
+								piece == Piece::WPAWN || piece == Piece::WBISHOP || piece == Piece::WROOK) {
+							continue;
+						}
 					}
-					move.setPromotion(true);
+					move.setPromotion(false);
 					if (pos.isLegalMove(move)) {
 						moves[num++] = move;
 					}
@@ -474,12 +478,12 @@ namespace Shogi {
 		return num;
 	}
 
-	void MoveGenerator::sort(unsigned begin, unsigned size) {
+	void MoveGenerator::sort(int begin, int size) {
 		// TODO: use boost
 //		boost::sort(moves);
-		for (unsigned i = begin + 1; (unsigned)i < begin + size; i++) {
+		for (int i = begin + 1; i < begin + size; i++) {
 			Move move = moves[i];
-			unsigned j;
+			int j;
 			for (j = i - 1; j >= begin; j--) {
 				if (move < moves[j]) {
 					break;

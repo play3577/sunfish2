@@ -14,7 +14,8 @@ $(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Network/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp) \
-$(wildcard ./src/Log/*.cpp)
+$(wildcard ./src/Log/*.cpp) \
+$(wildcard ./src/Test/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 
@@ -24,16 +25,18 @@ OBJECTS+=$(ATTACK_TABLE_SRC:.cpp=.o)
 CHECK_TABLE=checkTable
 CHECK_TABLE_SRC=src/Shogi/Attack/checkTable.cpp
 OBJECTS+=$(CHECK_TABLE_SRC:.cpp=.o)
+OBJECTS:=$(sort $(OBJECTS))
 
 DEV_PROGRAMS:=$(ATTACK_TABLE) $(CHECK_TABLE)
 
 override CFLAGS+=-DPOSIX
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-override CFLAGS+=-O2
+#override CFLAGS+=-O2
 #override CFLAGS+=-O3
 #override CFLAGS+=-NDEBUG
-#override CFLAGS+=-g
+#override CFLAGS+=-NLEARN
+override CFLAGS+=-g
 #override CFLAGS+=-pg
 #override LIBS+=-lboost_thread-mt
 #override LIBS+=-lboost_regex-mt
@@ -44,12 +47,9 @@ override LIBS+=-lboost_program_options
 
 .PHONY: all clean
 
-all: $(PROGRAM)
+all: $(PROGRAM) $(TEST)
 
-clean:
-	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
-
-$(PROGRAM): $(sort $(OBJECTS))
+$(PROGRAM): $(OBJECTS)
 	$(GPP) -o $(PROGRAM) $(CFLAGS) $^ $(LIBS)
 
 $(ATTACK_TABLE) : src/attackTable.cpp \
@@ -70,6 +70,9 @@ src/Shogi/Attack/attackTable.o
 
 $(CHECK_TABLE_SRC) : $(CHECK_TABLE)
 	./$(CHECK_TABLE) $@
+
+clean:
+	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
 
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<

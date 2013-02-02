@@ -26,15 +26,9 @@ namespace Tools{
 		}
 
 	public:
-		static void Print( const char* str, ... );
+		static bool positionOk(const Shogi::Position pos);
 
-		static bool PositionOk(const Shogi::Position pos);
-
-		static bool GeneratorRandomTest(const char* filename);
-
-		static bool GeneratorTest(const char* filename);
-
-		static bool PositionError(const Shogi::Position& pos);
+		static bool positionError(const Shogi::Position& pos);
 	};
 }
 

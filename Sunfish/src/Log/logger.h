@@ -60,6 +60,9 @@ namespace Log {
 	extern Logger send;
 	extern Logger receive;
 	extern Logger debug;
+#ifndef NDEBUG
+	extern Logger test;
+#endif //NDEBUG
 }
 
 #endif // LOGGER_H_

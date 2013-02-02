@@ -14,4 +14,7 @@ namespace Log {
 	Logger send;
 	Logger receive;
 	Logger debug;
+#ifndef NDEBUG
+	Logger test;
+#endif //NDEBUG
 }
