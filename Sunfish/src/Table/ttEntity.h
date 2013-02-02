@@ -10,7 +10,7 @@
 
 #include "../Util/int.h"
 #include "../Evaluates/value.h"
-#include "../Shogi/move.h"
+#include "../Search/hashMove.h"
 #include "../Search/nodeStat.h"
 
 namespace Table {

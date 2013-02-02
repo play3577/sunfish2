@@ -5,12 +5,20 @@
  *      Author: ryosuke
  */
 
+#ifndef SHEKTABLE_H_
+#define SHEKTABLE_H_
+
 #include "shekEntity.h"
+#include "../Shogi/position.h"
 
 namespace Shek {
 	class ShekTable : public Table::BaseTable<ShekEntity> {
 	public:
-		ShekTable(unsigned bits = DEF_BITS) : 
+		ShekTable() : 
+				Table::BaseTable<ShekEntity>() {
+		}
+
+		ShekTable(unsigned bits) : 
 				Table::BaseTable<ShekEntity>(bits) {
 		}
 
@@ -43,3 +51,5 @@ namespace Shek {
 		}
 	};
 }
+
+#endif // SHEKTABLE_H_

@@ -14,6 +14,7 @@
 #include "Network/csaClient.h"
 #include "Log/logger.h"
 #include "Test/shogiTest.h"
+#include "Learn/learn.h"
 
 using boost::program_options::options_description;
 using boost::program_options::variables_map;
@@ -54,6 +55,9 @@ int main(int argc, char* argv[]) {
 #ifndef NDEBUG
 			("test", "unit test mode.")
 #endif //NDEBUG
+#ifndef NLEARN
+			("learn", "learning mode.")
+#endif //NLEARN
 			("network,n", "CSA client moode.")
 			("auto-black,b", "search will be begun automatically on black turn.")
 			("auto-white,w", "search will be begun automatically on white turn.")
@@ -77,7 +81,15 @@ int main(int argc, char* argv[]) {
 #ifndef NDEBUG
 	} else if (argmap.count("test")) {
 		return test() ? 0 : 1;
-#endif // NDEBUG
+#endif //NDEBUG
+#ifndef NLEARN
+	} else if (argmap.count("learn")) {
+		// learning rootine based Bonanza-mthod
+		using namespace Learns;
+		Learn learn;
+		learn.execute();
+		return 0;
+#endif //NLEARN
 	} else if (argmap.count("network")) {
 		// --network or -n => CSA client
 
@@ -96,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 		Network::CsaClient csaClient;
 		csaClient.execute();
-		fout.close();
+		fout.close(); // close a log file.
 		return 0;
 	}
 

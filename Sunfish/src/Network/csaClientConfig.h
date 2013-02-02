@@ -8,35 +8,12 @@
 #ifndef CSACLIENTCONFIG_H_
 #define CSACLIENTCONFIG_H_
 
-#include <string>
-#include <typeinfo>
+#include "../Config/configure.h"
 
 namespace Network {
-	enum ItemType {
-		BOOL,
-		INTEGER,
-		STRING,
-	};
-
-	struct ConfigItem {
-		const char* name;
-		ItemType type;
-		void* data;
-		ConfigItem() {
-		}
-		ConfigItem(const char* name,
-				ItemType type, void* data) {
-			this->name = name;
-			this->type = type;
-			this->data = data;
-		}
-	};
-
-	class CsaClientConfig {
+	class CsaClientConfig : public Configures::Configure {
 	private:
-		static const int LINE_BUFFER_SIZE = 1024;
-
-		ConfigItem items[14];
+		Configures::ConfigItem items[14];
 
 		std::string host;
 		int port;
@@ -57,13 +34,18 @@ namespace Network {
 
 		std::string kifu;
 
-		bool readLine(const char* line);
+	protected:
+		Configures::ConfigItem* itemList() {
+			return items;
+		}
+
+		int itemSize() {
+			return sizeof(items)/sizeof(items[0]);
+		}
 
 	public:
 		CsaClientConfig(const char* filename = NULL);
 		
-		bool read(const char* filename);
-
 		const std::string& getHost() const {
 			return host;
 		}
@@ -117,6 +99,7 @@ namespace Network {
 		}
 
 		std::string getKifu() const {
+			// TODO: 共通化
 			if (kifu.length() > 0 && kifu[kifu.length()-1] == '/') {
 				return kifu;
 			} else {

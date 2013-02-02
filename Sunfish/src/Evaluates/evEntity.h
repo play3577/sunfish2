@@ -5,6 +5,9 @@
  *      Author: ryosuke
  */
 
+#ifndef EVENTITY_H_
+#define EVENTITY_H_
+
 #include "param.h"
 
 namespace Evaluates {
@@ -36,3 +39,5 @@ namespace Evaluates {
 		}
 	};
 }
+
+#endif // EVENTITY_H_

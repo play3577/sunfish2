@@ -5,18 +5,20 @@
  *      Author: ryosuke
  */
 
+#ifndef EVALUATETABLE_H_
+#define EVALUATETABLE_H_
+
 #include "evEntity.h"
 
 namespace Evaluates {
 	class EvaluateTable {
 	private:
-		static const unsigned DEF_BITS = 20;
 		unsigned size;
 		unsigned mask;
 		EvEntity* table;
 
 	public:
-		EvaluateTable(unsigned bits = DEF_BITS) :
+		EvaluateTable(unsigned bits = 21) :
 				size(0), table(NULL) {
 			init(bits);
 		}
@@ -48,3 +50,5 @@ namespace Evaluates {
 		}
 	};
 }
+
+#endif // EVALUATETABLE_H_

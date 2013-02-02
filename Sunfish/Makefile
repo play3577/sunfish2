@@ -4,7 +4,8 @@ RM:=rm
 
 PROGRAM:=sunfish
 SOURCES:=src/sunfish.cpp \
-$(wildcard ./src/Shogi/*.cpp) \
+$(wildcard ./src/*/*.cpp)
+#$(wildcard ./src/Shogi/*.cpp) \
 $(wildcard ./src/Shogi/*/*.cpp) \
 $(wildcard ./src/Evaluates/*.cpp) \
 $(wildcard ./src/Search/*.cpp) \
@@ -14,6 +15,7 @@ $(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Network/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp) \
+$(wildcard ./src/Log/*.cpp) \
 $(wildcard ./src/Log/*.cpp) \
 $(wildcard ./src/Test/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)

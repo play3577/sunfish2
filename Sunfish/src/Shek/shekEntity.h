@@ -8,6 +8,8 @@
 #ifndef SHEKENTITY_H_
 #define SHEKENTITY_H_
 
+#include <cassert>
+#include "../Log/logger.h"
 #include "handSet.h"
 
 namespace Shek {

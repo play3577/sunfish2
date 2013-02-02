@@ -8,12 +8,12 @@
 #ifndef SEARCHER_H_
 #define SEARCHER_H_
 
-#include "tree.h"
-#include "pvHandler.h"
 #include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
 #include "../Records/record.h"
+#include "pvHandler.h"
+#include "tree.h"
 #include <algorithm>
 #include <boost/timer.hpp>
 #define BOOST_THREAD_USE_LIB

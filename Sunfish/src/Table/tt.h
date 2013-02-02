@@ -8,14 +8,17 @@
 #ifndef TT_H_
 #define TT_H_
 
+#include "../Util/int.h"
 #include "baseTable.h"
 #include "ttEntity.h"
 
 namespace Table {
 	class TT : public BaseTable<TTEntity> {
 	public:
-		TT(unsigned bits = DEF_BITS) : 
-				BaseTable<TTEntity>(bits) {
+		TT() : BaseTable<TTEntity>() {
+		}
+
+		TT(unsigned bits) : BaseTable<TTEntity>(bits) {
 		}
 
 		bool entry(Util::uint64 hash,

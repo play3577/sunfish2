@@ -12,6 +12,7 @@
 #include <sstream>
 #include <iomanip>
 #include <list>
+#include <vector>
 
 namespace Util{
 	class TableString {
