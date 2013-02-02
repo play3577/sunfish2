@@ -18,8 +18,6 @@ $(wildcard ./src/Log/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
 DEPENDS:=$(SOURCES:.cpp=.d)
 
-DEV_PROGRAMS:=attackTable checkTable
-
 ATTACK_TABLE=attackTable
 ATTACK_TABLE_SRC=src/Shogi/Attack/attackTable.cpp
 OBJECTS+=$(ATTACK_TABLE_SRC:.cpp=.o)
@@ -27,6 +25,9 @@ CHECK_TABLE=checkTable
 CHECK_TABLE_SRC=src/Shogi/Attack/checkTable.cpp
 OBJECTS+=$(CHECK_TABLE_SRC:.cpp=.o)
 
+DEV_PROGRAMS:=$(ATTACK_TABLE) $(CHECK_TABLE)
+
+override CFLAGS+=-DPOSIX
 override CFLAGS+=-Wall
 override CFLAGS+=-W
 override CFLAGS+=-O2
@@ -41,8 +42,12 @@ override LIBS+=-lboost_thread
 override LIBS+=-lboost_regex
 override LIBS+=-lboost_program_options
 
-.PHONY: all
+.PHONY: all clean
+
 all: $(PROGRAM)
+
+clean:
+	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
 
 $(PROGRAM): $(sort $(OBJECTS))
 	$(GPP) -o $(PROGRAM) $(CFLAGS) $^ $(LIBS)
@@ -68,10 +73,6 @@ $(CHECK_TABLE_SRC) : $(CHECK_TABLE)
 
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<
-
-.PHONY: clean
-clean:
-	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
 
 %.d: %.cpp
 	@$(SHELL) -c '$(CC) -MM $(CFLAGS) $< | sed "s|^.*:|$*.o $@:|g" > $@; [ -s $@ ] || rm -f $@'

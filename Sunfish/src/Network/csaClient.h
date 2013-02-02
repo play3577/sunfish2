@@ -16,6 +16,7 @@
 #include "../Search/searcher.h"
 #include "connection.h"
 #include <iomanip>
+#include <queue>
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
 #define BOOST_REGEX_USE_LIB
@@ -54,16 +55,26 @@ namespace Network {
 			RECV_RESIGN    = 0x020000,
 			RECV_JISHOGI   = 0x040000,
 
-			RECV_END_MSK   = RECV_WIN | RECV_LOSE | RECV_DRAW
-					| RECV_INTERRUPT | RECV_REPEAT | RECV_CHECK_REP
-					| RECV_ILLEGAL | RECV_TIME_UP | RECV_RESIGN
-					| RECV_JISHOGI,
+			RECV_WIN_LOSE  = RECV_WIN | RECV_LOSE, // CSA将棋付属の簡易サーバ用
+
+			RECV_END_MSK   = RECV_WIN | RECV_LOSE
+					| RECV_DRAW | RECV_INTERRUPT
+					//| RECV_REPEAT | RECV_CHECK_REP
+					//| RECV_ILLEGAL | RECV_TIME_UP
+					//| RECV_RESIGN | RECV_JISHOGI
+					,
 
 			RECV_ERROR     = 0x800000,
 
-			RECV_NUM       = 19,
+			RECV_NUM       = 20,
 		};
-		unsigned recvFlags;
+
+		struct RECV_DATA {
+			unsigned flag;
+			std::string str;
+		};
+
+		std::queue<RECV_DATA> recvQueue;
 		unsigned endFlags;
 
 		struct ReceiveFlagSet {
@@ -83,8 +94,6 @@ namespace Network {
 		Evaluates::Param* pparam;
 
 		Connection con; // コネクション
-		std::string recvStr; // 受信文字列
-		std::string moveStr; // 受信した指し手
 
 		bool black; // 自分の手番が黒か
 		std::string gameId; // 対局ID
@@ -92,6 +101,8 @@ namespace Network {
 		std::string whiteName; // 後手の名前
 
 		void receiver();
+
+		bool enqueue(const std::string& recvStr);
 
 		bool login();
 
@@ -104,7 +115,7 @@ namespace Network {
 		bool sendResign();
 
 		bool send(const char* str) {
-			printSendString(str);
+			printSentString(str);
 			return con.sendln(str);
 		}
 
@@ -113,18 +124,16 @@ namespace Network {
 		}
 
 		void init() {
-			recvFlags = RECV_NULL;
+			while (!recvQueue.empty()) {
+				recvQueue.pop();
+			}
 			endFlags = RECV_NULL;
 			gameId = "";
 			blackName = "";
 			whiteName = "";
 		}
 
-		unsigned waitReceive(unsigned flags);
-
-		static void recvMove(CsaClient* p) {
-			p->moveStr = p->recvStr;
-		}
+		unsigned waitReceive(unsigned flags, std::string* str = NULL);
 
 		static void _recvGameSummary(CsaClient* p) {
 			p->recvGameSummary();
@@ -132,21 +141,31 @@ namespace Network {
 
 		void recvGameSummary();
 
+		bool inputGameSummary(std::string recvStr);
+
 		void recvTime();
 
+		bool inputTime(std::string recvStr);
+
 		void recvPosition();
+
+		bool inputPosition(std::string recvStr);
 
 		void sleep(unsigned msec) {
 			boost::thread::sleep(boost::get_system_time()
 				+ boost::posix_time::milliseconds(msec));
 		}
 
-		void printSendString(const char* str) {
+		void printSentString(const char* str) {
 			Log::send << '<' << str << '\n';
 		}
 
-		void printReceivedString() {
-			Log::receive << '>' << recvStr << '\n';
+		void printReceivedString(std::string recvStr, bool ok) {
+			Log::receive << '>' << recvStr;
+			if (!ok) {
+				Log::receive << " ..!!!parsing error!!!";
+			}
+			Log::receive << '\n';
 		}
 
 		void writeResult(Records::Record record);

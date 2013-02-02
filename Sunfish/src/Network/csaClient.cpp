@@ -27,14 +27,15 @@ namespace Network {
 		{ boost::regex("^LOGIN:.* OK$"), RECV_LOGIN_OK, NULL, NULL },
 		{ boost::regex("^LOGIN:incorect$"), RECV_LOGIN_INC, NULL, NULL },
 		{ boost::regex("^LOGOUT:completed$"), RECV_LOGOUT, NULL, NULL },
-		{ boost::regex("^%.*"), RECV_MOVE_EX, recvMove, NULL },
-		{ boost::regex("^\\+.*"), RECV_MOVE_B, recvMove, NULL },
-		{ boost::regex("^-.*"), RECV_MOVE_W, recvMove, NULL },
+		{ boost::regex("^%.*"), RECV_MOVE_EX, NULL, NULL },
+		{ boost::regex("^\\+.*"), RECV_MOVE_B, NULL, NULL },
+		{ boost::regex("^-.*"), RECV_MOVE_W, NULL, NULL },
 		{ boost::regex("^BEGIN Game_Summary$"), RECV_SUMMARY, _recvGameSummary, NULL },
 		{ boost::regex("^START:.*"), RECV_START, NULL, NULL },
 		{ boost::regex("^REJECT:.* by .*"), RECV_REJECT, NULL, NULL },
 		{ boost::regex("^#WIN$"), RECV_WIN, NULL, "win" },
 		{ boost::regex("^#LOSE$"), RECV_LOSE, NULL, "lose" },
+		{ boost::regex("^#WIN\\(LOSE\\)$"), RECV_WIN_LOSE, NULL, "unknown" }, // CSA将棋付属の簡易サーバ用
 		{ boost::regex("^#DRAW$"), RECV_DRAW, NULL, "draw" },
 		{ boost::regex("^#CHUDAN$"), RECV_INTERRUPT, NULL, "chudan" },
 		{ boost::regex("^#SENNICHITE$"), RECV_REPEAT, NULL, "sennichite" },
@@ -86,6 +87,7 @@ namespace Network {
 				searchConfig.limitEnable = config.getLimit() != 0;
 				searchConfig.limitSeconds = config.getLimit();
 				searchConfigEnemy = searchConfig;
+				searchConfigEnemy.depth = Tree::DEF_MAX_DEPTH; // TODO: 実際の値を取得
 				searchConfigEnemy.limitEnable = false;
 
 				while (1) {
@@ -114,8 +116,17 @@ namespace Network {
 						boost::thread enemyTurnSearchThread(
 								boost::bind(&CsaClient::enemyTurnSearch,
 								this, &searcher, record, searchConfigEnemy));
+						// 相手番の指し手を受信
 						unsigned mask = black ? RECV_MOVE_W : RECV_MOVE_B;
-						unsigned flags = waitReceive(mask | RECV_END_MSK);
+						std::string moveStr;
+						unsigned flags = waitReceive(mask | RECV_END_MSK, &moveStr);
+						// Searcher がスタートするか、もしくはスレッドがいなくなるまで待機
+						while (true) {
+							if (searcher.isRunning() || enemyTurnSearchThread.timed_join(boost::posix_time::milliseconds(1))) {
+								break;
+							}
+						}
+						// 強制中断
 						searcher.forceInterrupt();
 						enemyTurnSearchThread.join();
 						if (flags & mask) {
@@ -191,19 +202,22 @@ lab_end:
 		return (response & RECV_END_MSK) != 0U;
 	}
 
-	unsigned CsaClient::waitReceive(unsigned flags) {
+	unsigned CsaClient::waitReceive(unsigned flags, std::string* str) {
 		while (true) {
 			{
 				boost::mutex::scoped_lock lock(recvMutex);
-				unsigned masked = recvFlags & flags;
-				endFlags |= recvFlags & RECV_END_MSK;
-				if (masked) {
-					recvFlags &= ~masked;
-					return masked;
-				}
-				if (recvFlags & RECV_LOGOUT) {
-					recvFlags &= ~RECV_LOGOUT;
-					return 0U;
+				if (!recvQueue.empty()) {
+					RECV_DATA data = recvQueue.front();
+					recvQueue.pop();
+					unsigned masked = data.flag & flags;
+					if (masked) {
+						if (str != NULL) {
+							(*str) = data.str;
+						}
+						return masked;
+					} else if (data.flag & RECV_LOGOUT) {
+						return 0U;
+					}
 				}
 			}
 			sleep(20);
@@ -212,102 +226,125 @@ lab_end:
 
 	void CsaClient::receiver() {
 		while (con.receive()) {
-			recvStr = con.getReceivedString();
-			printReceivedString();
-			for (int i = 0; i < RECV_NUM; i++) {
-				if (boost::regex_match(recvStr, flagSets[i].regex)) {
-					if (flagSets[i].func != NULL) {
-						flagSets[i].func(this);
-					}
-					boost::mutex::scoped_lock lock(recvMutex);
-					recvFlags |= flagSets[i].flag;
+			std::string recvStr = con.getReceivedString();
+			bool ok = enqueue(recvStr);
+			printReceivedString(recvStr, ok);
+		}
+	}
+
+	bool CsaClient::enqueue(const std::string& recvStr) {
+		for (int i = 0; i < RECV_NUM; i++) {
+			if (boost::regex_match(recvStr, flagSets[i].regex)) {
+				if (flagSets[i].func != NULL) {
+					flagSets[i].func(this);
 				}
+				boost::mutex::scoped_lock lock(recvMutex);
+				RECV_DATA data;
+				data.flag = flagSets[i].flag;
+				data.str = recvStr;
+				recvQueue.push(data);
+				endFlags |= flagSets[i].flag & RECV_END_MSK;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	void CsaClient::recvGameSummary() {
 		while (con.receive()) {
-			recvStr = con.getReceivedString();
-			printReceivedString();
+			std::string recvStr = con.getReceivedString();
+			bool ok;
 			if (recvStr == "BEGIN Time") {
 				recvTime();
-				continue;
+				ok = true;
 			} else if (recvStr == "BEGIN Position") {
 				recvPosition();
-				continue;
+				ok = true;
 			} else if (recvStr == "END Game_Summary") {
+				printReceivedString(recvStr, true);
 				return;
+			} else {
+				ok = inputGameSummary(recvStr);
 			}
-
-			std::vector<std::string> tokens;
-			boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
-			if (tokens.size() < 2) {
-				continue;
-			}
-
-			if (tokens[0] == "Your_Turn") {
-				if (tokens[1] == "+") {
-					black = true;
-				} else if (tokens[1] == "-") {
-					black = false;
-				}
-			} else if (tokens[0] == "Game_ID") {
-				gameId = tokens[1];
-			} else if (tokens[0] == "Name+") {
-				blackName = tokens[1];
-			} else if (tokens[0] == "Name-") {
-				whiteName = tokens[1];
-			}
-			/*
-				"Protocol_Version"
-				"Protocol_Mode"
-				"Format"
-				"Declaration"
-				"Rematch_On_Draw" // 自動再試合(1.1.3では無視してよい。)
-				"To_Move"
-			*/
+			printReceivedString(recvStr, ok);
 		}
+	}
+
+	bool CsaClient::inputGameSummary(std::string recvStr) {
+		std::vector<std::string> tokens;
+		boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
+		if (tokens.size() < 2) {
+			return false;
+		}
+
+		if (tokens[0] == "Your_Turn") {
+			if (tokens[1] == "+") {
+				black = true;
+			} else if (tokens[1] == "-") {
+				black = false;
+			}
+		} else if (tokens[0] == "Game_ID") {
+			gameId = tokens[1];
+		} else if (tokens[0] == "Name+") {
+			blackName = tokens[1];
+		} else if (tokens[0] == "Name-") {
+			whiteName = tokens[1];
+		} else {
+			return false;
+		}
+		/*
+			"Protocol_Version"
+			"Protocol_Mode"
+			"Format"
+			"Declaration"
+			"Rematch_On_Draw" // 自動再試合(1.1.3では無視してよい。)
+			"To_Move"
+		*/
+		return true;
 	}
 
 	void CsaClient::recvTime() {
 		while (con.receive()) {
-			recvStr = con.getReceivedString();
-			printReceivedString();
+			std::string recvStr = con.getReceivedString();
 			if (recvStr == "END Time") {
+				printReceivedString(recvStr, true);
 				return;
 			}
-			std::vector<std::string> tokens;
-			boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
-			if (tokens.size() < 2) {
-				continue;
-			}
-			/*
-				"Time_Unit"
-				"Least_Time_Per_Move"
-				"Total_Time"
-				"Byoyomi"
-			*/
+			bool ok = inputTime(recvStr);
+			printReceivedString(recvStr, ok);
 		}
 	}
 
-	void CsaClient::recvPosition() {
-		pos.setBoard(Square(5,5), Piece::BPAWN);
-		Log::debug << pos.toString();
-		while (con.receive()) {
-			recvStr = con.getReceivedString();
-			printReceivedString();
-			if (recvStr == "END Position") {
-				Log::debug << pos.toString();
-				return;
-			} else {
-				CsaReader::LineStat stat =
-						CsaReader::parseLine(recvStr.c_str(), pos);
-				if (stat == CsaReader::LINE_ERROR) {
-					Log::error << "ERROR :" << recvStr << "\n";
-				}
-			}
+	bool CsaClient::inputTime(std::string recvStr) {
+		std::vector<std::string> tokens;
+		boost::algorithm::split(tokens, recvStr, boost::is_any_of(":"));
+		if (tokens.size() < 2) {
+			return false;
 		}
+		/*
+			"Time_Unit"
+			"Least_Time_Per_Move"
+			"Total_Time"
+			"Byoyomi"
+		*/
+		return true;
+	}
+
+	void CsaClient::recvPosition() {
+		while (con.receive()) {
+			std::string recvStr = con.getReceivedString();
+			if (recvStr == "END Position") {
+				printReceivedString(recvStr, true);
+				return;
+			}
+			bool ok = inputPosition(recvStr);
+			printReceivedString(recvStr, ok);
+		}
+	}
+
+	bool CsaClient::inputPosition(std::string recvStr) {
+		CsaReader::LineStat stat = CsaReader::parseLine(recvStr.c_str(), pos);
+		return !(stat == CsaReader::LINE_ERROR);
 	}
 
 	void CsaClient::writeResult(Record record) {

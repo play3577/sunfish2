@@ -129,13 +129,14 @@ namespace Search {
 			result.counter = counter;
 			result.sec = timer.elapsed();
 			result.nps = result.counter.nodes / result.sec;
+			bool ok;
 			if (pmove != NULL) {
 				result.resign = false;
 				result.move = *pmove;
-				return true;
+				ok = true;
 			} else {
 				result.resign = true;
-				return false;
+				ok = false;
 			}
 			{
 				boost::mutex::scoped_lock lock(flagMutex);
@@ -143,6 +144,7 @@ namespace Search {
 				signalInterrupt = false;
 				signalForceInterrupt = false;
 			}
+			return ok;
 		}
 
 		static Evaluates::Value getFutMgn(int depth, int count) {
@@ -194,8 +196,7 @@ namespace Search {
 		bool isInterrupted() const {
 			if (signalForceInterrupt) {
 				return true;
-			}
-			if (tree.getPv().getTop() != NULL) {
+			} else if (tree.getPv().getTop() != NULL) {
 				return signalInterrupt || (config.limitEnable
 					&& timer.elapsed() >= config.limitSeconds);
 			}
@@ -309,6 +310,11 @@ namespace Search {
 				return ret;
 			}
 			return false;
+		}
+
+		bool isRunning() {
+			boost::mutex::scoped_lock lock(flagMutex);
+			return running;
 		}
 	};
 }

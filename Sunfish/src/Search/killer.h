@@ -26,13 +26,15 @@ namespace Search {
 		}
 
 		void add(const Shogi::Move& move, const Evaluates::Value& value) {
-			if (value > value1) {
-				if (move != killer1) {
-					killer2 = killer1;
-					killer1 = move;
-				}
-				value2 = value1;
+			if (move == killer1) {
 				value1 = value;
+			} else if (value > value1) {
+				killer2 = killer1;
+				value2 = value1;
+				killer1 = move;
+				value1 = value;
+			} else if (move == killer2) {
+				value2 = value;
 			} else if (value > value2) {
 				killer2 = move;
 				value2 = value;

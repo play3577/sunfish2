@@ -31,7 +31,7 @@ namespace Search {
 			hash2.setEmpty();
 		}
 
-		void update(const Shogi::Move move) {
+		void update(const Shogi::Move& move) {
 			if (hash1 != move) {
 				hash2 = hash1;
 				hash1 = move;

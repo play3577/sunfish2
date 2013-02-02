@@ -85,7 +85,7 @@ namespace Search {
 			const Move& move = get(begin + i);
 			if (move == killer.get1() ||
 					move == killer.get2()) {
-				removeUnstable(i--);
+				removeUnstable(begin + i--);
 				num--;
 			}
 		}
@@ -96,7 +96,7 @@ namespace Search {
 			const Move& move = get(begin + i);
 			if (move == hashMove.getHash1() ||
 					move == hashMove.getHash2()) {
-				removeUnstable(i--);
+				removeUnstable(begin + i--);
 				num--;
 			}
 		}

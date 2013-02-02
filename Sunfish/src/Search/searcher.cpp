@@ -119,8 +119,8 @@ namespace Search {
 			Value alpha, Value beta, NodeStat stat) {
 #if NODE_DEBUG
 		bool debugNode = false;
-		if (tree.is("-0046FU")) {
-			Log::debug << " ***** ";
+		if (tree.is("-1314FU")) {
+			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
@@ -145,8 +145,13 @@ namespace Search {
 			return Value(0);
 		}
 
+		// end of stack
+		if (tree.isMaxDepth()) {
+			return tree.negaEvaluate();
+		}
+
 		// leaf node
-		if (depth < PLY1 || tree.isMaxDepth()) {
+		if (depth < PLY1) {
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
 		}
@@ -344,9 +349,9 @@ namespace Search {
 					value = newAlpha; // fail soft
 					counter.exFutilityPruning++;
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+					if (debugNode) {
+						Log::debug << ',' << __LINE__;
+					}
 #endif // NODE_DEBUG
 					continue;
 				}
@@ -354,42 +359,52 @@ namespace Search {
 
 			updateGain(tree, STAND_PAT + estimate.getValue(), newStandPat);
 
+#if NODE_DEBUG
+			Util::uint64 beforeNodes = counter.nodes;
+#endif // NODE_DEBUG
 			// recurcive search
 			if (moveCount == 1) {
 				newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+				if (debugNode) {
+					Log::debug << ',' << __LINE__;
+				}
 #endif // NODE_DEBUG
 			} else {
 				// nega-scout
 				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+				if (debugNode) {
+					Log::debug << ',' << __LINE__;
+				}
 #endif // NODE_DEBUG
 				if (!isInterrupted() && newValue > newAlpha && reduction != 0) {
 					// reductionをなくして再探索
 					newDepth += reduction;
 					newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+					if (debugNode) {
+						Log::debug << ',' << __LINE__;
+					}
 #endif // NODE_DEBUG
 				}
 				if (!isInterrupted() && newValue > newAlpha && beta > newAlpha + 1) {
 					// windowを広げて再探索
 					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+					if (debugNode) {
+						Log::debug << ',' << __LINE__;
+					}
 #endif // NODE_DEBUG
 				}
 			}
+#if NODE_DEBUG
+			if (debugNode) {
+				Util::uint64 afterNodes= counter.nodes;
+				Util::uint64 nodes = afterNodes - beforeNodes;
+				Log::debug << "(" << newValue << ")[" << nodes << "]";
+			}
+#endif // NODE_DEBUG
 
 			// unmake move
 			unmakeMove();
@@ -399,23 +414,22 @@ namespace Search {
 			}
 
 			if (newValue > value) {
-#if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
-#endif // NODE_DEBUG
 				value = newValue;
 				tree.updatePv();
 				best = tree.getCurrentMove();
-				tree.getHistory(history, depth);
-				tree.addKiller(newValue - STAND_PAT);
 
 				// beta cut
 				if (value >= beta) {
+					if (!tree.isCapture()) {
+						tree.getHistory(history, depth);
+						tree.addKiller(newValue - STAND_PAT);
+					} else if (!isHash) {
+						tree.addKiller(newValue - STAND_PAT);
+					}
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-			}
+					if (debugNode) {
+						Log::debug << ";bc";
+					}
 #endif // NODE_DEBUG
 					break;
 				}
@@ -499,9 +513,8 @@ namespace Search {
 				unsigned moveCount = tree.getMoveIndex();
 #if ROOT_NODE_DEBUG
 				// debug
-				bool isHash = tree.isHashMove();
 				Util::uint64 beforeNodes= counter.nodes;
-				Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
+				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
 revaluation:
@@ -523,7 +536,7 @@ revaluation:
 #endif // ROOT_NODE_DEBUG
 					if (!isInterrupted() && vtemp > alpha && vtemp < Value::MATE) {
 #if ROOT_NODE_DEBUG
-						Log::debug << "[" << vtemp << "]";
+						Log::debug << "(" << vtemp << ")";
 #endif // ROOT_NODE_DEBUG
 						// 再探索
 						vtemp = -negaMax<true>(tree,
@@ -538,9 +551,6 @@ revaluation:
 				// debug
 				Util::uint64 afterNodes= counter.nodes;
 				Util::uint64 nodes = afterNodes - beforeNodes;
-				if (isHash) {
-					Log::debug << "*";
-				}
 				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")"
 						<< "[" << nodes << "]"
 						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";

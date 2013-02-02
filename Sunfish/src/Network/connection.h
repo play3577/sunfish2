@@ -46,8 +46,8 @@ namespace Network {
 		int keepintvl;
 		int keepcnt;
 
-		void initKeepalive() {
-			keepalive = 0;
+		void init() {
+			keepalive = 1;
 			keepidle = 7200;
 			keepintvl = 75;
 			keepcnt = 3;
@@ -55,10 +55,12 @@ namespace Network {
 
 	public:
 		Connection() {
+			init();
 		}
 
 		Connection(const std::string& host, int port)
 				: host(host), port(port) {
+			init();
 		}
 
 		void setHost(const std::string& host) {
