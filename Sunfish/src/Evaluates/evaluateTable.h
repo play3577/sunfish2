@@ -9,44 +9,31 @@
 #define EVALUATETABLE_H_
 
 #include "evEntity.h"
+#include "../Table/baseTable.h"
 
 namespace Evaluates {
-	class EvaluateTable {
-	private:
-		unsigned size;
-		unsigned mask;
-		EvEntity* table;
+	using namespace Table;
 
+	class EvaluateTable : public BaseTable<EvEntity> {
 	public:
-		EvaluateTable(unsigned bits = 21) :
-				size(0), table(NULL) {
-			init(bits);
+		EvaluateTable() :
+				BaseTable<EvEntity>() {
+		}
+
+		EvaluateTable(unsigned bits) :
+				BaseTable<EvEntity>(bits) {
 		}
 
 		virtual ~EvaluateTable() {
 			delete table;
 		}
 
-		void init(unsigned bits = 0) {
-			unsigned newSize = 1 << bits;
-			if (bits != 0 && size != newSize) {
-				size = newSize;
-				mask = size - 1;
-				if (table != NULL) { delete[] table; }
-				table = new EvEntity[size];
-			} else {
-				for (unsigned i = 0; i < size; i++) {
-					table[i].init();
-				}
-			}
-		}
-
 		bool get(Util::uint64 hash, Value& value) const {
-			return table[hash&mask].get(hash, value);
+			return getEntity(hash).get(hash, value);
 		}
 
 		void set(Util::uint64 hash, const Value& value) {
-			table[hash&mask].set(hash, value);
+			_getEntity(hash).set(hash, value);
 		}
 	};
 }

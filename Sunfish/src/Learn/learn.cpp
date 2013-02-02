@@ -8,6 +8,8 @@
 #include "learn.h"
 #include "../Log/logger.h"
 
+#ifndef NLEARN
+
 namespace Learns {
 	const char* Learn::DEFAULT_CONFIG_FILE = "lconf";
 
@@ -19,3 +21,5 @@ namespace Learns {
 		Log::message << config.toString();
 	}
 }
+
+#endif // NLEARN

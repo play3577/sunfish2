@@ -29,7 +29,7 @@ namespace Table {
 		}
 
 		virtual ~BaseTable() {
-			delete table;
+			delete [] table;
 		}
 
 		void init(unsigned bits = 0) {
