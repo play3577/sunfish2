@@ -11,11 +11,12 @@
 namespace Table {
 	template <class Entity>
 	class BaseTable {
-	protected:
+	private:
 		unsigned size;
 		unsigned mask;
 		Entity* table;
 
+	protected:
 		Entity& _getEntity(Util::uint64 hash) {
 			return table[hash&mask];
 		}

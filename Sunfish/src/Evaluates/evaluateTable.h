@@ -24,10 +24,6 @@ namespace Evaluates {
 				BaseTable<EvEntity>(bits) {
 		}
 
-		virtual ~EvaluateTable() {
-			delete table;
-		}
-
 		bool get(Util::uint64 hash, Value& value) const {
 			return getEntity(hash).get(hash, value);
 		}

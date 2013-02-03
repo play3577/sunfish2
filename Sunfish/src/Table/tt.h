@@ -28,7 +28,7 @@ namespace Table {
 				int depth,
 				const Search::NodeStat& stat,
 				const Shogi::Move* pmove = NULL) {
-			return table[hash&mask].update(hash, alpha, beta, value, depth, stat, pmove);
+			return _getEntity(hash).update(hash, alpha, beta, value, depth, stat, pmove);
 		}
 	};
 }
