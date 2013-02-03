@@ -14,7 +14,7 @@ namespace Search {
 	extern const int aspWind[2];
 	extern const int ASP_MAX;
 
-	// ÃÊ³¬Åª¤Ë¹­¤¬¤ëÃµº÷Áë
+	// æ®µéšçš„ã«åºƒãŒã‚‹æ¢ç´¢çª“
 	template<int sign>
 	class AspWindow {
 	private:
@@ -36,7 +36,7 @@ namespace Search {
 		}
 
 		void init() {
-			aspValue = 0; // ÉÔÍ×
+			aspValue = 0; // ä¸è¦
 			aspPhase = ASP_MAX;
 		}
 

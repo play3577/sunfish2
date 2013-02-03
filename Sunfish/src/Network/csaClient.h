@@ -55,7 +55,7 @@ namespace Network {
 			RECV_RESIGN    = 0x020000,
 			RECV_JISHOGI   = 0x040000,
 
-			RECV_WIN_LOSE  = RECV_WIN | RECV_LOSE, // CSA$B>-4}IUB0$N4J0W%5!<%PMQ(B
+			RECV_WIN_LOSE  = RECV_WIN | RECV_LOSE, // CSA将棋付属の簡易サーバ用
 
 			RECV_END_MSK   = RECV_WIN | RECV_LOSE
 					| RECV_DRAW | RECV_INTERRUPT
@@ -93,12 +93,12 @@ namespace Network {
 		Shogi::Position pos;
 		Evaluates::Param* pparam;
 
-		Connection con; // $B%3%M%/%7%g%s(B
+		Connection con; // コネクション
 
-		bool black; // $B<+J,$N<jHV$,9u$+(B
-		std::string gameId; // $BBP6I(BID
-		std::string blackName; // $B@h<j$NL>A0(B
-		std::string whiteName; // $B8e<j$NL>A0(B
+		bool black; // 自分の手番が黒か
+		std::string gameId; // 対局ID
+		std::string blackName; // 先手の名前
+		std::string whiteName; // 後手の名前
 
 		void receiver();
 

@@ -37,11 +37,11 @@ namespace Configures {
 	}
 
 	void Configure::init() {
-		// $B=i4|CM$rBeF~(B
+		// 初期値を代入
 		ConfigItem* items = itemList();
 		int size = itemSize();
 		for (int i = 0; i < size; i++){
-			// $B@_Dj9`L\$N%G!<%?7?Kh$KJQ49(B
+			// 設定項目のデータ型毎に変換
 			if (!convert(items[i], items[i].defaultValue)) {
 				Log::error << "Unknown Error.." << __FILE__ << "(" << __LINE__ << ")\n";
 			}
@@ -52,18 +52,18 @@ namespace Configures {
 		if (line[0] == '\0' || line[0] == '#') {
 			return true;
 		}
-		// '=' $B$G:8JUCM$H1&JUCM$KJ,2r(B
+		// '=' で左辺値と右辺値に分解
 		std::vector<std::string> tokens;
 		boost::algorithm::split(tokens, line, boost::is_any_of("="));
 		if (tokens.size() != 2) {
 			return false;
 		}
-		// $B:8JUCM$K0lCW$9$k9`L\$rC5$9!#(B
+		// 左辺値に一致する項目を探す。
 		ConfigItem* items = itemList();
 		int size = itemSize();
 		for (int i = 0; i < size; i++){
 			if (tokens[0] == items[i].name) {
-				// $B@_Dj9`L\$N%G!<%?7?Kh$KJQ49(B
+				// 設定項目のデータ型毎に変換
 				if (convert(items[i], tokens[1])) {
 					return true;
 				} else {
@@ -76,7 +76,7 @@ namespace Configures {
 	}
 
 	bool Configure::convert(ConfigItem& item, const std::string& str) {
-		// $B@_Dj9`L\$N%G!<%?7?Kh$KJQ49(B
+		// 設定項目のデータ型毎に変換
 		if (item.type == STRING) {
 			*(std::string*)item.data = str;
 		} else if (item.type == INTEGER) {

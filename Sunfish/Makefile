@@ -46,6 +46,8 @@ override CFLAGS+=-g
 override LIBS+=-lboost_thread
 override LIBS+=-lboost_regex
 override LIBS+=-lboost_program_options
+override LIBS+=-lboost_system
+override LIBS+=-lboost_filesystem
 
 .PHONY: all clean
 

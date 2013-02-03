@@ -99,7 +99,7 @@ namespace Network {
 		}
 
 		std::string getKifu() const {
-			// TODO: $B6&DL2=(B
+			// TODO: 共通化
 			if (kifu.length() > 0 && kifu[kifu.length()-1] == '/') {
 				return kifu;
 			} else {

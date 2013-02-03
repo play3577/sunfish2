@@ -22,22 +22,22 @@ namespace Develop {
 		oss << "const unsigned Attack::_checkTable[][17][17] =\n";
 		oss << "{\n";
 		for (Piece piece = Piece::BPAWN; piece <= Piece::WDRAGON; piece.toNext()) {
-			// $B6L$N0LCV(B
+			// 玉の位置
 			oss << "{";
 			for (int rank1 = -8; rank1 <= 8; rank1++) {
 				oss << "{";
 				for (int file1 = -8; file1 <= 8; file1++) {
 					DirectionFlags flags;
 					if (piece != Piece::BKING && piece != Piece::WKING) {
-						// $B0\F0@h(B
+						// 移動先
 						for (int rank2 = -8; rank2 <= 8; rank2++) {
 							for (int file2 = -8; file2 <= 8; file2++) {
 								int rank = rank1 - rank2;
 								int file = file1 - file2;
 								if (rank >= -8 && rank <= 8 && file >= -8 && file <= 8 &&
-										Attack::attack(piece, rank2, file2) != 0 && // $B0\F0@h$KF0$1$k$+(B
+										Attack::attack(piece, rank2, file2) != 0 && // 移動先に動けるか
 										(Attack::attack(piece, rank, file) != 0 ||
-										Attack::attack(piece.getPromoted(), rank, file) != 0)) { // $B2&<j$7F@$k0LCV$+(B
+										Attack::attack(piece.getPromoted(), rank, file) != 0)) { // 王手し得る位置か
 									SquareDiff diff(file2+(rank2<<Square::SHIFT_RANK));
 									Direction dir = diff.toDirection();
 									if (piece.getMovableDirection().check(DirectionFlags(dir))) {
