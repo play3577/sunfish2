@@ -755,4 +755,17 @@ namespace Shogi {
 		}
 	}
 
+	int MoveGenerator::removeUnstable(const Move& move) {
+		int removed = 0;
+		for (int i = 0; i < (int)num; i++) {
+			const Move& temp = get(i);
+			if (temp == move) {
+				removeUnstable(i);
+				i--;
+				removed++;
+			}
+		}
+		return removed;
+	}
+
 }

@@ -11,6 +11,8 @@
 #include <iostream>
 #include <vector>
 
+#define __THIS__			__FILE__ << '(' << __LINE__ << ')'
+
 namespace Log {
 	class Logger {
 	private:

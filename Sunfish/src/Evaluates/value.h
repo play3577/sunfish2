@@ -27,6 +27,8 @@ namespace Evaluates {
 		TempValue() {
 		}
 
+		// TODO: explicit をつけるか、もしくは
+		// 引数がプリミティブ型のものをなくすか..
 		TempValue(T value) {
 			this->value = value;
 		}
@@ -137,6 +139,24 @@ namespace Evaluates {
 			return value >= v.value;
 		}
 		*/
+
+		static X safeAdd(X a, X b) {
+			if (b.value > 0 && a.value >= MAX - b.value) {
+				return MAX;
+			} else if (b.value < 0 && a.value <= MIN - b.value) {
+				return MIN;
+			}
+			return X(a.value + b.value);
+		}
+
+		static X safeSub(X a, X b) {
+			if (b.value > 0 && a.value <= MIN + b.value) {
+				return MIN;
+			} else if (b.value < 0 && a.value >= MAX + b.value) {
+				return MAX;
+			}
+			return X(a.value - b.value);
+		}
 
 		static X max(X a, X b) {
 			return a >= b ? a : b;

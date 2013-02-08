@@ -18,29 +18,28 @@ namespace Evaluates {
 
 	class Feature {
 	private:
-		template<class X, class T, class U, bool get, bool cum>
-		static void extract(const Shogi::Position& pos,
-				const TempParam<T, U>* iparam, const X* ivalue,
-				TempParam<T, U>* oparam, X* ovalue);
+		template<bool get, bool cum>
+		static Value extract(const Shogi::Position& pos,
+				const Param* pp, Gradient* pg, double inc);
 
 		Feature();
 
 	public:
-		template<class X, class T, class U>
-		static X getValue(const Shogi::Position& pos,
-				const TempParam<T, U>* pparam) {
-			X value(0);
-			extract<X, T, U, true, false>(pos, pparam, NULL, NULL, &value);
-			return value / Param::SCALE;
+		static Value getValue(const Shogi::Position& pos,
+				const Param* pparam) {
+			return Value(extract<true, false>(pos, pparam, NULL, 0.0) / Param::SCALE);
 		}
 
-		template<class X, class T, class U>
-		static Estimate<X> estimate(const Shogi::Position& pos,
-				const TempParam<T, U>* pparam,
-				const Shogi::Move& move) {
-			X value0(0);
-			X value1(0);
-			X error(0);
+		static void incValue(const Shogi::Position& pos,
+				Gradient* pg, double d) {
+			extract<false, true>(pos, NULL, pg, d);
+		}
+
+		static Estimate estimate(const Shogi::Position& pos,
+				const Param* pparam, const Shogi::Move& move) {
+			Value value0(0);
+			Value value1(0);
+			Value error(0);
 			Shogi::Piece cap = pos.getBoard(move.getTo());
 			if (!cap.isEmpty()) {
 				value0 -= pparam->getPieceExchange(cap);
@@ -58,7 +57,7 @@ namespace Evaluates {
 				value1 += pparam->getKKP(kings, piece, move.getTo());
 				error = PIECE_ERROR;
 			}
-			return Estimate<X>(value0 + value1 / Param::SCALE, error);
+			return Estimate(value0 + value1 / Param::SCALE, error);
 		}
 	};
 }

@@ -8,9 +8,10 @@
 #ifndef HAND_H_
 #define HAND_H_
 
+#include "piece.h"
 #include <cstdlib>
 #include <cstring>
-#include "piece.h"
+#include <iostream>
 
 namespace Shogi {
 	class Hand {
@@ -55,6 +56,16 @@ namespace Shogi {
 		std::string toString() const;
 
 		std::string toStringCsa() const;
+
+		bool writeBinary(std::ostream& out) const {
+			out.write((const char*)hand, sizeof(hand));
+			return !out.fail();
+		}
+
+		bool readBinary(std::istream& in) {
+			in.read((char*)hand, sizeof(hand));
+			return !in.fail();
+		}
 	};
 }
 

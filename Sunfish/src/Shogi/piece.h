@@ -8,8 +8,9 @@
 #ifndef PIECE_H_
 #define PIECE_H_
 
-#include <string>
 #include "directionFlags.h"
+#include <string>
+#include <iostream>
 
 namespace Shogi {
 	class Piece {
@@ -235,6 +236,16 @@ namespace Shogi {
 			} else {
 				return UNKNOWN_NAME;
 			}
+		}
+
+		bool writeBinary(std::ostream& out) const {
+			out.write((const char*)&piece, sizeof(piece));
+			return true;
+		}
+
+		bool readBinary(std::istream& in) {
+			in.read((char*)&piece, sizeof(piece));
+			return !in.fail();
 		}
 	};
 }

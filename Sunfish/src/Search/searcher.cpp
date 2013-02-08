@@ -82,7 +82,7 @@ namespace Search {
 
 			// futility pruning
 			if (!tree.isCheck() && !tree.isCheckMove()) {
-				Estimate<Value> estimate = tree.negaEstimate();
+				Estimate estimate = tree.negaEstimate();
 				if (standPat + estimate.getValue() + estimate.getError() <= newAlpha) {
 					continue;
 				}
@@ -131,18 +131,23 @@ namespace Search {
 
 		// TODO: distance pruning
 
-		switch (shekCheck()) {
-		case Shek::NONE:
-			break;
-		case Shek::SUPERIOR:
-			counter.shekPruning++;
-			return Value::MAX;
-		case Shek::INFERIOR:
-			counter.shekPruning++;
-			return Value::MIN;
-		case Shek::EQUAL:
-			counter.shekPruning++;
-			return Value(0);
+#ifndef NLEARN
+		if (config.isLearning)
+#endif // NLEARN
+		{
+			switch (shekCheck()) {
+			case Shek::NONE:
+				break;
+			case Shek::SUPERIOR:
+				counter.shekPruning++;
+				return Value::MAX;
+			case Shek::INFERIOR:
+				counter.shekPruning++;
+				return Value::MIN;
+			case Shek::EQUAL:
+				counter.shekPruning++;
+				return Value(0);
+			}
 		}
 
 		// end of stack
@@ -169,7 +174,11 @@ namespace Search {
 		Move hash2;
 		bool hashOk = false;
 		if (ttEntity.is(hash)) { // 局面が一致したら
-			if (ttEntity.isSuperior(depth)) {
+			if (ttEntity.isSuperior(depth)
+#ifndef NLEARN
+					&& config.isLearning
+#endif // NLEARN
+					) {
 				switch (ttEntity.getValueType()) {
 				case TTEntity::EXACT: // 確定
 					if (!pvNode && stat.isHashCut()) {
@@ -289,7 +298,7 @@ namespace Search {
 				newDepth += extension(tree) / 2;
 			}
 
-			Estimate<Value> estimate = tree.negaEstimate();
+			Estimate estimate = tree.negaEstimate();
 			int reduction = 0;
 			if (!isHash && moveCount != 1 && !mate && !tree.isCheck() && !isCheckMove && !isTacticalMove) {
 				// late move reduction
@@ -456,15 +465,14 @@ namespace Search {
 	 * result : 結果取得用構造体                                   *
 	 * pvHandlerは呼ばれない。                                     *
 	 ***************************************************************/
-	bool Searcher::search(SearchResult& result) {
+	bool Searcher::search(SearchResult& result, Value alpha, Value beta) {
 		// 前処理
 		before(result);
 		// 基本深さ
 		rootDepth = config.depth;
 
 		// 探索
-		Value value = negaMax<true>(tree, config.depth * PLY1,
-				Value::MIN, Value::MAX);
+		Value value = negaMax<true>(tree, config.depth * PLY1, alpha, beta);
 
 		// 後処理
 		return after(result, value);

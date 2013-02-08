@@ -79,14 +79,13 @@ namespace Network {
 			if (waitGameSummary() && agree()) {
 				Record record(pos);
 				Searcher searcher(*pparam);
-				SearchConfig searchConfig;
-				SearchConfig searchConfigEnemy;
 
+				SearchConfig searchConfig = SearchConfig::getDefault();
 				searchConfig.depth = config.getDepth();
 				searchConfig.pvHandler = this;
 				searchConfig.limitEnable = config.getLimit() != 0;
 				searchConfig.limitSeconds = config.getLimit();
-				searchConfigEnemy = searchConfig;
+				SearchConfig searchConfigEnemy = searchConfig;
 				searchConfigEnemy.depth = Tree::DEF_MAX_DEPTH; // TODO: 実際の値を取得
 				searchConfigEnemy.limitEnable = false;
 
@@ -99,7 +98,7 @@ namespace Network {
 						// my turn
 						SearchResult result;
 						searcher.setSearchConfig(searchConfig);
-						searcher.init(record.getPosition());
+						searcher.init(record);
 						searcher.idSearch(result);
 						if (!result.resign && record.move(result.move)) {
 							if (!sendMove(result)) {
@@ -372,7 +371,7 @@ lab_end:
 		if (config.getEnemy()) {
 			SearchResult result;
 			psearcher->setSearchConfig(searchConfig);
-			psearcher->init(record.getPosition());
+			psearcher->init(record);
 			psearcher->idSearch(result);
 		}
 	}

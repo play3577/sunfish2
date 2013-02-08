@@ -8,10 +8,10 @@
 #ifndef DIRECTIONFLAGS_H_
 #define DIRECTIONFLAGS_H_
 
+#include "directionAndRange.h"
 #include <string>
 #include <sstream>
 #include <iostream>
-#include "directionAndRange.h"
 
 namespace Shogi {
 	class DirectionFlags {

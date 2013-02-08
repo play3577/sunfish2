@@ -167,6 +167,8 @@ namespace Shogi {
 			num--;
 		}
 
+		int removeUnstable(const Move& move);
+
 		void removeAfter(int index) {
 			num = index;
 		}

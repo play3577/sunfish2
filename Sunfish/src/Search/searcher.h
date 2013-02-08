@@ -25,6 +25,17 @@ namespace Search {
 		PvHandler* pvHandler;
 		bool limitEnable;
 		double limitSeconds;
+#ifndef NLEARN
+		bool isLearning;
+#endif // NLEARN
+		static SearchConfig getDefault() {
+			SearchConfig config = {32, NULL, false, .0
+#ifndef NLEARN
+				, false
+#endif // NLEARN
+				};
+			return config;
+		}
 	};
 
 	struct SearchCounter {
@@ -77,7 +88,7 @@ namespace Search {
 		boost::timer timer;
 		int rootDepth;
 		Evaluates::Value gain[Shogi::Piece::WDRAGON+1][Shogi::Square::END+1];
-		const Records::HashStack* pHashStack;
+		Records::HashStack hashStack;
 
 		//flags 
 		bool running;
@@ -104,9 +115,9 @@ namespace Search {
 				signalInterrupt = false;
 				signalForceInterrupt = false;
 			}
-			if (pHashStack != NULL) {
-				for (int i = 0; i < pHashStack->size; i++) {
-					shekTable.set(pHashStack->stack[i]);
+			if (hashStack.stack != NULL) {
+				for (int i = 0; i < hashStack.size; i++) {
+					shekTable.set(hashStack.stack[i]);
 				}
 			}
 			memset(&counter, 0, sizeof(SearchCounter));
@@ -118,9 +129,9 @@ namespace Search {
 		}
 
 		bool after(SearchResult& result, Evaluates::Value value) {
-			if (pHashStack != NULL) {
-				for (int i = pHashStack->size - 1; i >= 0; i--) {
-					shekTable.unset(pHashStack->stack[i]);
+			if (hashStack.stack != NULL) {
+				for (int i = hashStack.size - 1; i >= 0; i--) {
+					shekTable.unset(hashStack.stack[i]);
 				}
 			}
 			result.value = value;
@@ -245,29 +256,31 @@ namespace Search {
 		}
 
 	public:
-		Searcher(const Evaluates::Param& param,
-				Records::HashStack* pHashStack = NULL) :
+		Searcher(const Evaluates::Param& param) :
 			tree(param, history),
-			pHashStack(pHashStack),
+			hashStack(Records::HashStack::nan()),
 			running(false),
 			signalInterrupt(false),
 			signalForceInterrupt(false) {
 		}
 
 		Searcher(const Evaluates::Param& param,
-				const Shogi::Position& pos,
-				Records::HashStack* pHashStack = NULL) :
+				const Shogi::Position& pos) :
 			tree(param, pos, history),
-			pHashStack(pHashStack),
+			hashStack(Records::HashStack::nan()),
 			running(false),
 			signalInterrupt(false),
 			signalForceInterrupt(false) {
 		}
 
 		void init(const Shogi::Position& pos,
-				const Records::HashStack* pHashStack = NULL) {
+				const Records::HashStack& hashStack) {
 			tree.init(pos);
-			this->pHashStack = pHashStack;
+			this->hashStack = hashStack;
+		}
+
+		void init(const Records::Record& record) {
+			init(record.getPosition(), record.getHashStack());
 		}
 
 		const SearchConfig& getSearchConfig() const {
@@ -287,7 +300,9 @@ namespace Search {
 			return isMate1Ply(tree);
 		}
 
-		bool search(SearchResult& result);
+		bool search(SearchResult& result,
+				Evaluates::Value alpha = Evaluates::Value::MIN,
+				Evaluates::Value beta = Evaluates::Value::MAX);
 
 		// iterative-deepening search
 		bool idSearch(SearchResult& result);

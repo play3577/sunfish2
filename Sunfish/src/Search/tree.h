@@ -219,15 +219,15 @@ namespace Search {
 			}
 		}
 
-		Evaluates::Estimate<Evaluates::Value> estimate() const {
+		Evaluates::Estimate estimate() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
 				return eval.estimate(pos, *pmove);
 			}
-			return Evaluates::Estimate<Evaluates::Value>();
+			return Evaluates::Estimate();
 		}
 
-		Evaluates::Estimate<Evaluates::Value> negaEstimate() const {
+		Evaluates::Estimate negaEstimate() const {
 			return pos.isBlackTurn() ? estimate() : -estimate();
 		}
 

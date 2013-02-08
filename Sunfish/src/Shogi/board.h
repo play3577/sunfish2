@@ -8,11 +8,12 @@
 #ifndef BOARD_H_
 #define BOARD_H_
 
-#include <string>
 #include "piece.h"
 #include "handicap.h"
 #include "square.h"
 #include "pawnFlags.h"
+#include <string>
+#include <iostream>
 
 namespace Shogi {
 	class Board {
@@ -52,6 +53,24 @@ namespace Shogi {
 		std::string toString() const;
 
 		std::string toStringCsa() const;
+
+		bool writeBinary(std::ostream& out) const {
+			for (Square sq = Square::TOP; sq.valid(); sq.next()) {
+				if (!board[sq].writeBinary(out)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		bool readBinary(std::istream& in) {
+			for (Square sq = Square::TOP; sq.valid(); sq.next()) {
+				if (!board[sq].readBinary(in)) {
+					return false;
+				}
+			}
+			return true;
+		}
 	};
 }
 

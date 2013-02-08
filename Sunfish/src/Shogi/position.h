@@ -8,7 +8,6 @@
 #ifndef POSITION_H_
 #define POSITION_H_
 
-#include <iostream>
 #include "board.h"
 #include "hand.h"
 #include "move.h"
@@ -18,6 +17,7 @@
 #include "change.h"
 #include "squareDiff.h"
 #include "../Log/logger.h"
+#include <iostream>
 
 namespace Evaluates {
 	class Evaluate;
@@ -460,6 +460,31 @@ namespace Shogi {
 
 		std::string toStringWPawns() const {
 			return wpawns.toString();
+		}
+
+		bool writeBinary(std::ostream& out) const {
+			if (board.writeBinary(out) &&
+					blackHand.writeBinary(out) &&
+					whiteHand.writeBinary(out)) {
+				char cBlackTurn = (char)blackTurn;
+				out.write(&cBlackTurn, sizeof(cBlackTurn));
+				return !out.fail();
+			}
+			return false;
+		}
+
+		bool readBinary(std::istream& in) {
+			if (board.readBinary(in) &&
+					blackHand.readBinary(in) &&
+					whiteHand.readBinary(in)) {
+				char cBlackTurn;
+				in.read(&cBlackTurn, sizeof(cBlackTurn));
+				if (in.fail()) { return false; }
+				blackTurn = cBlackTurn != 0;
+				update();
+				return true;
+			}
+			return false;
 		}
 	};
 }

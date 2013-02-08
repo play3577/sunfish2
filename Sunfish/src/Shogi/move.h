@@ -10,6 +10,7 @@
 
 #include "square.h"
 #include "piece.h"
+#include <iostream>
 
 namespace Shogi {
 	class Move {
@@ -128,6 +129,16 @@ namespace Shogi {
 		std::string toStringCsa() const;
 
 		std::string toString4Debug() const;
+
+		bool writeBinary(std::ostream& out) const {
+			out.write((const char*)&m, sizeof(m));
+			return true;
+		}
+
+		bool readBinary(std::istream& in) {
+			in.read((char*)&m, sizeof(m));
+			return !in.fail();
+		}
 	};
 }
 

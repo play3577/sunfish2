@@ -55,4 +55,3 @@ namespace Shogi{
 		return oss.str();
 	}
 }
-

@@ -166,7 +166,7 @@ namespace Cui {
 		Command prevCommand = EMPTY;
 		Record record;
 		Searcher searcher(*pparam);
-		SearchConfig searchConfig;
+		SearchConfig searchConfig = SearchConfig::getDefault();
 		SearchResult result;
 
 		// 棋譜読み込み
@@ -197,7 +197,7 @@ namespace Cui {
 			// コンピュータによる着手
 			if ((record.getPosition().isBlackTurn() && config.autoBlack) ||
 					(record.getPosition().isWhiteTurn() && config.autoWhite)) {
-				searcher.init(record.getPosition());
+				searcher.init(record);
 				searcher.idSearch(result);
 				std::cout << result.toString();
 				if (result.resign || !record.move(result.move)) {
@@ -291,7 +291,7 @@ namespace Cui {
 				}
 				break;
 			case SEARCH: // 探索
-				searcher.init(record.getPosition());
+				searcher.init(record);
 				searcher.idSearch(result);
 				std::cout << result.toString();
 				if (result.resign) {

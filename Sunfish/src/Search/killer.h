@@ -62,7 +62,7 @@ namespace Search {
 				const Shogi::Move& move,
 				const Evaluates::Param& param) {
 			Shogi::Piece cap = pos.getBoard(move.getTo());
-			Evaluates::Value value = (int)param.getPieceExchange(cap);
+			Evaluates::Value value = Evaluates::Value(param.getPieceExchange(cap));
 			if (move.isPromotion()) {
 				value += param.getPiecePromote(move.getPiece());
 			}

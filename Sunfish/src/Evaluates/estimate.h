@@ -11,33 +11,32 @@
 #include "param.h"
 
 namespace Evaluates {
-	template <class T>
 	class Estimate {
 	private:
-		T value;
-		T error;
+		Value value;
+		Value error;
 
 	public:
 		Estimate() {
 		}
 
-		Estimate(T value, T error) :
+		Estimate(Value value, Value error) :
 			value(value), error(error){
 		}
 
-		void setValue(T value) {
+		void setValue(Value value) {
 			this->value = value;
 		}
 
-		void setError(T error) {
+		void setError(Value error) {
 			this->error = error;
 		}
 
-		T getValue() const {
+		Value getValue() const {
 			return value;
 		}
 
-		T getError() const {
+		Value getError() const {
 			return error;
 		}
 

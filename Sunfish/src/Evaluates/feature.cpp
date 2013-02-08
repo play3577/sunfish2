@@ -11,10 +11,11 @@
 namespace Evaluates {
 	using namespace Shogi;
 
-	template<class X, class T, class U, bool get, bool cum>
-	void Feature::extract(const Shogi::Position& pos,
-			const TempParam<T, U>* iparam, const X* ivalue,
-			TempParam<T, U>* oparam, X* ovalue) {
+	// TODO: 使わない引数が残るのが嫌
+	template<bool get, bool cum>
+	Value Feature::extract(const Shogi::Position& pos,
+			const Param* pp, Gradient* pg, double inc) {
+		Value ret = Value(0);
 		int num = 0;
 		int list0[64];
 		int list1[64];
@@ -32,11 +33,16 @@ namespace Evaluates {
 					int blackIndex = blackPiece[pieceIndex];
 					int whiteIndex = whitePiece[pieceIndex];
 					if (get) {
-						*ovalue += piece.isBlack() ?
-							iparam->getKKP(kings, blackIndex, squareIndex, true) :
-							iparam->getKKP(kings, whiteIndex, squareIndexR, false);
+						ret += piece.isBlack() ?
+							pp->getKKP(kings, blackIndex, squareIndex, true) :
+							pp->getKKP(kings, whiteIndex, squareIndexR, false);
 					}
 					if (cum) {
+						if (piece.isBlack()) {
+							pg->addKKP(kings, blackIndex, squareIndex, true, ValueF(inc));
+						} else {
+							pg->addKKP(kings, whiteIndex, squareIndexR, false, ValueF(inc));
+						}
 					}
 					list0[num] = blackIndex + KPP_KNUM * squareIndex;
 					list2[num] = whiteIndex + KPP_KNUM * squareIndexR;
@@ -99,18 +105,23 @@ namespace Evaluates {
 			int y = list1[i];
 			for(int j = 0; j <= i; j++) {
 				if (get) {
-					*ovalue += Value(iparam->getKPP(
+					ret += Value(pp->getKPP(
 						kings.getBlack(), x, list0[j]));
-					*ovalue -= Value(iparam->getKPP(
+					ret -= Value(pp->getKPP(
 						kings.getBlackR(), y, list1[j]));
 				}
 				if (cum) {
+					pg->addKPP(kings.getBlack(), x, list0[j], ValueF(inc));
+					pg->addKPP(kings.getBlackR(), y, list1[j], ValueF(-inc));
 				}
 			}
 		}
+		return ret;
 	}
-	template void Feature::extract<Value, ValueS, ValueS, true, false>
+	template Value Feature::extract<true, false>
 			(const Shogi::Position& pos,
-			const Param* iparam, const Value* ivalue,
-			Param* oparam, Value* ovalue);
+			const Param* pp, Gradient* pg, double inc);
+	template Value Feature::extract<false, true>
+			(const Shogi::Position& pos,
+			const Param* pp, Gradient* pg, double inc);
 }

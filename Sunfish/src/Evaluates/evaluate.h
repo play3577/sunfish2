@@ -67,7 +67,7 @@ namespace Evaluates {
 			Util::uint64 hash = pos.getHash();
 			Value value;
 			if (!table.get(hash, value)) {
-				value = Feature::getValue<Value, ValueS, ValueS>(pos, &param);
+				value = Feature::getValue(pos, &param);
 				table.set(hash, value);
 			}
 			return value;
@@ -81,8 +81,8 @@ namespace Evaluates {
 			return param;
 		}
 
-		Estimate<Value> estimate(const Shogi::Position& pos, const Shogi::Move move) const {
-			return Feature::estimate<Value, ValueS, ValueS>(pos, &param, move);
+		Estimate estimate(const Shogi::Position& pos, const Shogi::Move move) const {
+			return Feature::estimate(pos, &param, move);
 		}
 	};
 }

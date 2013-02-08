@@ -8,8 +8,9 @@
 #ifndef PV_H_
 #define PV_H_
 
-#include "sstream"
 #include "../Shogi/move.h"
+#include <iostream>
+#include <sstream>
 
 namespace Search {
 	class Pv {
@@ -77,6 +78,28 @@ namespace Search {
 				oss << moves[i].toStringCsa() << ' ';
 			}
 			return oss.str();
+		}
+
+		bool writeBinary(std::ostream& out) const {
+			out.write((const char*)&num, sizeof(num));
+			if (out.fail()) { return false; }
+			for (int i = 0; i < num; i++) {
+				if (!moves[i].writeBinary(out)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		bool readBinary(std::istream& in) {
+			in.read((char*)&num, sizeof(num));
+			if (in.fail()) { return false; }
+			for (int i = 0; i < num; i++) {
+				if (!moves[i].readBinary(in)) {
+					return false;
+				}
+			}
+			return true;
 		}
 	};
 }

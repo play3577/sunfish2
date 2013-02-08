@@ -78,6 +78,8 @@ namespace Evaluates {
 		KKP_DAI_HI  = KKP_DAI_KA + 3,
 	
 		KKP_ALL     = KKP_DAI_HI + 3,
+
+		KKP_MAX     = KKP_ALL,
 	};
 
 	template <class T, class U>
@@ -207,6 +209,11 @@ namespace Evaluates {
 			piece[bp] = value;
 		}
 
+		void addPiece(const Shogi::Piece& p, T value) {
+			Shogi::Piece bp = p.getTurnedBlack();
+			piece[bp] += value;
+		}
+
 		T getPiece(const Shogi::Piece& p) const {
 			if (!p.isWhite()) {
 				return  piece[p];
@@ -243,17 +250,35 @@ namespace Evaluates {
 			return piecePr[p.getTurnedBlack()];
 		}
 
-		void setKPP(int kingIndex, int pieceIndex, U value) {
+		// index1 >= index2
+		static int getKPPIndex(int index1, int index2) {
+			return index1 * (index1 + 1) / 2 + index2;
+		}
+
+		// index1 >= index2
+		void setKPP(int kingIndex, int index1, int index2, const U& value) {
+			kpp[kingIndex][getKPPIndex(index1, index2)] = value;
+		}
+
+		void setKPP(int kingIndex, int pieceIndex, const U& value) {
 			kpp[kingIndex][pieceIndex] = value;
 		}
 
-		void setKPP(int index, U value) {
+		void setKPP(int index, const U& value) {
 			kpp[0][index] = value;
 		}
 
 		// index1 >= index2
-		static int getKPPIndex(int index1, int index2) {
-			return index1 * (index1 + 1) / 2 + index2;
+		void addKPP(int kingIndex, int index1, int index2, const U& value) {
+			kpp[kingIndex][getKPPIndex(index1, index2)] += value;
+		}
+
+		void addKPP(int kingIndex, int pieceIndex, const U& value) {
+			kpp[kingIndex][pieceIndex] += value;
+		}
+
+		void addKPP(int index, const U& value) {
+			kpp[0][index] += value;
 		}
 
 		// index1 >= index2
@@ -269,12 +294,64 @@ namespace Evaluates {
 			return kpp[0][index];
 		}
 
-		void getKKP(int kingIndex1, int kingIndex2, int pieceIndex, U value) {
+		void setKKP(int kingIndex1, int kingIndex2, int pieceIndex, const U& value) {
 			kkp[kingIndex1][kingIndex2][pieceIndex] = value;
 		}
 
-		void getKKP(int index, U value) {
+		void setKKP(int index, const U& value) {
 			kkp[0][0][index] = value;
+		}
+
+		void setKKP(const Kings& kings, int pieceIndex,
+				int squareIndex, bool black, const U& value) {
+			if (black) {
+				kkp[kings.getBlack()][kings.getWhite()]
+					[pieceIndex+KKP_KNUM*squareIndex] = value;
+			} else {
+				kkp[kings.getBlackR()][kings.getWhiteR()]
+					[pieceIndex+KKP_KNUM*squareIndex] = -value;
+			}
+		}
+
+		void setKKP(const Kings& kings, const Shogi::Piece& piece,
+				const Shogi::Square& sq, const U& value) {
+			if (piece.isBlack()) {
+				getKKP(kings, blackPiece[piece.getInteger()],
+					sq.getShortIndex(), true) = value;
+			} else {
+				getKKP(kings, whitePiece[piece.getInteger()],
+					80-sq.getShortIndex(), false) = -value;
+			}
+		}
+
+		void addKKP(int kingIndex1, int kingIndex2, int pieceIndex, const U& value) {
+			kkp[kingIndex1][kingIndex2][pieceIndex] += value;
+		}
+
+		void addKKP(int index, const U& value) {
+			kkp[0][0][index] += value;
+		}
+
+		void addKKP(const Kings& kings, int pieceIndex,
+				int squareIndex, bool black, const U& value) {
+			if (black) {
+				kkp[kings.getBlack()][kings.getWhite()]
+					[pieceIndex+KKP_KNUM*squareIndex] += value;
+			} else {
+				kkp[kings.getBlackR()][kings.getWhiteR()]
+					[pieceIndex+KKP_KNUM*squareIndex] -= value;
+			}
+		}
+
+		void addKKP(const Kings& kings, const Shogi::Piece& piece,
+				const Shogi::Square& sq, const U& value) {
+			if (piece.isBlack()) {
+				getKKP(kings, blackPiece[piece.getInteger()],
+					sq.getShortIndex(), true) += value;
+			} else {
+				getKKP(kings, whitePiece[piece.getInteger()],
+					80-sq.getShortIndex(), false) -= value;
+			}
 		}
 
 		U getKKP(int kingIndex1, int kingIndex2, int pieceIndex) const {

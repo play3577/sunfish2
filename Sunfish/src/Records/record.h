@@ -14,9 +14,16 @@ namespace Records {
 	struct HashStack {
 		const Util::uint64* stack;
 		int size;
+		HashStack(const HashStack& hashStack) {
+			this->stack = hashStack.stack;
+			this->size = hashStack.size;
+		}
 		HashStack(const Util::uint64* stack, int size) {
 			this->stack = stack;
 			this->size = size;
+		}
+		static HashStack nan() {
+			return HashStack(NULL, 0);
 		}
 	};
 
@@ -112,6 +119,10 @@ namespace Records {
 
 		int getCurrent() const {
 			return cur;
+		}
+
+		bool hasNext() const {
+			return cur < num;
 		}
 
 		bool getNextMove(Shogi::Move& move) const {
