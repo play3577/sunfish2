@@ -112,13 +112,17 @@ namespace Shogi {
 			piece |= TURN;
 		}
 
+		void turn() {
+			piece ^= TURN;
+		}
+
 		Piece getPromoted() const {
 			Piece p(*this);
 			p.promote();
 			return p;
 		}
 
-		Piece getUnPromoted() const {
+		Piece getUnpromoted() const {
 			Piece p(*this);
 			p.unPromote();
 			return p;
@@ -133,6 +137,12 @@ namespace Shogi {
 		Piece getTurnedWhite() const {
 			Piece p(*this);
 			p.turnWhite();
+			return p;
+		}
+
+		Piece getTurned() const {
+			Piece p(*this);
+			p.turn();
 			return p;
 		}
 

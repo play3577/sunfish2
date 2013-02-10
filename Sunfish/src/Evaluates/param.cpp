@@ -98,8 +98,8 @@ namespace Evaluates {
 	template bool TempParam<ValueD, ValueF>::write(const char* filename);
 
 	/*
+	 * パラメータの値を足し込む。
 	 * パラメータの内容が変更された時に呼び出す。
-	 * パラメータの値を足し込む場合はここに記述する。
 	 */
 	template <class T, class U>
 	void TempParam<T, U>::cumulate() {

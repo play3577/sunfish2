@@ -18,9 +18,14 @@ namespace Evaluates {
 		Value baseValue;
 		EvaluateTable table;
 
+		// TODO: 差分計算実装中
+		Value posValue;
+
 	public:
-		Evaluate(const Param& param, Value baseValue = Value(0)) :
-				param(param), baseValue(baseValue) {
+		Evaluate(const Param& param, Value baseValue = Value(0),
+				Value posValue = Value(0)) :
+				param(param), baseValue(baseValue),
+				posValue(posValue) {
 		}
 
 		Evaluate(const Param& param, const Shogi::Position& pos) :
@@ -62,8 +67,50 @@ namespace Evaluates {
 			this->baseValue = baseValue;
 		}
 
+		// 駒を打った場合
+		void updatePositionalValue(
+				const Shogi::Position& pos,
+				const Shogi::Square& to,
+				const Shogi::Piece& toAfter) {
+			posValue += Feature::getDiff(
+					pos, param, Shogi::Square::NON, to,
+					Shogi::Piece::EMPTY, Shogi::Piece::EMPTY,
+					toAfter);
+		}
 
-		Value getAdditionalValue(const Shogi::Position& pos) {
+		// 盤上の駒の移動の場合
+		void updatePositionalValue(
+				const Shogi::Position& pos,
+				const Shogi::Square& from,
+				const Shogi::Square& to,
+				const Shogi::Piece& fromBefore,
+				const Shogi::Piece& toBefore,
+				const Shogi::Piece& toAfter) {
+			Util::uint64 hash = pos.getHash();
+			if (toAfter.isKing()) {
+				assert(fromBefore == toAfter);
+				if (!table.get(hash, posValue)) {
+					posValue = Feature::getValue(pos, &param);
+					table.set(hash, posValue);
+				}
+			} else {
+				posValue += Feature::getDiff(
+						pos, param, from, to,
+						fromBefore, toBefore, toAfter);
+				table.set(hash, posValue);
+			}
+		}
+
+		Value getPositionalValue() const {
+			return posValue;
+		}
+
+		void setPositionalValue(const Value& posValue) {
+			this->posValue = posValue;
+		}
+
+#if 0
+		Value _getPositionalValue(const Shogi::Position& pos) {
 			Util::uint64 hash = pos.getHash();
 			Value value;
 			if (!table.get(hash, value)) {
@@ -72,9 +119,10 @@ namespace Evaluates {
 			}
 			return value;
 		}
+#endif
 
-		Value getValue(const Shogi::Position& pos) {
-			return baseValue + getAdditionalValue(pos);
+		Value getValue() {
+			return baseValue + getPositionalValue() / Param::SCALE;
 		}
 
 		const Param& getParam() const {
@@ -82,7 +130,8 @@ namespace Evaluates {
 		}
 
 		Estimate estimate(const Shogi::Position& pos, const Shogi::Move move) const {
-			return Feature::estimate(pos, &param, move);
+			return Feature::estimate(pos, &param, move,
+					Param::SCALE);
 		}
 	};
 }

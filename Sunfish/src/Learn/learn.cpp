@@ -14,6 +14,7 @@
 //#include <boost/filesystem.hpp>
 //#include <boost/foreach.hpp>
 #include "../Util/fileList.h"
+#include <iostream>
 
 #ifndef NLEARN
 
@@ -27,6 +28,16 @@ namespace Learns {
 	using namespace Util;
 	using namespace Evaluates;
 
+	void Learn::beginAdjust() {
+		memset(&info, 0, sizeof(info));
+	}
+
+	void Learn::endAdjust() {
+		double loss = info.loss / info.samples;
+		Log::message << "LOSS=" << loss << '\n';
+		Log::message << "NUMBER_OF_SAMPLES=" << info.samples << '\n';
+	}
+
 	void Learn::execute() {
 		// load settings
 		if (!config.read(configFilename)) {
@@ -35,18 +46,22 @@ namespace Learns {
 		Log::message << config.toString();
 
 		// learning
-		for (int step = 1; step <= config.getSteps(); step++) {
+		for (int step = 0; step < config.getSteps(); step++) {
 			analyzeAllFiles();
 
-			Gradient* pg = new Gradient();
-			generateGradient(*pg);
-			pg->symAdd();
+			for (int uc = 0; uc < config.getUPS(); uc++) {
+				beginAdjust();
 
-			adjustParam(*pg);
-			pparam->symCopy();
-			pparam->write("evdata");
+				Gradient* pg = new Gradient();
+				generateGradient(*pg);
 
-			delete pg;
+				adjustParam(*pg);
+				pparam->write("evdata");
+
+				delete pg;
+
+				endAdjust();
+			}
 		}
 	}
 
@@ -74,7 +89,7 @@ namespace Learns {
 	}
 
 	void Learn::analyzeFile(const char* path, PvWriter& writer) {
-		Log::message << path << '\n';
+		std::cout << path << '\n';
 
 		// 棋譜の読み込み
 		Record record;
@@ -169,26 +184,6 @@ namespace Learns {
 		Log::debug << '\n';
 	}
 
-	double Learn::loss(double x) {
-		const double swin = 256; // TODO: magic number
-		const double dt = swin / 7.0;
-		if (x > swin) { x = swin; }
-		else if (x < -swin) { x = -swin; }
-		return 1.0 / (1.0 + exp(x / dt));
-	}
-
-	double Learn::dLoss(double x) {
-		const double swin = 256; // TODO: magic number
-		const double dt = swin / 7.0;
-		double d;
-		if (x >= swin || x <= -swin) {
-			return 0.0;
-		}
-		x = exp(x / dt);
-		d = x + 1.0;
-		return x / (dt * d * d);
-	}
-
 	void Learn::generateGradient(Evaluates::Gradient& g) {
 		// PVの読み込み
 		PvReader reader("pv.tmp");
@@ -219,7 +214,7 @@ namespace Learns {
 			for (int i = 0; i < recPv.size(); i++) {
 				record.move(recPv.get(i));
 			}
-			Value recValue = eval.getValue(record.getPosition()) * sign;
+			Value recValue = eval.getValue() * sign;
 			for (int i = 0; i < recPv.size(); i++) {
 				record.prev();
 			}
@@ -241,14 +236,14 @@ namespace Learns {
 				for (int i = 0; i < pv.size(); i++) {
 					record.move(pv.get(i));
 				}
-				Value value = eval.getValue(record.getPosition()) * sign;
+				Value value = eval.getValue() * sign;
 				// 勾配
 				double d = dLoss(recValue - value);
 				Feature::incValue(record.getPosition(), &g, -d);
 				dSum += d;
 				// 損失
 				double l = loss(recValue - value);
-				// TODO: 損失の足しこみ
+				info.loss += l;
 				for (int i = 0; i < pv.size(); i++) {
 					record.prev();
 				}
@@ -266,25 +261,91 @@ namespace Learns {
 				record.prev();
 			}
 			record.prev();
+
+			info.samples++;
 		}
+
+		g.decumulate(); // 足し込みの展開
+		g.symAdd(); // 対称化
+	}
+
+	double Learn::loss(double x) {
+		const double swin = 256; // TODO: magic number
+		const double dt = swin / 7.0;
+		if (x > swin) { x = swin; }
+		else if (x < -swin) { x = -swin; }
+		return 1.0 / (1.0 + exp(x / dt));
+	}
+
+	double Learn::dLoss(double x) {
+		const double swin = 256; // TODO: magic number
+		const double dt = swin / 7.0;
+		double d;
+		if (x >= swin || x <= -swin) {
+			return 0.0;
+		}
+		x = exp(x / dt);
+		d = x + 1.0;
+		return x / (dt * d * d);
 	}
 
 	void Learn::adjustParam(const Gradient& g) {
-		// TODO: 駒割
+		Piece piece[13] = {
+			Piece::PAWN, Piece::LANCE, Piece::KNIGHT,
+			Piece::SILVER, Piece::GOLD,
+			Piece::BISHOP, Piece::ROOK,
+			Piece::TOKIN, Piece::PLANCE, Piece::PKNIGHT,
+			Piece::PSILVER, Piece::HORSE, Piece::DRAGON,
+		};
+		ValueS pieceValue[13] = {
+			-2, -2,
+			-1, -1, -1,
+			 0,  0,  0,
+			 1,  1,  1,
+			 2,  2,
+		};
 
-		for (int index = 0; index < KPP_MAX; index++) {
+		// 昇順ソート
+		for (int i = 1; i < 13; i++) {
+			Piece tmpPiece = piece[i];
+			ValueD tmpVal = g.getPiece(piece[i]);
+			int j;
+			for (j = i; j > 0; j++) {
+				if (g.getPiece(piece[j-1]) <= tmpVal) {
+					break;
+				}
+				piece[j] = piece[j-1];
+			}
+			piece[j] = tmpPiece;
+		}
+
+		// シャッフル
+		random.shuffle(&piece[0], 6); // 0 - 5
+		random.shuffle(&piece[7], 6); // 7 - 12
+
+		// 更新
+		for (int i = 0; i < 13; i++) {
+			pparam->addPiece(piece[i], pieceValue[i]);
+		}
+
+		// King-Piece-Piece
+		for (int index = 0; index < KPP_ALL; index++) {
 			ValueS prev = pparam->getKPP(index);
 			ValueF grad = g.getKPP(index);
 			ValueS value = adjustValue(prev, grad);
 			pparam->setKPP(index, value);
 		}
 
-		for (int index = 0; index < KKP_MAX; index++) {
+		// King-King-Piece
+		for (int index = 0; index < KKP_ALL; index++) {
 			ValueS prev = pparam->getKKP(index);
 			ValueF grad = g.getKKP(index);
 			ValueS value = adjustValue(prev, grad);
 			pparam->setKKP(index, value);
 		}
+
+		pparam->symCopy(); // 対象化
+		pparam->cumulate(); // 足し込み
 	}
 
 	ValueS Learn::adjustValue(ValueS prev, ValueF grad) {

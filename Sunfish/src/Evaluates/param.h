@@ -60,9 +60,9 @@ namespace Evaluates {
 		KPP_DAI_GKA = KPP_DAI_GKI + 5,
 		KPP_DAI_GHI = KPP_DAI_GKA + 3,
 	
-		KPP_ALL     = KPP_DAI_GHI + 3,
-	
-		KPP_MAX     = KPP_ALL*(KPP_ALL+1)/2,
+		KPP_MAX     = KPP_DAI_GHI + 3,
+		KPP_SIZE    = KPP_MAX*(KPP_MAX+1)/2,
+		KPP_ALL     = 81 * KPP_SIZE,
 	
 		// King King Piece
 		KKP_KNUM    = 9,
@@ -77,9 +77,8 @@ namespace Evaluates {
 		KKP_DAI_KA  = KKP_DAI_KI + 5,
 		KKP_DAI_HI  = KKP_DAI_KA + 3,
 	
-		KKP_ALL     = KKP_DAI_HI + 3,
-
-		KKP_MAX     = KKP_ALL,
+		KKP_MAX     = KKP_DAI_HI + 3,
+		KKP_ALL     = 81 * 81 * KKP_MAX,
 	};
 
 	template <class T, class U>
@@ -92,29 +91,29 @@ namespace Evaluates {
 		T piecePr[Shogi::Piece::DRAGON+1];
 
 		// King Piece Piece
-		U kpp[81][KPP_MAX];
+		U kpp[81][KPP_SIZE];
 
 		// King King Piece
-		U kkp[81][81][KKP_ALL];
+		U kkp[81][81][KKP_MAX];
 
 		template <bool copy>
 		void symmetry() {
 			int x0, y0, z0;
 			int x1, y1, z1;
 
-			for( x0 = 0 ; x0 < 81 ; x0++ ){
+			for (x0 = 0; x0 < 81; x0++) {
 				x1 = sym[x0]; // 左右反転
 				if( x0 > x1 ) { continue; }
 
 				// King Piece Piece
-				for( y0 = 0 ; y0 < KPP_ALL ; y0++ ){
+				for (y0 = 0; y0 < KPP_MAX; y0++) {
 					if( y0 < KPP_DAI_SFU ){
 						// 盤上は左右反転
 						y1 = sym[y0/KPP_KNUM] * KPP_KNUM + ( y0 % KPP_KNUM );
 						if( x0 == x1 && y0 > y1 ) { continue; }
 					}
 					else{ y1 = y0; } // 駒台はそのまま
-					for( z0 = 0 ; z0 <= y0 ; z0++ ){
+					for (z0 = 0; z0 <= y0; z0++) {
 						if( z0 < KPP_DAI_SFU ){
 							// 盤上は左右反転
 							z1 = sym[z0/KPP_KNUM] * KPP_KNUM + ( z0 % KPP_KNUM );
@@ -144,11 +143,11 @@ namespace Evaluates {
 				}
 
 				// King King Piece
-				for( y0 = 0 ; y0 < 81 ; y0++ ){
+				for (y0 = 0; y0 < 81; y0++) {
 					if( y0 == x0 ) { continue; }
 					y1 = sym[y0];
 					if( x0 == x1 && y0 > y1 ) { continue; }
-					for( z0 = 0 ; z0 < KKP_ALL ; z0++ ){
+					for (z0 = 0; z0 < KKP_MAX; z0++) {
 						if( z0 < KKP_DAI_FU ){
 							// 盤上は左右反転
 							z1 = sym[z0/KKP_KNUM] * KKP_KNUM + ( z0 % KKP_KNUM );
@@ -381,16 +380,31 @@ namespace Evaluates {
 			}
 		}
 
+		U sum() const {
+			U value = 0;
+			for (int i = 0; i < KPP_ALL; i++) {
+				value += kpp[0][i];
+			}
+			for (int i = 0; i < KKP_ALL; i++) {
+				value += kkp[0][0][i];
+			}
+			return value;
+		}
+
+		double ave() const {
+			return (double)sum() / (KPP_ALL + KKP_ALL);
+		}
+
 		Type& operator+=(Type& param) {
 			for (Shogi::Piece p = Shogi::Piece::PAWN; p <= Shogi::Piece::DRAGON; p.toNext()) {
 				piece[p] += param.piece[p];
 			}
 
-			for(int i = 0 ; i < 81 * KPP_MAX ; i++) {
+			for (int i = 0; i < KPP_ALL; i++) {
 				kpp[0][i] += param.kpp[0][i];
 			}
 
-			for(int i = 0 ; i < 81 * 81 * KKP_ALL ; i++) {
+			for (int i = 0; i < KKP_ALL; i++) {
 				kkp[0][0][i] += param.kkp[0][0][i];
 			}
 

@@ -208,14 +208,14 @@ namespace Search {
 		}
 
 		Evaluates::Value evaluate() {
-			return eval.getValue(pos);
+			return eval.getValue();
 		}
 
 		Evaluates::Value negaEvaluate() {
 			if (pos.isBlackTurn()) {
-				return eval.getValue(pos);
+				return eval.getValue();
 			} else {
-				return -eval.getValue(pos);
+				return -eval.getValue();
 			}
 		}
 

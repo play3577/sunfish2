@@ -33,9 +33,17 @@ namespace Util {
 			return ((unsigned)r() << 16) ^ (unsigned)r();
 		}
 
+		unsigned getInt32(unsigned num) {
+			return getInt32() % num;
+		}
+
 		Util::uint64 getInt64() {
 			return ((Util::uint64)r() << 48) ^ ((Util::uint64)r() << 32)
 					^ ((Util::uint64)r() << 16) ^ (Util::uint64)r();
+		}
+
+		Util::uint64 getInt64(Util::uint64 num) {
+			return getInt64() % num;
 		}
 
 		unsigned getBit() {
@@ -47,6 +55,18 @@ namespace Util {
 			unsigned ret = bits & 0x01;
 			bits >>= 1;
 			return ret;
+		}
+
+		template <class T>
+		void shuffle(T array[], int size) {
+			for (int i = size - 1; i > 0; i--) {
+				int r = getInt32(i+1);
+				if (r != i) {
+					T tmp = array[i];
+					array[i] = array[r];
+					array[r] = tmp;
+				}
+			}
 		}
 	};
 }

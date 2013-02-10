@@ -255,8 +255,13 @@ namespace Shogi {
 				}
 				effectBoard.change<false, true>(move.getTo(), piece.getMovableDirection(), board); // effect
 			}
+			if (evNotNull) {
+				eval->updatePositionalValue(*this,
+						move.getTo(), move.getPiece());
+			}
 		} else { // 盤上の駒
 			Piece piece = board.set(move.getFrom(), Piece::EMPTY); // board
+			Piece fromBefore = piece;
 			boardHash ^= hashBoard(piece, move.getFrom()); // board hash
 			if (chNotNull) { change->setFromSquare(move.getFrom()); } // move from
 			if (chNotNull) { change->setFromPiece(piece); } // moved piece
@@ -290,7 +295,7 @@ namespace Shogi {
 				boardHash ^= hashBoard(capture, move.getTo()); // board hash
 				if (chNotNull) { change->setType(Change::CAPTURE); } // type of change
 				if (evNotNull) { eval->subBaseValueEx(capture); } // evaluate
-				Piece captureUP = capture.getUnPromoted();
+				Piece captureUP = capture.getUnpromoted();
 				if (black) {
 					if (chNotNull) { change->setHandNum(blackHand.get(captureUP)); } // number of pieces
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
@@ -304,7 +309,7 @@ namespace Shogi {
 					if (chNotNull) { change->setHandNum(whiteHand.get(captureUP)); } // number of pieces
 					if (chNotNull) { change->setHandPiece(captureUP); } // captured piece
 					handHash ^= hashHand(captureUP, whiteHand.get(captureUP), false); // hand hash
-					whiteHand.inc(capture.getUnPromoted()); // hand
+					whiteHand.inc(captureUP); // hand
 					effectBoard.change<true, false>(move.getTo(), capture.getMovableDirection(), board); // effect
 					if (capture == Piece::BPAWN) { // 先手の歩
 						bpawns.unset(move.getTo().getFile());
@@ -317,6 +322,11 @@ namespace Shogi {
 				effectBoard.change<true, true>(move.getTo(), piece.getMovableDirection(), board);
 			} else {
 				effectBoard.change<false, true>(move.getTo(), piece.getMovableDirection(), board);
+			}
+			if (evNotNull) {
+				eval->updatePositionalValue(*this,
+						move.getFrom(), move.getTo(),
+						fromBefore, capture, piece);
 			}
 		}
 		turn();

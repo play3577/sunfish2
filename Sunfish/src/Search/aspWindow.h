@@ -20,6 +20,7 @@ namespace Search {
 	private:
 		int aspPhase;
 		Evaluates::Value aspValue;
+		bool fail;
 
 	public:
 		AspWindow(int value) {
@@ -33,11 +34,13 @@ namespace Search {
 		void init(int value) {
 			aspValue = value;
 			aspPhase = 0;
+			fail = false;
 		}
 
 		void init() {
 			aspValue = 0; // 不要
 			aspPhase = ASP_MAX;
+			fail = false;
 		}
 
 		bool next() {
@@ -45,6 +48,7 @@ namespace Search {
 				return false;
 			} else {
 				aspPhase++;
+				fail = true;
 				return true;
 			}
 		}
@@ -65,6 +69,10 @@ namespace Search {
 			aspPhase = asp.aspPhase;
 			aspValue = asp.aspValue;
 			return *this;
+		}
+
+		bool isFail() const {
+			return fail;
 		}
 	};
 }

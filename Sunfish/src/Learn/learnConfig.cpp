@@ -13,6 +13,7 @@ namespace Learns {
 	LearnConfig::LearnConfig(const char* filename) {
 		int i = 0;
 		items[i++] = ConfigItem("dir", STRING, &dir, "Csa");
+		items[i++] = ConfigItem("ups", INTEGER, &ups, "10");
 		items[i++] = ConfigItem("steps", INTEGER, &steps, "1");
 		items[i++] = ConfigItem("depth", INTEGER, &depth, "1");
 

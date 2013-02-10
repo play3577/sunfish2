@@ -19,6 +19,7 @@ namespace Search {
 		const Shogi::Move* pmove;
 		Shogi::Change change;
 		Evaluates::Value baseValue;
+		Evaluates::Value posValue;
 		bool isNullMoveMaked;
 		Pv pv;
 
@@ -113,6 +114,7 @@ namespace Search {
 		void makeMove(Shogi::Position& pos,
 				Evaluates::Evaluate& eval) {
 			baseValue = eval.getBaseValue();
+			posValue = eval.getPositionalValue();
 			pos.moveUnsafe(*pmove, change, eval);
 		}
 
@@ -120,6 +122,7 @@ namespace Search {
 				Evaluates::Evaluate& eval) {
 			isNullMoveMaked = true;
 			baseValue = eval.getBaseValue();
+			posValue = eval.getPositionalValue();
 			return pos.nullMove(change);
 		}
 
@@ -127,6 +130,7 @@ namespace Search {
 				Evaluates::Evaluate& eval) {
 			isNullMoveMaked = false;
 			eval.setBaseValue(baseValue);
+			eval.setPositionalValue(posValue);
 			pos.back(change);
 		}
 

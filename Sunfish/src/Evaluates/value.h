@@ -21,7 +21,7 @@ namespace Evaluates {
 		//typedef decltype(*this) X; // C++11
 		typedef TempValue<T, vmax> X;
 		static const T MAX = (T)vmax;
-		static const T MIN = -MAX;
+		static const T MIN = -(T)vmax;
 		static const T MATE = (T)vmax / 2;
 
 		TempValue() {

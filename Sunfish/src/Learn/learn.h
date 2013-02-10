@@ -16,13 +16,22 @@
 namespace Learns {
 	class Learn {
 	private:
+		struct LearnInfo {
+			double loss;
+			int samples;
+		};
+
 		static const double PENALTY = 1.0e-2;
 
 		const char* configFilename;
 		LearnConfig config;
 		Evaluates::Param* pparam;
-
+		LearnInfo info;
 		Util::Random random;
+
+		void beginAdjust();
+
+		void endAdjust();
 
 		void analyzeAllFiles();
 

@@ -119,7 +119,8 @@ namespace Search {
 			Value alpha, Value beta, NodeStat stat) {
 #if NODE_DEBUG
 		bool debugNode = false;
-		if (tree.is("-1314FU")) {
+		//if (tree.is("+2726FU -2255KA")) {
+		if (tree.is("+2726FU")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
@@ -529,7 +530,16 @@ revaluation:
 				// 手を進める。
 				makeMove();
 				Value vtemp;
-				if (moveCount == 1) {
+				if (aspBeta.isFail()) {
+					// fail-high の場合
+					vtemp = -negaMax<true>(tree,
+							depth * PLY1, -aspBeta, -alpha,
+							NodeStat().unsetNullMove());
+#if ROOT_NODE_DEBUG
+					Log::debug << "f";
+#endif // ROOT_NODE_DEBUG
+				} else if (moveCount == 1) {
+					// 前回の最善手
 					vtemp = -negaMax<true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
 #if ROOT_NODE_DEBUG

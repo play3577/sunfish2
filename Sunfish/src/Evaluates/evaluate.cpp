@@ -22,5 +22,9 @@ namespace Evaluates {
 			int wnum = pos.getBlackHand(piece);
 			baseValue -= param.getPiece(piece) * wnum;
 		}
+
+		posValue = Feature::getValue(pos, &param);
+		Util::uint64 hash = pos.getHash();
+		table.set(hash, posValue);
 	}
 }

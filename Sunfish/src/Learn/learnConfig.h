@@ -14,9 +14,10 @@
 namespace Learns {
 	class LearnConfig : public Configures::Configure {
 	private:
-		Configures::ConfigItem items[3];
+		Configures::ConfigItem items[4];
 
 		std::string dir; // 棋譜の保存場所
+		int ups; // 1 step あたりの更新回数
 		int steps; // 反復回数
 		int depth; // 探索深さ
 
@@ -41,6 +42,10 @@ namespace Learns {
 			}
 		}
 
+		int getUPS() const {
+			return ups;
+		}
+
 		int getSteps() const {
 			return steps;
 		}
@@ -52,7 +57,9 @@ namespace Learns {
 		std::string toString() const {
 			Util::TableString table("* ", " :", "");
 			table.row() << "DIR" << getDir();
+			table.row() << "UPS" << getUPS();
 			table.row() << "STEPS" << getSteps();
+			table.row() << "DEPTH" << getDepth();
 			return table.get();
 		}
 	};

@@ -15,6 +15,7 @@
 #include "Log/logger.h"
 #include "Test/shogiTest.h"
 #include "Learn/learn.h"
+#include "Evaluates/paramAnalyzer.h"
 
 using boost::program_options::options_description;
 using boost::program_options::variables_map;
@@ -57,6 +58,7 @@ int main(int argc, char* argv[]) {
 #endif //NDEBUG
 #ifndef NLEARN
 			("learn", "learning mode.")
+			("analyze", "analyzing mode for 'evdata'")
 #endif //NLEARN
 			("network,n", "CSA client moode.")
 			("auto-black,b", "search will be begun automatically on black turn.")
@@ -75,23 +77,43 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (argmap.count("help")) {
-		// --help or -h => show help
+		// ** コマンドヘルプの表示
 		std::cerr << opt << std::endl;
 		return 0;
 #ifndef NDEBUG
 	} else if (argmap.count("test")) {
+		// ** ユニットテスト
 		return test() ? 0 : 1;
 #endif //NDEBUG
 #ifndef NLEARN
 	} else if (argmap.count("learn")) {
-		// learning rootine based Bonanza-mthod
+		// ** 機械学習
 		using namespace Learns;
+
+		// log
+		std::ofstream fout("learn.log", std::ios::out | std::ios::app);
+		if (fout) {
+			Log::error.addStream(fout);
+			Log::warning.addStream(fout);
+			Log::message.addStream(fout);
+#ifndef NDEBUG
+			//Log::debug.addStream(fout);
+#endif
+		}
+
 		Learn learn;
 		learn.execute();
 		return 0;
+	} else if (argmap.count("analyze")) {
+		using namespace Evaluates;
+		Param* pparam = new Param("evdata");
+		ParamAnalyzer analyzer(*pparam);
+		std::cout << analyzer.analyze();
+		delete pparam;
+		return 0;
 #endif //NLEARN
 	} else if (argmap.count("network")) {
-		// --network or -n => CSA client
+		// ** CSA Client の起動
 
 		// log
 		std::ofstream fout("network.log", std::ios::out | std::ios::app);
@@ -112,6 +134,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	// ** CLI の起動
 	Cui::Controller controller;
 	if (argmap.count("auto-black")) {
 		controller.setAutoBlack(true);
