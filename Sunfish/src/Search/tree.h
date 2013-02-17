@@ -9,6 +9,7 @@
 #define TREE_H_
 
 #include "../Evaluates/evaluate.h"
+#include "../Records/record.h"
 #include "node.h"
 #include <boost/algorithm/string.hpp>
 
@@ -17,7 +18,8 @@ namespace Search {
 	private:
 		Shogi::Position pos;
 		Evaluates::Evaluate eval;
-		const History& history;
+		Shek::ShekTable shekTable;
+		History& history;
 		Node* nodes;
 		int depth;
 		int maxDepth;
@@ -25,8 +27,7 @@ namespace Search {
 	public:
 		static const int DEF_MAX_DEPTH = 64;
 
-		Tree(const Evaluates::Param& param,
-				const History& history,
+		Tree(const Evaluates::Param& param, History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), history(history),
 				nodes(NULL) {
@@ -34,8 +35,7 @@ namespace Search {
 		}
 
 		Tree(const Evaluates::Param& param,
-				const Shogi::Position& pos,
-				const History& history,
+				const Shogi::Position& pos, History& history,
 				int maxDepth = DEF_MAX_DEPTH) :
 				pos(pos), eval(param),
 				history(history), nodes(NULL) {
@@ -202,7 +202,10 @@ namespace Search {
 		bool isTacticalMove() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
-				return pmove->isPromotion() || pos.isCapturingMove(*pmove);
+				return (pmove->isPromotion()
+						&& !pmove->getPiece().getTurnedBlack()
+								.is(Shogi::Piece::BSILVER))
+						|| pos.isCapturingMove(*pmove);
 			}
 			return false;
 		}
@@ -259,8 +262,12 @@ namespace Search {
 			return nodes[depth].getNumberOfMoves();
 		}
 
-		void getHistory(History& history, int depth) const {
-			nodes[this->depth].getHistory(history, depth);
+		void addHistory(int depth) const {
+			nodes[this->depth].addHistory(history, depth);
+		}
+
+		unsigned getHistory() const {
+			return history.get(*getCurrentMove());
 		}
 
 		void sort(Evaluates::Value values[]) {
@@ -290,6 +297,38 @@ namespace Search {
 				}
 			}
 			return true;
+		}
+
+		void shekSet(const Records::HashStack& hashStack) {
+			for (int i = 0; i < hashStack.size; i++) {
+				shekTable.set(hashStack.stack[i]);
+			}
+		}
+
+		void shekUnset(const Records::HashStack& hashStack) {
+			for (int i = hashStack.size - 1; i >= 0; i--) {
+				shekTable.unset(hashStack.stack[i]);
+			}
+		}
+
+		Shek::ShekStat shekCheck() const {
+			return shekTable.check(pos);
+		}
+
+		unsigned getShekCount() const {
+			return shekTable.getCount(pos);
+		}
+
+		void shekDebug() const {
+			shekTable.debugPrint(pos);
+		}
+
+		void shekSet() {
+			shekTable.set(pos);
+		}
+
+		void shekUnset() {
+			shekTable.unset(pos);
 		}
 	};
 }

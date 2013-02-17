@@ -19,14 +19,17 @@
 #ifndef NLEARN
 
 namespace Learns {
-	const char* Learn::DEFAULT_CONFIG_FILE = "lconf";
-
 	using namespace Records;
 	using namespace Csa;
 	using namespace Shogi;
 	using namespace Search;
 	using namespace Util;
 	using namespace Evaluates;
+
+	const char* Learn::DEFAULT_CONFIG_FILE = "lconf";
+
+	//const double Learn::PENALTY = 1.0e-2;
+	const double Learn::PENALTY = 0.0;
 
 	void Learn::beginAdjust() {
 		memset(&info, 0, sizeof(info));
@@ -189,7 +192,7 @@ namespace Learns {
 		PvReader reader("pv.tmp");
 
 		// 局面評価
-		Evaluate eval(*pparam);
+		Evaluate eval(*pparam, 0, 0);
 
 		while (reader.nextFlag().is(PvIoFlag::POSITION)) {
 			Position pos;
@@ -205,15 +208,16 @@ namespace Learns {
 			reader.readMove(recMove);
 			reader.readPv(recPv);
 
-			Log::debug << pos.toString() << '\n';
-			Log::debug << recMove.toString() << ' ';
-			Log::debug << recPv.toString() << '\n';
+			//Log::debug << pos.toString() << '\n';
+			//Log::debug << recMove.toString() << ' ';
+			//Log::debug << recPv.toString() << '\n';
 
 			// PV の末端
 			record.move(recMove);
 			for (int i = 0; i < recPv.size(); i++) {
 				record.move(recPv.get(i));
 			}
+			eval.init(record.getPosition());
 			Value recValue = eval.getValue() * sign;
 			for (int i = 0; i < recPv.size(); i++) {
 				record.prev();
@@ -228,21 +232,24 @@ namespace Learns {
 				reader.readMove(move);
 				reader.readPv(pv);
 
-				Log::debug << move.toString() << ' ';
-				Log::debug << pv.toString() << '\n';
+				//Log::debug << move.toString() << ' ';
+				//Log::debug << pv.toString() << '\n';
 
 				// PV の末端
 				record.move(move);
 				for (int i = 0; i < pv.size(); i++) {
 					record.move(pv.get(i));
 				}
+				eval.init(record.getPosition());
 				Value value = eval.getValue() * sign;
 				// 勾配
 				double d = dLoss(recValue - value);
+				assert(d >= 0.0);
 				Feature::incValue(record.getPosition(), &g, -d);
 				dSum += d;
 				// 損失
 				double l = loss(recValue - value);
+				assert(l >= 0.0);
 				info.loss += l;
 				for (int i = 0; i < pv.size(); i++) {
 					record.prev();
@@ -256,7 +263,6 @@ namespace Learns {
 				record.move(recPv.get(i));
 			}
 			Feature::incValue(record.getPosition(), &g, dSum);
-			assert(dSum >= 0.0);
 			for (int i = 0; i < recPv.size(); i++) {
 				record.prev();
 			}

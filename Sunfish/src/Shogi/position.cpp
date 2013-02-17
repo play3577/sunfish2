@@ -543,6 +543,9 @@ namespace Shogi {
 	template <bool black>
 	bool Position::_isMate() const {
 		DirectionFlags flags = getCheckDirection();
+		if (flags.isZero()) {
+			return false;
+		}
 		// 玉の移動
 		if (isKingMovable<black>(Direction::LEFT_UP, flags) ||
 				isKingMovable<black>(Direction::UP, flags) ||

@@ -25,12 +25,12 @@ namespace Search {
 		tree.generateCheck();
 
 		while (tree.next()) {
-			makeMove(false);
+			makeMove(tree, false);
 			if (tree.isMate()) {
-				unmakeMove(false);
+				unmakeMove(tree, false);
 				return true;
 			}
-			unmakeMove(false);
+			unmakeMove(tree, false);
 		}
 		return false; // 不詰め
 	}
@@ -89,9 +89,9 @@ namespace Search {
 			}
 
 			// 子ノードを展開
-			makeMove(false);
+			makeMove(tree, false);
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
-			unmakeMove(false);
+			unmakeMove(tree, false);
 			if (isInterrupted()) { return Value(0); }
 
 			if (newValue > value) {
@@ -120,7 +120,7 @@ namespace Search {
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("+2726FU")) {
+		if (tree.is("-6364FU")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
@@ -136,7 +136,7 @@ namespace Search {
 		if (config.isLearning)
 #endif // NLEARN
 		{
-			switch (shekCheck()) {
+			switch (shekCheck(tree)) {
 			case Shek::NONE:
 				break;
 			case Shek::SUPERIOR:
@@ -207,8 +207,7 @@ namespace Search {
 		}
 
 		// stand-pat
-		Value standPat = Value::MIN;
-#define STAND_PAT		(standPat == Value::MIN ? standPat = tree.negaEvaluate() : standPat)
+		Value standPat = tree.negaEvaluate();
 
 		// 詰めろ
 		bool mate = false;
@@ -226,13 +225,13 @@ namespace Search {
 			if (stat.isNullMove() &&
 					!pvNode &&
 					depth >= PLY1 * 2 &&
-					beta <= STAND_PAT){
+					beta <= standPat){
 				int nullDepth = 
 						(depth >= PLY1*15/2 ? depth - PLY1*4 :
 						(depth >= PLY1*9/2 ? depth - PLY1*3 : depth - PLY1*2));
-				if (nullMove(false)) {
+				if (nullMove(tree, false)) {
 					Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, NodeStat().unsetNullMove());
-					unmakeMove(false);
+					unmakeMove(tree, false);
 					if (isInterrupted()) { return Value(0); }
 					if (newValue >= beta) {
 						counter.nullMovePruning++;
@@ -266,14 +265,7 @@ namespace Search {
 		Value value = Value::MIN;
 		const Move* best = NULL;
 		while (tree.next()) {
-			// node status
-			NodeStat newStat;
-
-			unsigned moveCount = tree.getMoveIndex();
-			bool isHash = tree.isHashMove();
-
 			assert(tree.getCurrentMove() != NULL);
-
 #if NODE_DEBUG
 			if (debugNode) {
 				Log::debug << ' ' << tree.getCurrentMove()->toString();
@@ -282,80 +274,39 @@ namespace Search {
 
 			Value newAlpha = Value::max(alpha, value);
 
-			int newDepth = depth - PLY1;
+			NodeController node(*this, tree, rootDepth, stat,
+					depth - PLY1, newAlpha, standPat,
+					beta == alpha + 1, mate);
+			node.execute();
 
-			// TODO: クラスにまとめる。
-			bool isCheckMove = tree.isCheckMove();
-			bool isTacticalMove = tree.isTacticalMove();
-			bool isRecapture = tree.isRecapture();
-
-			// extensions
-			if (isCheckMove) {
-				newDepth += extension(tree);
-			} else if (stat.isRecapture() && isRecapture) {
-				newDepth += extension(tree) * 3 / 4;
-				newStat.unsetRecapture();
-			} else if (mate) {
-				newDepth += extension(tree) / 2;
-			}
-
-			Estimate estimate = tree.negaEstimate();
-			int reduction = 0;
-			if (!isHash && moveCount != 1 && !mate && !tree.isCheck() && !isCheckMove && !isTacticalMove) {
-				// late move reduction
-				unsigned hist = history.get(*tree.getCurrentMove());
-				if (beta != alpha + 1) {
-					if        (hist * 32U < History::SCALE) {
-						reduction = PLY1 * 3 / 2;
-					} else if (hist * 16U < History::SCALE) {
-						reduction = PLY1;
-					} else if (hist *  4U < History::SCALE) {
-						reduction = PLY1 / 2;
-					}
-				} else {
-					if        (hist * 32U < History::SCALE) {
-						reduction = PLY1 * 2;
-					} else if (hist * 20U < History::SCALE) {
-						reduction = PLY1 * 3 / 2;
-					} else if (hist *  8U < History::SCALE) {
-						reduction = PLY1;
-					} else if (hist *  2U < History::SCALE) {
-						reduction = PLY1 / 2;
-					}
-				}
-				newDepth -= reduction;
-
-				// futility pruning
-				if (STAND_PAT + estimate.getValue() + estimate.getError()
-						+ getFutMgn(newDepth, moveCount)
-						+ getGain(tree) <= newAlpha) {
-					value = newAlpha; // fail soft
-					counter.futilityPruning++;
+			if (node.isPruning()) {
+				value = newAlpha; // fail soft
+				counter.futilityPruning++;
 #if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ',' << __LINE__;
-				if (tree.getCurrentMove()->toStringCsa() == "+4748KI") {
-					Log::debug << ",fut_mgn=[" << getFutMgn(newDepth, moveCount) << "]"
-							<< " gain=[" << getGain(tree) << "]"
-							<< " depth=[" << newDepth << "]";
+				if (debugNode) {
+					Log::debug << ',' << __LINE__;
+					if (tree.getCurrentMove()->toStringCsa() == "+4748KI") {
+						Log::debug << ",fut_mgn=[" << getFutMgn(node.getDepth(), node.getMoveCount()) << "]"
+								<< " gain=[" << getGain(tree) << "]"
+								<< " depth=[" << node.getDepth() << "]";
+					}
 				}
-			}
 #endif // NODE_DEBUG
-					continue;
-				}
+				continue;
 			}
 
 			// make move
 			Value newValue;
-			makeMove();
+			makeMove(tree);
 
 			// new stand-pat
 			Value newStandPat = tree.negaEvaluate();
 
 			// extended futility pruning
-			if (!isHash && !mate && !isCheckMove && !isTacticalMove) {
-				if (newStandPat - getFutMgn(newDepth, moveCount) >= -newAlpha) {
-					unmakeMove();
+			if (!node.isHash() && !node.isMateThreat()
+					&& !node.isCheckMove() && !node.isTacticalMove()) {
+				if (newStandPat - getFutMgn(node.getDepth(), node.getMoveCount()) >= -newAlpha) {
+					unmakeMove(tree);
 					value = newAlpha; // fail soft
 					counter.exFutilityPruning++;
 #if NODE_DEBUG
@@ -367,14 +318,15 @@ namespace Search {
 				}
 			}
 
-			updateGain(tree, STAND_PAT + estimate.getValue(), newStandPat);
+			updateGain(tree, standPat + node.getEstimate().getValue(),
+					newStandPat);
 
 #if NODE_DEBUG
 			Util::uint64 beforeNodes = counter.nodes;
 #endif // NODE_DEBUG
 			// recurcive search
-			if (moveCount == 1) {
-				newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
+			if (node.getMoveCount() == 1) {
+				newValue = -negaMax<pvNode>(tree, node.getDepth(), -beta, -newAlpha, node.getStat());
 #if NODE_DEBUG
 				if (debugNode) {
 					Log::debug << ',' << __LINE__;
@@ -382,16 +334,18 @@ namespace Search {
 #endif // NODE_DEBUG
 			} else {
 				// nega-scout
-				newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
+				newValue = -negaMax<false>(tree, node.getDepth(), -newAlpha-1, -newAlpha, node.getStat());
 #if NODE_DEBUG
 				if (debugNode) {
 					Log::debug << ',' << __LINE__;
 				}
 #endif // NODE_DEBUG
-				if (!isInterrupted() && newValue > newAlpha && reduction != 0) {
+				if (!isInterrupted() && newValue > newAlpha
+						&& node.isReduced() != 0) {
 					// reductionをなくして再探索
-					newDepth += reduction;
-					newValue = -negaMax<false>(tree, newDepth, -newAlpha-1, -newAlpha, newStat);
+					newValue = -negaMax<false>(tree,
+							node.getDepth(false),
+							-newAlpha-1, -newAlpha, node.getStat());
 #if NODE_DEBUG
 					if (debugNode) {
 						Log::debug << ',' << __LINE__;
@@ -400,7 +354,9 @@ namespace Search {
 				}
 				if (!isInterrupted() && newValue > newAlpha && beta > newAlpha + 1) {
 					// windowを広げて再探索
-					newValue = -negaMax<pvNode>(tree, newDepth, -beta, -newAlpha, newStat);
+					newValue = -negaMax<pvNode>(tree,
+							node.getDepth(false),
+							-beta, -newAlpha, node.getStat());
 #if NODE_DEBUG
 					if (debugNode) {
 						Log::debug << ',' << __LINE__;
@@ -417,7 +373,7 @@ namespace Search {
 #endif // NODE_DEBUG
 
 			// unmake move
-			unmakeMove();
+			unmakeMove(tree);
 
 			if (isInterrupted()) {
 				return Value(0);
@@ -431,10 +387,10 @@ namespace Search {
 				// beta cut
 				if (value >= beta) {
 					if (!tree.isCapture()) {
-						tree.getHistory(history, depth);
-						tree.addKiller(newValue - STAND_PAT);
-					} else if (!isHash) {
-						tree.addKiller(newValue - STAND_PAT);
+						tree.addHistory(depth);
+						tree.addKiller(newValue - standPat);
+					} else if (!node.isHash()) {
+						tree.addKiller(newValue - standPat);
 					}
 #if NODE_DEBUG
 					if (debugNode) {
@@ -493,6 +449,8 @@ namespace Search {
 		// 前処理
 		before(result);
 
+		Value standPat = tree.negaEvaluate();
+
 		// ノード初期化
 		tree.initNode();
 		// 合法手生成
@@ -519,6 +477,7 @@ namespace Search {
 			// 合法手を順に調べる。
 			tree.setMoveIndex(0);
 			while (tree.next()) {
+				bool doNullWind = true;
 				unsigned moveCount = tree.getMoveIndex();
 #if ROOT_NODE_DEBUG
 				// debug
@@ -526,19 +485,16 @@ namespace Search {
 				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
+				NodeController node(*this, tree, rootDepth,
+						NodeStat(), depth * PLY1, alpha,
+						standPat, false, false);
+				node.execute(true);
+
 revaluation:
 				// 手を進める。
-				makeMove();
+				makeMove(tree);
 				Value vtemp;
-				if (aspBeta.isFail()) {
-					// fail-high の場合
-					vtemp = -negaMax<true>(tree,
-							depth * PLY1, -aspBeta, -alpha,
-							NodeStat().unsetNullMove());
-#if ROOT_NODE_DEBUG
-					Log::debug << "f";
-#endif // ROOT_NODE_DEBUG
-				} else if (moveCount == 1) {
+				if (moveCount == 1) {
 					// 前回の最善手
 					vtemp = -negaMax<true>(tree,
 							depth * PLY1, -aspBeta, -alpha);
@@ -546,19 +502,25 @@ revaluation:
 					Log::debug << "f";
 #endif // ROOT_NODE_DEBUG
 				} else {
-					// null window searchを試みる。
-					vtemp = -negaMax<false>(tree,
-							depth * PLY1, -alpha - 1, -alpha);
+					if (doNullWind) {
+						// null window searchを試みる。
+						vtemp = -negaMax<false>(tree,
+								node.getDepth(), -alpha - 1, -alpha);
+						if (!isInterrupted() && vtemp > alpha && node.isReduced()) {
+							vtemp = -negaMax<false>(tree,
+									node.getDepth(false), -alpha - 1, -alpha);
+						}
 #if ROOT_NODE_DEBUG
-					Log::debug << "n";
+						Log::debug << "n";
 #endif // ROOT_NODE_DEBUG
-					if (!isInterrupted() && vtemp > alpha && vtemp < Value::MATE) {
+					}
+					if (!doNullWind || (!isInterrupted() && vtemp > alpha && vtemp < Value::MATE)) {
 #if ROOT_NODE_DEBUG
 						Log::debug << "(" << vtemp << ")";
 #endif // ROOT_NODE_DEBUG
 						// 再探索
 						vtemp = -negaMax<true>(tree,
-								depth * PLY1, -aspBeta, -alpha,
+								node.getDepth(false), -aspBeta, -alpha,
 								NodeStat().unsetNullMove());
 #if ROOT_NODE_DEBUG
 						Log::debug << "f";
@@ -574,7 +536,7 @@ revaluation:
 						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";
 #endif // ROOT_NODE_DEBUG
 				// 手を戻す。
-				unmakeMove();
+				unmakeMove(tree);
 				if (isInterrupted()) {
 					goto lab_search_end;
 				}
@@ -589,6 +551,7 @@ revaluation:
 					maxValue = alpha = vtemp - 1;
 					// PVを更新
 					tree.updatePv();
+					doNullWind = false;
 					goto revaluation;
 				}
 				// fail-low

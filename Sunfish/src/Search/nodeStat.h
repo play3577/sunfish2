@@ -100,6 +100,10 @@ namespace Search {
 		bool isHashCut() const {
 			return is(HASH_CUT);
 		}
+
+		operator unsigned() const {
+			return stat;
+		}
 	};
 }
 

@@ -53,6 +53,11 @@ namespace Search {
 		void setHash2(const Shogi::Move& move) {
 			this->hash2 = move;
 		}
+
+		operator Util::uint64() const {
+			return ((Util::uint64)(unsigned)hash1 << 32)
+					+ (Util::uint64)(unsigned)hash2;
+		}
 	};
 }
 

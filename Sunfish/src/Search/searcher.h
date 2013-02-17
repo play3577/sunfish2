@@ -11,7 +11,6 @@
 #include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
-#include "../Records/record.h"
 #include "pvHandler.h"
 #include "tree.h"
 #include <algorithm>
@@ -76,11 +75,8 @@ namespace Search {
 
 	class Searcher {
 	private:
-		static const int PLY1 = 4;
-
 		Tree tree;
 		Table::TT tt;
-		Shek::ShekTable shekTable;
 
 		History history;
 		SearchConfig config;
@@ -116,9 +112,7 @@ namespace Search {
 				signalForceInterrupt = false;
 			}
 			if (hashStack.stack != NULL) {
-				for (int i = 0; i < hashStack.size; i++) {
-					shekTable.set(hashStack.stack[i]);
-				}
+				tree.shekSet(hashStack);
 			}
 			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
@@ -130,9 +124,7 @@ namespace Search {
 
 		bool after(SearchResult& result, Evaluates::Value value) {
 			if (hashStack.stack != NULL) {
-				for (int i = hashStack.size - 1; i >= 0; i--) {
-					shekTable.unset(hashStack.stack[i]);
-				}
+				tree.shekUnset(hashStack);
 			}
 			result.value = value;
 			const Shogi::Move* pmove = tree.getPv().getTop();
@@ -158,11 +150,12 @@ namespace Search {
 			return ok;
 		}
 
+		// TODO:
 		static Evaluates::Value getFutMgn(int depth, int count) {
-				if (depth < PLY1) {
-					return 0;
-				}
-				return 120 * depth / PLY1 + 4 * count;
+			if (depth < PLY1) {
+				return 0;
+			}
+			return 120 * depth / PLY1 + 4 * count;
 		}
 
 		void updateGain(const Search::Tree& tree,
@@ -192,6 +185,7 @@ namespace Search {
 			return gain[piece][square];
 		}
 
+		// TODO:
 		int extension(Tree& tree) const {
 			if (tree.getDepth() < rootDepth) {
 				return PLY1;
@@ -214,48 +208,49 @@ namespace Search {
 			return false;
 		}
 
-		Shek::ShekStat shekCheck() {
-			return shekTable.check(tree.getPosition());
+		Shek::ShekStat shekCheck(Tree& tree) const {
+			return tree.shekCheck();
 		}
 
-		unsigned getShekCount() {
-			return shekTable.getCount(tree.getPosition());
+		unsigned getShekCount(Tree& tree) const {
+			return tree.getShekCount();
 		}
 
-		void shekDebug() {
-			shekTable.debugPrint(tree.getPosition());
-			
+		void shekDebug(Tree& tree) const {
+			tree.shekDebug();
 		}
 
-		bool nullMove(bool shek = true) {
+		bool nullMove(Tree& tree, bool shek = true) {
 			if (shek) {
-				shekTable.set(tree.getPosition());
+				tree.shekSet();
 			}
 			if (tree.nullMove()) {
 				return true;
 			} else {
 				if (shek) {
-					shekTable.unset(tree.getPosition());
+					tree.shekUnset();
 				}
 				return false;
 			}
 		}
 
-		void makeMove(bool shek = true) {
+		void makeMove(Tree& tree, bool shek = true) {
 			if (shek) {
-				shekTable.set(tree.getPosition());
+				tree.shekSet();
 			}
 			tree.makeMove();
 		}
 
-		void unmakeMove(bool shek = true) {
+		void unmakeMove(Tree& tree, bool shek = true) {
 			tree.unmakeMove();
 			if (shek) {
-				shekTable.unset(tree.getPosition());
+				tree.shekUnset();
 			}
 		}
 
 	public:
+		static const int PLY1 = 4;
+
 		Searcher(const Evaluates::Param& param) :
 			tree(param, history),
 			hashStack(Records::HashStack::nan()),
@@ -331,6 +326,118 @@ namespace Search {
 			boost::mutex::scoped_lock lock(flagMutex);
 			return running;
 		}
+
+	private:
+		class NodeController {
+		private:
+			Searcher& searcher;
+			Tree& tree;
+			const int rootDepth;
+			const NodeStat stat;
+			NodeStat newStat;
+			int depth;
+			const Evaluates::Value alpha;
+			const Evaluates::Value standPat;
+			const Evaluates::Estimate estimate;
+			int reduction;
+			bool pruning;
+			const unsigned moveCount;
+			const bool _isNullWindow;
+			const bool _isMateThreat;
+			const bool _isHash;
+			const bool _isCheckMove;
+			const bool _isTacticalMove;
+			const bool _isRecapture;
+
+			template <bool isRoot>
+			void execute();
+
+			int extension() const;
+
+			static Evaluates::Value getFutMgn(int depth, int count);
+
+		public:
+			NodeController(Searcher& searcher, Tree& tree,
+					int rootDepth, const NodeStat& stat, int depth,
+					Evaluates::Value alpha, Evaluates::Value standPat,
+					bool isNullWindow, bool isMateThreat) :
+					searcher(searcher), tree(tree),
+					rootDepth(rootDepth), stat(stat), depth(depth),
+					alpha(alpha), standPat(standPat),
+					estimate(tree.negaEstimate()), reduction(0),
+					pruning(false), moveCount(tree.getMoveIndex()),
+					_isNullWindow(isNullWindow),
+					_isMateThreat(isMateThreat),
+					_isHash(tree.isHashMove()),
+					_isCheckMove(tree.isCheckMove()),
+					_isTacticalMove(tree.isTacticalMove()),
+					_isRecapture(tree.isRecapture()) {
+			}
+
+			void execute(bool isRoot = false) {
+				if (isRoot) {
+					execute<true>();
+				} else {
+					execute<false>();
+				}
+			}
+
+			bool isPruning() const {
+				return pruning;
+			}
+
+			int getDepth(bool reduced = true) const {
+				return depth - (reduced ? reduction : 0);
+			}
+
+			int getReduction() const {
+				return reduction;
+			}
+
+			bool isReduced() const {
+				return reduction != 0;
+			}
+
+			bool isNullWindow() const {
+				return _isNullWindow;
+			}
+
+			bool isCheckMove() const {
+				return _isCheckMove;
+			}
+
+			bool isTacticalMove() const {
+				return _isTacticalMove;
+			}
+
+			bool isRecapture() const {
+				return _isRecapture;
+			}
+
+			bool isMateThreat() const {
+				return _isMateThreat;
+			}
+
+			bool isHash () const {
+				return _isHash;
+			}
+
+			unsigned getMoveCount() const {
+				return moveCount;
+			}
+
+			Evaluates::Value getStandPat() const {
+				return standPat;
+			}
+
+			NodeStat getStat() const {
+				return newStat;
+			}
+
+			const Evaluates::Estimate& getEstimate() const {
+				return estimate;
+			}
+		};
 	};
 }
 

@@ -68,7 +68,7 @@ namespace Search {
 			unsigned index = from(move);
 			assert(index < FROM);
 			assert(move.getTo() < TO);
-			return (good[index][move.getTo()] + 1) * SCALE / (all[index][move.getTo()] + 1);
+			return (good[index][move.getTo()] + 1) * SCALE / (all[index][move.getTo()] + 2);
 		}
 	};
 }

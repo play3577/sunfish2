@@ -4,6 +4,7 @@
 - 時間制御
 - 序盤定跡
 - 機械学習
+	- 並列化
 
 - CSAプロトコル
 	- 相手番千日手による対局停止
@@ -16,11 +17,11 @@
 	- 探索中の王手千日手検出
 ? 玉がいない場合
 ? USI
-- 相手番思考
+* 相手番思考
 ? ハッシュ表サイズ管理
 - ハッシュ表slot
 - 探索
-	- 差分計算
+	* 差分計算
 	* 静止探索
 	- ordering
 		* static exchange evaluation
@@ -42,3 +43,4 @@
 	* aspiration search
 	- parallel search
 		- lockless hash
+		- history

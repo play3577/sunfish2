@@ -21,7 +21,7 @@ namespace Learns {
 			int samples;
 		};
 
-		static const double PENALTY = 1.0e-2;
+		static const double PENALTY;
 
 		const char* configFilename;
 		LearnConfig config;

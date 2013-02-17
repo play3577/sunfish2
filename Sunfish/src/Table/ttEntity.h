@@ -23,6 +23,15 @@ namespace Table {
 		int depth;
 		Search::HashMove hashMove;
 		Search::NodeStat stat;
+		Util::uint64 checkSum;
+
+		Util::uint64 generateCheckSum() const {
+			return hash ^ (Util::uint64)(int)value
+					^ (Util::uint64)valueType
+					^ (Util::uint64)depth
+					^ (Util::uint64)hashMove
+					^ (Util::uint64)(unsigned)stat;
+		}
 
 		bool update(Util::uint64 newHash,
 				Evaluates::Value newValue,
@@ -44,6 +53,7 @@ namespace Table {
 			depth = newDepth;
 			stat = newStat;
 			if (pmove != NULL) { hashMove.update(*pmove); }
+			checkSum = generateCheckSum();
 
 			return true;
 		}
@@ -83,11 +93,18 @@ namespace Table {
 		}
 
 		bool is(Util::uint64 hash) const {
-			return this->hash == hash;
+			return this->hash == hash && checkSum == generateCheckSum();
 		}
 
 		bool isSuperior(int curDepth) const {
+			using namespace Evaluates;
 			if (depth >= curDepth) {
+				return true;
+			}
+			if (value >= Value::MATE && valueType == LOWER) {
+				return true;
+			}
+			if (value <= Value::MATE && valueType == UPPER) {
 				return true;
 			}
 			return false;

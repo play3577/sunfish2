@@ -52,20 +52,20 @@ int main(int argc, char* argv[]) {
 	// program options
 	options_description opt("Option");
 	opt.add_options()
-			("help,h", "show help.")
+			("help,h", "show help")
 #ifndef NDEBUG
-			("test", "unit test mode.")
+			("test", "unit test")
 #endif //NDEBUG
 #ifndef NLEARN
-			("learn", "learning mode.")
-			("analyze", "analyzing mode for 'evdata'")
+			("learn", "learning")
+			("analyze", "analyzing for 'evdata'")
 #endif //NLEARN
-			("network,n", "CSA client moode.")
+			("network,n", "CSA client moode")
 			("auto-black,b", "search will be begun automatically on black turn.")
 			("auto-white,w", "search will be begun automatically on white turn.")
-			("depth,d", value<int>(), "search depth.")
-			("limit,l", value<int>(), "search limit.(sec)")
-			("file,f", value<std::string>(), "CSA file name to read.")
+			("depth,d", value<int>(), "search depth")
+			("limit,l", value<int>(), "search limit(sec)")
+			("file,f", value<std::string>(), "CSA file name to read")
 			;
 	variables_map argmap;
 	try {

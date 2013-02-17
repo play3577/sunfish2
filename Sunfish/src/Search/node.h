@@ -28,7 +28,8 @@ namespace Search {
 		}
 
 		Node(const Shogi::Position& pos, const Evaluates::Param& param,
-				const History& history) : pgen(NULL), pmove(NULL), isNullMoveMaked(false) {
+				const History& history) : pgen(NULL), pmove(NULL),
+				isNullMoveMaked(false) {
 			init(pos, param, history);
 		}
 
@@ -146,7 +147,7 @@ namespace Search {
 			return change;
 		}
 
-		void getHistory(History& history, int depth) const {
+		void addHistory(History& history, int depth) const {
 			assert(pmove != NULL);
 			for (unsigned i = 0; i < pgen->getCurrent(); i++) {
 				history.addAppear(pgen->get(i), depth);
