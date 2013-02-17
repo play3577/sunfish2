@@ -5,6 +5,7 @@
 - 序盤定跡
 - 機械学習
 	- 並列化
+- 入玉対策
 
 - CSAプロトコル
 	- 相手番千日手による対局停止
@@ -36,11 +37,12 @@
 	+ extensions
 	* late move reduction
 	+ mate 1ply
+		- 無駄合判定
 	- mate 3ply
 	? singular extension
 	* SHEK
 	* recursive iterative-deepening search
 	* aspiration search
 	- parallel search
-		- lockless hash
+		* lockless hash
 		- history

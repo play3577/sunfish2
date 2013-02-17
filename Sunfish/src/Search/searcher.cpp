@@ -423,6 +423,8 @@ namespace Search {
 	 * pvHandlerは呼ばれない。                                     *
 	 ***************************************************************/
 	bool Searcher::search(SearchResult& result, Value alpha, Value beta) {
+		Tree& tree = trees[0];
+
 		// 前処理
 		before(result);
 		// 基本深さ
@@ -441,6 +443,8 @@ namespace Search {
 	 * 深さ毎にresult.pvHandler()を呼び出す。                      *
 	 ***************************************************************/
 	bool Searcher::idSearch(SearchResult& result) {
+		Tree& tree = trees[0];
+
 		// 最善手の評価値
 		Value maxValue = Value::MIN;
 		// 各指し手毎の評価値

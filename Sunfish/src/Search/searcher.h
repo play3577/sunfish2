@@ -13,6 +13,7 @@
 #include "../Shek/shekTable.h"
 #include "pvHandler.h"
 #include "tree.h"
+#include "worker.h"
 #include <algorithm>
 #include <boost/timer.hpp>
 #define BOOST_THREAD_USE_LIB
@@ -75,7 +76,12 @@ namespace Search {
 
 	class Searcher {
 	private:
-		Tree tree;
+		static const int DEFAULT_WORKER_SIZE = 1;
+		Tree* trees;
+		int treeSize;
+		Worker* workers;
+		int workerSize;
+
 		Table::TT tt;
 
 		History history;
@@ -112,7 +118,9 @@ namespace Search {
 				signalForceInterrupt = false;
 			}
 			if (hashStack.stack != NULL) {
-				tree.shekSet(hashStack);
+				for (int i = 0; i < treeSize; i++) {
+					trees[i].shekSet(hashStack);
+				}
 			}
 			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
@@ -124,11 +132,13 @@ namespace Search {
 
 		bool after(SearchResult& result, Evaluates::Value value) {
 			if (hashStack.stack != NULL) {
-				tree.shekUnset(hashStack);
+				for (int i = 0; i < treeSize; i++) {
+					trees[i].shekUnset(hashStack);
+				}
 			}
 			result.value = value;
-			const Shogi::Move* pmove = tree.getPv().getTop();
-			result.pv.copy(tree.getPv());
+			const Shogi::Move* pmove = trees[0].getPv().getTop();
+			result.pv.copy(trees[0].getPv());
 			result.counter = counter;
 			result.sec = timer.elapsed();
 			result.nps = result.counter.nodes / result.sec;
@@ -201,7 +211,7 @@ namespace Search {
 		bool isInterrupted() const {
 			if (signalForceInterrupt) {
 				return true;
-			} else if (tree.getPv().getTop() != NULL) {
+			} else if (trees[0].getPv().getTop() != NULL) {
 				return signalInterrupt || (config.limitEnable
 					&& timer.elapsed() >= config.limitSeconds);
 			}
@@ -248,29 +258,80 @@ namespace Search {
 			}
 		}
 
+		static int genTreeSize(int workerSize, int treeSize) {
+			return treeSize > 0 ? treeSize : (workerSize * 4 - 3);
+		}
+
+		void buildWorkers() {
+			workers = new Worker[workerSize];
+			for (int i = 0; i < workerSize; i++) {
+				workers[i].init(i, this);
+			}
+		}
+
+		void buildInstances(const Evaluates::Param& param,
+				History& history) {
+			trees = (Tree*)new char[sizeof(Tree) * treeSize];
+			for (int i = 0; i < treeSize; i++) {
+				new (trees + i) Tree(param, history);
+			}
+			buildWorkers();
+		}
+
+		void buildInstances(const Evaluates::Param& param,
+				const Shogi::Position& pos, History& history) {
+			trees = (Tree*)new char[sizeof(Tree) * treeSize];
+			for (int i = 0; i < treeSize; i++) {
+				new (trees + i) Tree(param, pos, history);
+			}
+			buildWorkers();
+		}
+
+		void releaseInstances() {
+			for (int i = 0; i < treeSize; i++) {
+				trees[i].~Tree();
+			}
+			delete [] (char*)trees;
+			delete [] workers;
+		}
+
 	public:
 		static const int PLY1 = 4;
 
-		Searcher(const Evaluates::Param& param) :
-			tree(param, history),
-			hashStack(Records::HashStack::nan()),
-			running(false),
-			signalInterrupt(false),
-			signalForceInterrupt(false) {
+		Searcher(const Evaluates::Param& param,
+				int workerSize = DEFAULT_WORKER_SIZE,
+				int treeSize = 0) :
+				treeSize(genTreeSize(workerSize, treeSize)),
+				workerSize(workerSize),
+				hashStack(Records::HashStack::nan()),
+				running(false),
+				signalInterrupt(false),
+				signalForceInterrupt(false) {
+			buildInstances(param, history);
 		}
 
 		Searcher(const Evaluates::Param& param,
-				const Shogi::Position& pos) :
-			tree(param, pos, history),
-			hashStack(Records::HashStack::nan()),
-			running(false),
-			signalInterrupt(false),
-			signalForceInterrupt(false) {
+				const Shogi::Position& pos,
+				int workerSize = DEFAULT_WORKER_SIZE,
+				int treeSize = 0) :
+				treeSize(genTreeSize(workerSize, treeSize)),
+				workerSize(workerSize),
+				hashStack(Records::HashStack::nan()),
+				running(false),
+				signalInterrupt(false),
+				signalForceInterrupt(false) {
+			buildInstances(param, pos, history);
+		}
+
+		virtual ~Searcher() {
+			releaseInstances();
 		}
 
 		void init(const Shogi::Position& pos,
 				const Records::HashStack& hashStack) {
-			tree.init(pos);
+			for (int i = 0; i < treeSize; i++) {
+				trees[i].init(pos);
+			}
 			this->hashStack = hashStack;
 		}
 
@@ -287,12 +348,12 @@ namespace Search {
 		}
 
 		bool isMate1Ply(const Shogi::Position& pos) {
-			tree.init(pos);
-			return isMate1Ply(tree);
+			trees[0].init(pos);
+			return isMate1Ply(trees[0]);
 		}
 
 		bool isMate1Ply() {
-			return isMate1Ply(tree);
+			return isMate1Ply(trees[0]);
 		}
 
 		bool search(SearchResult& result,
