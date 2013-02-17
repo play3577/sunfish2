@@ -12,6 +12,7 @@
 #include <boost/thread.hpp>
 
 namespace Search {
+	class Tree;
 	class Searcher;
 
 	class Worker {
@@ -23,24 +24,22 @@ namespace Search {
 		bool job;
 		bool shutdown;
 
-		void waitForJob();
+		void waitForJob(Tree* suspend = NULL);
 
 	public:
 		Worker(int worker = 0, Searcher* psearcher = NULL) :
-			worker(worker),
-			psearcher(psearcher) {
+			psearcher(psearcher), worker(worker) {
 		}
 
-		void init(worker, Searcher* psearcher) {
-			this->worker = worker;
+		void init(Searcher* psearcher, int worker) {
 			this->psearcher = psearcher;
+			this->worker = worker;
 		}
 
 		void start() {
 			shutdown = false;
-			job = false;
 			thread = new boost::thread(boost::bind(
-					&Worker::waitForJob, this));
+					&Worker::waitForJob, this, (Tree*)NULL));
 		}
 
 		void stop() {

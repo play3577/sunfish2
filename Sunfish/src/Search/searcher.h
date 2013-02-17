@@ -81,9 +81,9 @@ namespace Search {
 		int treeSize;
 		Worker* workers;
 		int workerSize;
+		boost::mutex splitMutex;
 
 		Table::TT tt;
-
 		History history;
 		SearchConfig config;
 		SearchCounter counter;
@@ -263,9 +263,11 @@ namespace Search {
 		}
 
 		void buildWorkers() {
-			workers = new Worker[workerSize];
-			for (int i = 0; i < workerSize; i++) {
-				workers[i].init(i, this);
+			if (workerSize >= 1) {
+				workers = new Worker[workerSize];
+				for (int i = 0; i < workerSize; i++) {
+					workers[i].init(this, i);
+				}
 			}
 		}
 
@@ -292,7 +294,9 @@ namespace Search {
 				trees[i].~Tree();
 			}
 			delete [] (char*)trees;
-			delete [] workers;
+			if (workerSize >= 1) {
+				delete [] workers;
+			}
 		}
 
 	public:
@@ -302,7 +306,7 @@ namespace Search {
 				int workerSize = DEFAULT_WORKER_SIZE,
 				int treeSize = 0) :
 				treeSize(genTreeSize(workerSize, treeSize)),
-				workerSize(workerSize),
+				workerSize(workerSize - 1),
 				hashStack(Records::HashStack::nan()),
 				running(false),
 				signalInterrupt(false),
@@ -315,7 +319,7 @@ namespace Search {
 				int workerSize = DEFAULT_WORKER_SIZE,
 				int treeSize = 0) :
 				treeSize(genTreeSize(workerSize, treeSize)),
-				workerSize(workerSize),
+				workerSize(workerSize - 1),
 				hashStack(Records::HashStack::nan()),
 				running(false),
 				signalInterrupt(false),
@@ -359,6 +363,10 @@ namespace Search {
 		bool search(SearchResult& result,
 				Evaluates::Value alpha = Evaluates::Value::MIN,
 				Evaluates::Value beta = Evaluates::Value::MAX);
+
+		boost::mutex& getSplitMutex() {
+			return splitMutex;
+		}
 
 		// iterative-deepening search
 		bool idSearch(SearchResult& result);

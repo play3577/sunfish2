@@ -6,8 +6,20 @@
  */
 
 #include "worker.h"
+#include "searcher.h"
 
 namespace Search {
-	void Worker::waitForJob() {
+	void Worker::waitForJob(Tree* suspend) {
+		if (suspend != NULL) {
+			boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
+			job = false;
+		}
+
+		while (true) {
+			if (shutdown) {
+				break;
+			}
+			boost::thread::yield();
+		}
 	}
 }
