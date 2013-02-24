@@ -8,14 +8,15 @@
 #ifndef SEARCHER_H_
 #define SEARCHER_H_
 
+#include "../Util/timer.h"
 #include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
+#include "../Records/record.h"
 #include "pvHandler.h"
 #include "tree.h"
 #include "worker.h"
 #include <algorithm>
-#include <boost/timer.hpp>
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
 
@@ -36,15 +37,6 @@ namespace Search {
 				};
 			return config;
 		}
-	};
-
-	struct SearchCounter {
-		Util::uint64 nodes;
-		Util::uint64 hashPruning;
-		Util::uint64 nullMovePruning;
-		Util::uint64 futilityPruning;
-		Util::uint64 exFutilityPruning;
-		Util::uint64 shekPruning;
 	};
 
 	struct SearchResult {
@@ -77,17 +69,19 @@ namespace Search {
 	class Searcher {
 	private:
 		static const int DEFAULT_WORKER_SIZE = 1;
+		static const int NO_SET_TREE_SIZE = 0;
 		Tree* trees;
 		int treeSize;
+		int idleTree;
 		Worker* workers;
 		int workerSize;
+		int idleWorker;
 		boost::mutex splitMutex;
 
 		Table::TT tt;
 		History history;
 		SearchConfig config;
-		SearchCounter counter;
-		boost::timer timer;
+		Util::Timer timer;
 		int rootDepth;
 		Evaluates::Value gain[Shogi::Piece::WDRAGON+1][Shogi::Square::END+1];
 		Records::HashStack hashStack;
@@ -110,6 +104,14 @@ namespace Search {
 				Evaluates::Value beta,
 				NodeStat stat = NodeStat());
 
+		bool split(Tree& tree, int depth,
+				Evaluates::Value alpha,
+				Evaluates::Value beta,
+				Evaluates::Value value,
+				NodeStat stat,
+				Evaluates::Value standPat,
+				bool mateThreat, bool pvNode);
+
 		void before(SearchResult& result) {
 			{
 				boost::mutex::scoped_lock lock(flagMutex);
@@ -122,15 +124,38 @@ namespace Search {
 					trees[i].shekSet(hashStack);
 				}
 			}
-			memset(&counter, 0, sizeof(SearchCounter));
 			memset(&result, 0, sizeof(SearchResult));
 			memset(&gain, 0, sizeof(gain));
 			history.clear();
 			tt.init();
-			timer.restart();
+			// 並列探索用
+			idleTree = treeSize - 1;
+			idleWorker = workerSize - 1;
+			trees[0].use(0);
+			for (int i = 1; i < treeSize; i++) {
+				trees[i].unuse();
+			}
+			for (int i = 0; i < workerSize; i++) {
+			}
+			workers[0].setJob(0);
+			workers[0].getCounter().init();
+			for (int i = 1; i < workerSize; i++) {
+				workers[i].start();
+				workers[i].getCounter().init();
+			}
+			// 時間計測開始
+			timer.set();
 		}
 
 		bool after(SearchResult& result, Evaluates::Value value) {
+			// 並列探索用
+			SearchCounter counter;
+			counter += workers[0].getCounter();
+			for (int i = 1; i < workerSize; i++) {
+				workers[i].stop();
+				counter += workers[i].getCounter();
+			}
+
 			if (hashStack.stack != NULL) {
 				for (int i = 0; i < treeSize; i++) {
 					trees[i].shekUnset(hashStack);
@@ -139,8 +164,8 @@ namespace Search {
 			result.value = value;
 			const Shogi::Move* pmove = trees[0].getPv().getTop();
 			result.pv.copy(trees[0].getPv());
+			result.sec = timer.get();
 			result.counter = counter;
-			result.sec = timer.elapsed();
 			result.nps = result.counter.nodes / result.sec;
 			bool ok;
 			if (pmove != NULL) {
@@ -160,14 +185,6 @@ namespace Search {
 			return ok;
 		}
 
-		// TODO:
-		static Evaluates::Value getFutMgn(int depth, int count) {
-			if (depth < PLY1) {
-				return 0;
-			}
-			return 120 * depth / PLY1 + 4 * count;
-		}
-
 		void updateGain(const Search::Tree& tree,
 				const Evaluates::Value& before, const Evaluates::Value& after) {
 			const Shogi::Move* pmove = tree.getCurrentMove();
@@ -184,9 +201,13 @@ namespace Search {
 		Evaluates::Value getGain(const Search::Tree& tree) const {
 			const Shogi::Move* pmove = tree.getCurrentMove();
 			if (pmove != NULL) {
-				return getGain(pmove->getPiece(), pmove->getTo());
+				return getGain(*pmove);
 			}
 			return Evaluates::Value(0);
+		}
+
+		Evaluates::Value getGain(const Shogi::Move& move) const {
+			return getGain(move.getPiece(), move.getTo());
 		}
 
 		Evaluates::Value getGain(const Shogi::Piece& piece, const Shogi::Square& square) const {
@@ -195,25 +216,20 @@ namespace Search {
 			return gain[piece][square];
 		}
 
-		// TODO:
-		int extension(Tree& tree) const {
-			if (tree.getDepth() < rootDepth) {
-				return PLY1;
-			} else if (tree.getDepth() < rootDepth * 2) {
-				return PLY1 * 3 / 4;
-			} else if (tree.getDepth() < rootDepth * 3) {
-				return PLY1 / 2;
-			} else {
-				return PLY1 / 4;
-			}
-		}
-
-		bool isInterrupted() const {
+		bool isInterrupted(Tree& tree) const {
 			if (signalForceInterrupt) {
 				return true;
 			} else if (trees[0].getPv().getTop() != NULL) {
-				return signalInterrupt || (config.limitEnable
-					&& timer.elapsed() >= config.limitSeconds);
+				if (signalInterrupt) {
+					return true;
+				}
+				if (config.limitEnable && timer.get() >= config.limitSeconds) {
+					return true;
+				}
+				if (tree.split.parent != Tree::SPLIT::TREE_NULL
+						&& trees[tree.split.parent].split.shutdown) {
+					return true;
+				}
 			}
 			return false;
 		}
@@ -231,43 +247,26 @@ namespace Search {
 		}
 
 		bool nullMove(Tree& tree, bool shek = true) {
-			if (shek) {
-				tree.shekSet();
-			}
-			if (tree.nullMove()) {
-				return true;
-			} else {
-				if (shek) {
-					tree.shekUnset();
-				}
-				return false;
-			}
+			return tree.nullMove(shek);
 		}
 
 		void makeMove(Tree& tree, bool shek = true) {
-			if (shek) {
-				tree.shekSet();
-			}
-			tree.makeMove();
+			tree.makeMove(shek);
+			// FIXME: スタックがいっぱいで失敗するケース
 		}
 
-		void unmakeMove(Tree& tree, bool shek = true) {
+		void unmakeMove(Tree& tree) {
 			tree.unmakeMove();
-			if (shek) {
-				tree.shekUnset();
-			}
 		}
 
 		static int genTreeSize(int workerSize, int treeSize) {
-			return treeSize > 0 ? treeSize : (workerSize * 4 - 3);
+			return treeSize != NO_SET_TREE_SIZE ? treeSize : (workerSize * 4 - 3);
 		}
 
 		void buildWorkers() {
-			if (workerSize >= 1) {
-				workers = new Worker[workerSize];
-				for (int i = 0; i < workerSize; i++) {
-					workers[i].init(this, i);
-				}
+			workers = new Worker[workerSize];
+			for (int i = 0; i < workerSize; i++) {
+				workers[i].init(this, i);
 			}
 		}
 
@@ -275,7 +274,7 @@ namespace Search {
 				History& history) {
 			trees = (Tree*)new char[sizeof(Tree) * treeSize];
 			for (int i = 0; i < treeSize; i++) {
-				new (trees + i) Tree(param, history);
+				new (trees + i) Tree(param, history, i);
 			}
 			buildWorkers();
 		}
@@ -294,9 +293,7 @@ namespace Search {
 				trees[i].~Tree();
 			}
 			delete [] (char*)trees;
-			if (workerSize >= 1) {
-				delete [] workers;
-			}
+			delete [] workers;
 		}
 
 	public:
@@ -304,9 +301,9 @@ namespace Search {
 
 		Searcher(const Evaluates::Param& param,
 				int workerSize = DEFAULT_WORKER_SIZE,
-				int treeSize = 0) :
+				int treeSize = NO_SET_TREE_SIZE) :
 				treeSize(genTreeSize(workerSize, treeSize)),
-				workerSize(workerSize - 1),
+				workerSize(workerSize),
 				hashStack(Records::HashStack::nan()),
 				running(false),
 				signalInterrupt(false),
@@ -317,9 +314,9 @@ namespace Search {
 		Searcher(const Evaluates::Param& param,
 				const Shogi::Position& pos,
 				int workerSize = DEFAULT_WORKER_SIZE,
-				int treeSize = 0) :
+				int treeSize = NO_SET_TREE_SIZE) :
 				treeSize(genTreeSize(workerSize, treeSize)),
-				workerSize(workerSize - 1),
+				workerSize(workerSize),
 				hashStack(Records::HashStack::nan()),
 				running(false),
 				signalInterrupt(false),
@@ -396,11 +393,33 @@ namespace Search {
 			return running;
 		}
 
+		void searchChildTree(int index) {
+			searchChildTree(trees[index]);
+		}
+
+		void searchChildTree(Tree& tree);
+
+		void releaseTree(int index) {
+			trees[index].unuse();
+			idleTree--;
+			int parent = trees[index].split.parent;
+			trees[parent].split.childCount--;
+		}
+
+		void addIdleWorker() {
+			idleWorker++;
+		}
+
+		void reduceIdleWorker() {
+			idleWorker--;
+		}
+
 	private:
 		class NodeController {
 		private:
 			Searcher& searcher;
 			Tree& tree;
+			const Shogi::Move move;
 			const int rootDepth;
 			const NodeStat stat;
 			NodeStat newStat;
@@ -416,7 +435,9 @@ namespace Search {
 			const bool _isHash;
 			const bool _isCheckMove;
 			const bool _isTacticalMove;
+			const bool _isCapture;
 			const bool _isRecapture;
+			Evaluates::Value newStandPat;
 
 			template <bool isRoot>
 			void execute();
@@ -426,21 +447,23 @@ namespace Search {
 			static Evaluates::Value getFutMgn(int depth, int count);
 
 		public:
-			NodeController(Searcher& searcher, Tree& tree,
+			NodeController(Searcher& searcher, Tree& parent, Tree& tree,
 					int rootDepth, const NodeStat& stat, int depth,
 					Evaluates::Value alpha, Evaluates::Value standPat,
 					bool isNullWindow, bool isMateThreat) :
 					searcher(searcher), tree(tree),
+					move(*parent.getCurrentMove()),
 					rootDepth(rootDepth), stat(stat), depth(depth),
 					alpha(alpha), standPat(standPat),
-					estimate(tree.negaEstimate()), reduction(0),
-					pruning(false), moveCount(tree.getMoveIndex()),
+					estimate(parent.negaEstimate()), reduction(0),
+					pruning(false), moveCount(parent.getMoveIndex()),
 					_isNullWindow(isNullWindow),
 					_isMateThreat(isMateThreat),
-					_isHash(tree.isHashMove()),
-					_isCheckMove(tree.isCheckMove()),
-					_isTacticalMove(tree.isTacticalMove()),
-					_isRecapture(tree.isRecapture()) {
+					_isHash(parent.isHashMove()),
+					_isCheckMove(parent.isCheckMove()),
+					_isTacticalMove(parent.isTacticalMove()),
+					_isCapture(parent.isRecapture()),
+					_isRecapture(parent.isRecapture()) {
 			}
 
 			void execute(bool isRoot = false) {
@@ -450,6 +473,8 @@ namespace Search {
 					execute<false>();
 				}
 			}
+
+			void executeInterior();
 
 			bool isPruning() const {
 				return pruning;
@@ -479,6 +504,10 @@ namespace Search {
 				return _isTacticalMove;
 			}
 
+			bool isCapture() const {
+				return _isCapture;
+			}
+
 			bool isRecapture() const {
 				return _isRecapture;
 			}
@@ -497,6 +526,14 @@ namespace Search {
 
 			Evaluates::Value getStandPat() const {
 				return standPat;
+			}
+
+			void setNewStandPat(Evaluates::Value newStandPat) {
+				this->newStandPat = newStandPat;
+			}
+
+			Evaluates::Value getNewStandPat() const {
+				return newStandPat;
 			}
 
 			NodeStat getStat() const {

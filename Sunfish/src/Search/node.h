@@ -22,6 +22,7 @@ namespace Search {
 		Evaluates::Value posValue;
 		bool isNullMoveMaked;
 		Pv pv;
+		bool shek;
 
 	public:
 		Node() : pgen(NULL), pmove(NULL), isNullMoveMaked(false) {
@@ -139,6 +140,10 @@ namespace Search {
 			return pmove;
 		}
 
+		void setMove(const Shogi::Move* pmove) {
+			this->pmove = pmove;
+		}
+
 		bool isNullMove() const {
 			return isNullMoveMaked;
 		}
@@ -148,15 +153,27 @@ namespace Search {
 		}
 
 		void addHistory(History& history, int depth) const {
+			addHistory(history, depth, pgen->getCurrent());
+		}
+
+		void addHistory(History& history, int depth, int index) const {
 			assert(pmove != NULL);
-			for (unsigned i = 0; i < pgen->getCurrent(); i++) {
+			for (int i = 0; i < index; i++) {
 				history.addAppear(pgen->get(i), depth);
 			}
-			history.addGood(*pmove, depth);
+			history.addGood(pgen->get(index-1), depth);
 		}
 
 		void sort(Evaluates::Value values[]) {
 			pgen->sort(values);
+		}
+
+		void setShek(bool shek) {
+			this->shek = shek;
+		}
+
+		bool isShek() {
+			return shek;
 		}
 	};
 }

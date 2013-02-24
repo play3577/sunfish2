@@ -10,6 +10,7 @@
 
 #include "shekEntity.h"
 #include "../Shogi/position.h"
+#include "../Records/hashStack.h"
 
 namespace Shek {
 	class ShekTable : public Table::BaseTable<ShekEntity> {
@@ -20,6 +21,21 @@ namespace Shek {
 
 		ShekTable(unsigned bits) : 
 				Table::BaseTable<ShekEntity>(bits) {
+		}
+
+		void set(const Records::HashStack& hashStack) {
+			for (int i = 0; i < hashStack.size; i++) {
+				const Records::HashData& hashData = hashStack.stack[i];
+				_getEntity(hashData.boardHash)
+					.set(hashData.handSet, hashData.blackTurn);
+			}
+		}
+
+		void unset(const Records::HashStack& hashStack) {
+			for (int i = 0; i < hashStack.size; i++) {
+				const Records::HashData& hashData = hashStack.stack[i];
+				_getEntity(hashData.boardHash).unset();
+			}
 		}
 
 		void set(const Shogi::Position& pos) {
@@ -47,7 +63,8 @@ namespace Shek {
 		void debugPrint(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			getEntity(pos.getBoardHash()).debugPrint(HandSet(hand));
+			getEntity(pos.getBoardHash()).debugPrint(
+					HandSet(hand), pos.isBlackTurn());
 		}
 	};
 }

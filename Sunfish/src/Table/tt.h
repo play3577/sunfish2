@@ -27,8 +27,8 @@ namespace Table {
 				Evaluates::Value value,
 				int depth,
 				const Search::NodeStat& stat,
-				const Shogi::Move* pmove = NULL) {
-			return _getEntity(hash).update(hash, alpha, beta, value, depth, stat, pmove);
+				const Shogi::Move& move) {
+			return _getEntity(hash).update(hash, alpha, beta, value, depth, stat, move);
 		}
 	};
 }

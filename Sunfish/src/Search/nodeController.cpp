@@ -28,7 +28,7 @@ namespace Search {
 				&& !isTacticalMove()
 				&& depth >= (isRoot ? 2 * PLY1: PLY1)) {
 			// late move reduction
-			unsigned hist = tree.getHistory();
+			unsigned hist = tree.getHistory(move);
 			if (!isNullWindow()) {
 				if        (hist * 20U < History::SCALE) {
 					reduction = Searcher::PLY1 * 3 / 2;
@@ -53,7 +53,7 @@ namespace Search {
 				// futility pruning
 				if (standPat + estimate.getValue() + estimate.getError()
 						+ getFutMgn(depth - reduction, moveCount)
-						+ searcher.getGain(tree) <= alpha) {
+						+ searcher.getGain(move) <= alpha) {
 					pruning = true;
 					return;
 				}
@@ -62,6 +62,16 @@ namespace Search {
 	}
 	template void Searcher::NodeController::execute<true>();
 	template void Searcher::NodeController::execute<false>();
+
+	void Searcher::NodeController::executeInterior() {
+		// extended futility pruning
+		if (!isHash() && !isMateThreat()
+				&& !isCheckMove() && !isTacticalMove()) {
+			if (newStandPat - getFutMgn(getDepth(), getMoveCount()) >= -alpha) {
+				pruning = true;
+			}
+		}
+	}
 
 	int Searcher::NodeController::extension() const {
 		if (tree.getDepth() < rootDepth) {

@@ -36,6 +36,7 @@ namespace Cui {
 			MATE1,
 #ifndef NDEBUG
 			SEE,
+			EVALUATE,
 #endif // ifndef NDEBUG
 			CMD_NUM,
 
@@ -62,7 +63,9 @@ namespace Cui {
 
 		void showMoves(Shogi::MoveGenerator& gen);
 
-		void SeeTest(const Shogi::Position& pos, const Evaluates::Param& param);
+		void seeTest(const Shogi::Position& pos, const Evaluates::Param& param);
+
+		void evaluate(const Shogi::Position& pos, const Evaluates::Param& param);
 
 		Evaluates::Param* pparam;
 
@@ -73,6 +76,7 @@ namespace Cui {
 			bool autoWhite;
 			int depth;
 			int limit;
+			int worker;
 		} config;
 
 		Command inputCommand(const char* str);
@@ -103,6 +107,7 @@ namespace Cui {
 			config.autoWhite = false;
 			config.depth = 32;
 			config.limit = 10;
+			config.worker = 1;
 		}
 
 		void setFilename(const char* filename) {
@@ -123,6 +128,10 @@ namespace Cui {
 
 		void setLimit(int limit) {
 			config.limit = limit;
+		}
+
+		void setWorker(int worker) {
+			config.worker = worker;
 		}
 
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,

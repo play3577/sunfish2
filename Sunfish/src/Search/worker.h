@@ -8,6 +8,7 @@
 #ifndef WORKER_H_
 #define WORKER_H_
 
+#include "searchCounter.h"
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
 
@@ -19,12 +20,11 @@ namespace Search {
 	private:
 		boost::thread* thread;
 		Searcher* psearcher;
-		int tree;
 		int worker;
-		bool job;
-		bool shutdown;
-
-		void waitForJob(Tree* suspend = NULL);
+		volatile int tree;
+		volatile bool job;
+		volatile bool shutdown;
+		SearchCounter counter;
 
 	public:
 		Worker(int worker = 0, Searcher* psearcher = NULL) :
@@ -37,6 +37,7 @@ namespace Search {
 		}
 
 		void start() {
+			job = false;
 			shutdown = false;
 			thread = new boost::thread(boost::bind(
 					&Worker::waitForJob, this, (Tree*)NULL));
@@ -46,6 +47,29 @@ namespace Search {
 			shutdown = true;
 			thread->join();
 			delete thread;
+		}
+
+		void waitForJob(Tree* suspend = NULL);
+
+		void setJob(int tree) {
+			this->tree = tree;
+			job = true;
+		}
+
+		void unsetJob() {
+			job = false;
+		}
+
+		bool hasJob() const {
+			return job;
+		}
+
+		bool mustShutdown() const {
+			return shutdown;
+		}
+
+		SearchCounter& getCounter() {
+			return counter;
 		}
 	};
 }

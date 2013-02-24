@@ -57,8 +57,15 @@ namespace Shek {
 			return cnt;
 		}
 
-		void debugPrint(const HandSet&) const {
-			Log::debug << "ShekEntity::cnt=[" << cnt << "]\n";
+		void debugPrint(const HandSet& handSet, bool blackTurn) const {
+			Log::debug << "********** SHEK DEBUG **********\n";
+			Log::debug << "cnt=[" << cnt << "]\n";
+			Log::debug << "check=[" << check(handSet, blackTurn) << "]\n";
+			Log::debug << "handSet(current)=[" << handSet.toString() << "]\n";
+			Log::debug << "handSet=[" << this->handSet.toString() << "]\n";
+			Log::debug << "blackTurn(current)=[" << blackTurn << "]\n";
+			Log::debug << "blackTurn=[" << this->blackTurn << "]\n";
+			Log::debug << "********************************\n";
 		}
 	};
 }

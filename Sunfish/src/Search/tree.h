@@ -9,9 +9,13 @@
 #define TREE_H_
 
 #include "../Evaluates/evaluate.h"
-#include "../Records/record.h"
+#include "../Records/hashStack.h"
+#include "../Shek/shekTable.h"
+#include "nodeStat.h"
 #include "node.h"
 #include <boost/algorithm/string.hpp>
+#define BOOST_THREAD_USE_LIB
+#include <boost/thread.hpp>
 
 namespace Search {
 	class Tree {
@@ -23,24 +27,47 @@ namespace Search {
 		Node* nodes;
 		int depth;
 		int maxDepth;
+		boost::mutex mutex;
 
 	public:
+		// 並列探索用
+		struct SPLIT {
+			static const int TREE_NULL = -1;
+			volatile int self; // 自分の番号
+			volatile int parent; // 親の番号
+			volatile int worker; // worker の番号
+			volatile bool used; // 使用状態
+			volatile int childCount; // 子供の tree の数
+			volatile bool shutdown; // 直ちに終了
+			volatile int depth; // 残り深さ
+			Evaluates::Value alpha; // alpha値
+			Evaluates::Value beta; // beta値
+			NodeStat stat; // node status
+			Evaluates::Value standPat; // stand pat
+			volatile bool mateThreat; // 詰めろ
+			volatile bool pvNode;
+			Evaluates::Value value; // 暫定解 (workerが更新)
+			Shogi::Move best; // 暫定解 (workerが更新)
+		} split;
+
 		static const int DEF_MAX_DEPTH = 64;
 
 		Tree(const Evaluates::Param& param, History& history,
-				int maxDepth = DEF_MAX_DEPTH) :
+				int index = 0, int maxDepth = DEF_MAX_DEPTH) :
 				eval(param), history(history),
 				nodes(NULL) {
 			init(maxDepth);
+			split.self = index;
 		}
 
 		Tree(const Evaluates::Param& param,
 				const Shogi::Position& pos, History& history,
-				int maxDepth = DEF_MAX_DEPTH) :
+				int index = 0, int maxDepth = DEF_MAX_DEPTH) :
 				pos(pos), eval(param),
 				history(history), nodes(NULL) {
 			eval.init(pos);
 			init(maxDepth);
+			split.self = index;
 		}
 
 		virtual ~Tree() {
@@ -88,6 +115,10 @@ namespace Search {
 			return nodes[depth].setPv(nodes[depth+1]);
 		}
 
+		int updatePv(const Tree& child) {
+			return nodes[depth].setPv(child.nodes[depth+1]);
+		}
+
 		const Pv& getPv() const {
 			return nodes[depth].getPv();
 		}
@@ -112,24 +143,30 @@ namespace Search {
 			return nodes[depth].next();
 		}
 
-		bool makeMove() {
+		bool makeMove(bool shek) {
+			nodes[depth].setShek(shek);
 			if (depth < maxDepth) {
+				if (shek) { shekSet(); }
 				nodes[depth++].makeMove(pos, eval);
 				return true;
 			}
 			return false;
 		}
 
-		bool nullMove() {
+		bool nullMove(bool shek) {
+			nodes[depth].setShek(shek);
+			if (shek) { shekSet(); }
 			if (depth < maxDepth && nodes[depth].nullMove(pos, eval)) {
 				depth++;
 				return true;
 			}
+			if (shek) { shekUnset(); }
 			return false;
 		}
 
 		void unmakeMove() {
 			nodes[--depth].unmakeMove(pos, eval);
+			if (nodes[depth].isShek()) { shekUnset(); }
 		}
 
 		const Shogi::Move* getPrevMove() const {
@@ -140,8 +177,12 @@ namespace Search {
 			return nodes[depth].getMove();
 		}
 
+		void setMove(const Shogi::Move& move) {
+			nodes[depth].setMove(&move);
+		}
+
 		void debugPrint() const {
-			Log::debug << debugString() << "\n";
+			Log::debug << debugString() << "¥n";
 		}
 
 		std::string debugString() const {
@@ -266,8 +307,16 @@ namespace Search {
 			nodes[this->depth].addHistory(history, depth);
 		}
 
+		void addHistory(int depth, int index) const {
+			nodes[this->depth].addHistory(history, depth, index);
+		}
+
 		unsigned getHistory() const {
 			return history.get(*getCurrentMove());
+		}
+
+		unsigned getHistory(const Shogi::Move& move) const {
+			return history.get(move);
 		}
 
 		void sort(Evaluates::Value values[]) {
@@ -300,15 +349,19 @@ namespace Search {
 		}
 
 		void shekSet(const Records::HashStack& hashStack) {
-			for (int i = 0; i < hashStack.size; i++) {
-				shekTable.set(hashStack.stack[i]);
-			}
+			shekTable.set(hashStack);
 		}
 
 		void shekUnset(const Records::HashStack& hashStack) {
-			for (int i = hashStack.size - 1; i >= 0; i--) {
-				shekTable.unset(hashStack.stack[i]);
-			}
+			shekTable.unset(hashStack);
+		}
+
+		void shekSet() {
+			shekTable.set(pos);
+		}
+
+		void shekUnset() {
+			shekTable.unset(pos);
 		}
 
 		Shek::ShekStat shekCheck() const {
@@ -323,12 +376,54 @@ namespace Search {
 			shekTable.debugPrint(pos);
 		}
 
-		void shekSet() {
-			shekTable.set(pos);
+		// split するときに親 tree へ情報をセット
+		void setParentInfo(int depth,
+				Evaluates::Value alpha,
+				Evaluates::Value beta,
+				Evaluates::Value value,
+				NodeStat stat,
+				Evaluates::Value standPat,
+				bool mateThreat,
+				bool pvNode,
+				int childCount) {
+			split.depth = depth;
+			split.alpha = alpha;
+			split.beta = beta;
+			split.value = value;
+			split.stat = stat;
+			split.standPat = standPat;
+			split.mateThreat = mateThreat;
+			split.pvNode = pvNode;
+			split.childCount = childCount;
 		}
 
-		void shekUnset() {
-			shekTable.unset(pos);
+		// split した時の子 tree に対して呼ぶ
+		void use(Tree& tree, int worker) {
+			fastCopy(tree);
+			split.parent = tree.split.self;
+			split.worker = worker;
+			split.used = true;
+			split.shutdown = false;
+		}
+
+		// root 局面が一致している場合に高速に同じ局面へ遷移する。
+		void fastCopy(Tree& tree);
+
+		// メインスレッドの場合
+		void use(int worker) {
+			split.parent = SPLIT::TREE_NULL;
+			split.worker = worker;
+			split.used = true;
+			split.shutdown = false;
+		}
+
+		// tree の解放
+		void unuse() {
+			split.used = false;
+		}
+
+		boost::mutex& getMutex() {
+			return mutex;
 		}
 	};
 }

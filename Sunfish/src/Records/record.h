@@ -8,25 +8,10 @@
 #ifndef RECORD_H_
 #define RECORD_H_
 
+#include "hashStack.h"
 #include "../Shogi/position.h"
 
 namespace Records {
-	struct HashStack {
-		const Util::uint64* stack;
-		int size;
-		HashStack(const HashStack& hashStack) {
-			this->stack = hashStack.stack;
-			this->size = hashStack.size;
-		}
-		HashStack(const Util::uint64* stack, int size) {
-			this->stack = stack;
-			this->size = size;
-		}
-		static HashStack nan() {
-			return HashStack(NULL, 0);
-		}
-	};
-
 	class Record {
 	private:
 		static const int STACK_SIZE = 1024;
@@ -35,7 +20,7 @@ namespace Records {
 		int cur;
 		Shogi::Move moveStack[STACK_SIZE];
 		Shogi::Change changeStack[STACK_SIZE];
-		Util::uint64 hashStack[STACK_SIZE];
+		HashData hashStack[STACK_SIZE];
 
 	public:
 		Record() {
@@ -50,10 +35,20 @@ namespace Records {
 			initStack();
 		}
 
+		void setHashStack(int index, const Shogi::Position& pos) {
+			hashStack[index].positionHash = pos.getHash();
+			hashStack[index].boardHash = pos.getBoardHash();
+			hashStack[index].handHash = pos.getHandHash();
+			hashStack[index].turnHash = pos.getTurnHash();
+			hashStack[index].handSet = Shek::HandSet(pos.isBlackTurn()
+					? pos.getBlackHand() : pos.getBlackHand());
+			hashStack[index].blackTurn = pos.isBlackTurn();
+		}
+
 		void initStack() {
 			num = 0;
 			cur = 0;
-			hashStack[0] = pos.getHash();
+			setHashStack(0, pos);
 		}
 
 		void init(const Shogi::Position& pos) {
@@ -67,7 +62,7 @@ namespace Records {
 				moveStack[cur] = move;
 				changeStack[cur] = change;
 				num = ++cur;
-				hashStack[cur] = pos.getHash();
+				setHashStack(cur, pos);
 				return true;
 			}
 			return false;
@@ -142,7 +137,7 @@ namespace Records {
 		}
 
 		Util::uint64 getHash(int index) {
-			return hashStack[index];
+			return hashStack[index].positionHash;
 		}
 
 		bool isRepetition(bool full = true) const;

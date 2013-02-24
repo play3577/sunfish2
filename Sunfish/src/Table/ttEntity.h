@@ -38,7 +38,7 @@ namespace Table {
 				int newValueType,
 				int newDepth,
 				const Search::NodeStat& newStat,
-				const Shogi::Move* pmove) {
+				const Shogi::Move& move) {
 			if (newDepth < 0) { newDepth = 0; }
 
 			if (valueType == UNKNOWN) {
@@ -52,7 +52,7 @@ namespace Table {
 			valueType = newValueType;
 			depth = newDepth;
 			stat = newStat;
-			if (pmove != NULL) { hashMove.update(*pmove); }
+			if (!move.isEmpty()) { hashMove.update(move); }
 			checkSum = generateCheckSum();
 
 			return true;
@@ -80,7 +80,7 @@ namespace Table {
 				Evaluates::Value newValue,
 				int newDepth,
 				const Search::NodeStat& newStat,
-				const Shogi::Move* pmove) {
+				const Shogi::Move& move) {
 			int newValueType;
 			if (newValue >= beta) {
 				newValueType = LOWER;
@@ -89,7 +89,7 @@ namespace Table {
 			} else {
 				newValueType = EXACT;
 			}
-			return update(newHash, newValue, newValueType, newDepth, newStat, pmove);
+			return update(newHash, newValue, newValueType, newDepth, newStat, move);
 		}
 
 		bool is(Util::uint64 hash) const {

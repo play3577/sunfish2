@@ -27,10 +27,10 @@ namespace Search {
 		while (tree.next()) {
 			makeMove(tree, false);
 			if (tree.isMate()) {
-				unmakeMove(tree, false);
+				unmakeMove(tree);
 				return true;
 			}
-			unmakeMove(tree, false);
+			unmakeMove(tree);
 		}
 		return false; // 不詰め
 	}
@@ -42,6 +42,9 @@ namespace Search {
 	 * beta  : beta値                                              *
 	 ***************************************************************/
 	Value Searcher::quies(Tree& tree, int ply, Value alpha, Value beta) {
+		Worker& worker = workers[tree.split.worker];
+		SearchCounter& counter = worker.getCounter();
+
 		counter.nodes++;
 
 #if VARIATION_DEBUG
@@ -91,8 +94,8 @@ namespace Search {
 			// 子ノードを展開
 			makeMove(tree, false);
 			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
-			unmakeMove(tree, false);
-			if (isInterrupted()) { return Value(0); }
+			unmakeMove(tree);
+			if (isInterrupted(tree)) { return Value(0); }
 
 			if (newValue > value) {
 				value = newValue;
@@ -117,14 +120,22 @@ namespace Search {
 	template <bool pvNode>
 	Value Searcher::negaMax(Tree& tree, int depth,
 			Value alpha, Value beta, NodeStat stat) {
+		Worker& worker = workers[tree.split.worker];
+		SearchCounter& counter = worker.getCounter();
+
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-6364FU")) {
+		if (tree.is("-7374GI +6655KA")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
+#if 0
+		if (tree.is("-2332GI")) {
+			tree.shekDebug();
+		}
+#endif
 
 #if VARIATION_DEBUG
 		tree.debugPrint();
@@ -133,7 +144,7 @@ namespace Search {
 		// TODO: distance pruning
 
 #ifndef NLEARN
-		if (config.isLearning)
+		if (!config.isLearning)
 #endif // NLEARN
 		{
 			switch (shekCheck(tree)) {
@@ -177,7 +188,7 @@ namespace Search {
 		if (ttEntity.is(hash)) { // 局面が一致したら
 			if (ttEntity.isSuperior(depth)
 #ifndef NLEARN
-					&& config.isLearning
+					&& !config.isLearning
 #endif // NLEARN
 					) {
 				switch (ttEntity.getValueType()) {
@@ -231,8 +242,8 @@ namespace Search {
 						(depth >= PLY1*9/2 ? depth - PLY1*3 : depth - PLY1*2));
 				if (nullMove(tree, false)) {
 					Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, NodeStat().unsetNullMove());
-					unmakeMove(tree, false);
-					if (isInterrupted()) { return Value(0); }
+					unmakeMove(tree);
+					if (isInterrupted(tree)) { return Value(0); }
 					if (newValue >= beta) {
 						counter.nullMovePruning++;
 						// TT entry
@@ -252,7 +263,7 @@ namespace Search {
 			int newDepth = depth >= PLY1*9/2 ? depth - PLY1*3 : PLY1*3/2;
 			negaMax<pvNode>(tree, newDepth, alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
-			if (isInterrupted()) { return Value(0); }
+			if (isInterrupted(tree)) { return Value(0); }
 			const TTEntity& tte = tt.getEntity(hash);
 			if (tte.is(hash)) {
 				tree.setHashMove(tte.getHashMove());
@@ -263,7 +274,7 @@ namespace Search {
 		tree.generateMoves();
 
 		Value value = Value::MIN;
-		const Move* best = NULL;
+		Move best;
 		while (tree.next()) {
 			assert(tree.getCurrentMove() != NULL);
 #if NODE_DEBUG
@@ -274,7 +285,7 @@ namespace Search {
 
 			Value newAlpha = Value::max(alpha, value);
 
-			NodeController node(*this, tree, rootDepth, stat,
+			NodeController node(*this, tree, tree, rootDepth, stat,
 					depth - PLY1, newAlpha, standPat,
 					beta == alpha + 1, mate);
 			node.execute();
@@ -282,16 +293,6 @@ namespace Search {
 			if (node.isPruning()) {
 				value = newAlpha; // fail soft
 				counter.futilityPruning++;
-#if NODE_DEBUG
-				if (debugNode) {
-					Log::debug << ',' << __LINE__;
-					if (tree.getCurrentMove()->toStringCsa() == "+4748KI") {
-						Log::debug << ",fut_mgn=[" << getFutMgn(node.getDepth(), node.getMoveCount()) << "]"
-								<< " gain=[" << getGain(tree) << "]"
-								<< " depth=[" << node.getDepth() << "]";
-					}
-				}
-#endif // NODE_DEBUG
 				continue;
 			}
 
@@ -300,26 +301,18 @@ namespace Search {
 			makeMove(tree);
 
 			// new stand-pat
-			Value newStandPat = tree.negaEvaluate();
+			node.setNewStandPat(tree.negaEvaluate());
+			node.executeInterior();
 
-			// extended futility pruning
-			if (!node.isHash() && !node.isMateThreat()
-					&& !node.isCheckMove() && !node.isTacticalMove()) {
-				if (newStandPat - getFutMgn(node.getDepth(), node.getMoveCount()) >= -newAlpha) {
-					unmakeMove(tree);
-					value = newAlpha; // fail soft
-					counter.exFutilityPruning++;
-#if NODE_DEBUG
-					if (debugNode) {
-						Log::debug << ',' << __LINE__;
-					}
-#endif // NODE_DEBUG
-					continue;
-				}
+			if (node.isPruning()) {
+				unmakeMove(tree);
+				value = newAlpha; // fail soft
+				counter.exFutilityPruning++;
+				continue;
 			}
 
 			updateGain(tree, standPat + node.getEstimate().getValue(),
-					newStandPat);
+					node.getNewStandPat());
 
 #if NODE_DEBUG
 			Util::uint64 beforeNodes = counter.nodes;
@@ -340,7 +333,7 @@ namespace Search {
 					Log::debug << ',' << __LINE__;
 				}
 #endif // NODE_DEBUG
-				if (!isInterrupted() && newValue > newAlpha
+				if (!isInterrupted(tree) && newValue > newAlpha
 						&& node.isReduced() != 0) {
 					// reductionをなくして再探索
 					newValue = -negaMax<false>(tree,
@@ -352,7 +345,7 @@ namespace Search {
 					}
 #endif // NODE_DEBUG
 				}
-				if (!isInterrupted() && newValue > newAlpha && beta > newAlpha + 1) {
+				if (!isInterrupted(tree) && newValue > newAlpha && beta > newAlpha + 1) {
 					// windowを広げて再探索
 					newValue = -negaMax<pvNode>(tree,
 							node.getDepth(false),
@@ -375,18 +368,18 @@ namespace Search {
 			// unmake move
 			unmakeMove(tree);
 
-			if (isInterrupted()) {
+			if (isInterrupted(tree)) {
 				return Value(0);
 			}
 
 			if (newValue > value) {
 				value = newValue;
 				tree.updatePv();
-				best = tree.getCurrentMove();
+				best = *tree.getCurrentMove();
 
 				// beta cut
 				if (value >= beta) {
-					if (!tree.isCapture()) {
+					if (!node.isCapture()) {
 						tree.addHistory(depth);
 						tree.addKiller(newValue - standPat);
 					} else if (!node.isHash()) {
@@ -398,6 +391,21 @@ namespace Search {
 					}
 #endif // NODE_DEBUG
 					break;
+				}
+			}
+
+			if (workerSize >= 2 &&
+					(depth >= PLY1 * 4 || (depth >= PLY1 * 3 && rootDepth <= 10)) &&
+					(tree.isCheck() || tree.getNumberOfMoves() >= 4)) {
+				if (split(tree, depth, alpha, beta, value, stat, standPat, mate, pvNode)) {
+					if (isInterrupted(tree)) {
+						return Value(0);
+					}
+					if (tree.split.value > value) {
+						value = tree.split.value;
+						best = tree.split.best;
+						break;
+					}
 				}
 			}
 		}
@@ -444,6 +452,8 @@ namespace Search {
 	 ***************************************************************/
 	bool Searcher::idSearch(SearchResult& result) {
 		Tree& tree = trees[0];
+		Worker& worker = workers[tree.split.worker];
+		SearchCounter& counter = worker.getCounter();
 
 		// 最善手の評価値
 		Value maxValue = Value::MIN;
@@ -489,7 +499,7 @@ namespace Search {
 				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
-				NodeController node(*this, tree, rootDepth,
+				NodeController node(*this, tree, tree, rootDepth,
 						NodeStat(), depth * PLY1, alpha,
 						standPat, false, false);
 				node.execute(true);
@@ -510,7 +520,7 @@ revaluation:
 						// null window searchを試みる。
 						vtemp = -negaMax<false>(tree,
 								node.getDepth(), -alpha - 1, -alpha);
-						if (!isInterrupted() && vtemp > alpha && node.isReduced()) {
+						if (!isInterrupted(tree) && vtemp > alpha && node.isReduced()) {
 							vtemp = -negaMax<false>(tree,
 									node.getDepth(false), -alpha - 1, -alpha);
 						}
@@ -518,7 +528,7 @@ revaluation:
 						Log::debug << "n";
 #endif // ROOT_NODE_DEBUG
 					}
-					if (!doNullWind || (!isInterrupted() && vtemp > alpha && vtemp < Value::MATE)) {
+					if (!doNullWind || (!isInterrupted(tree) && vtemp > alpha && vtemp < Value::MATE)) {
 #if ROOT_NODE_DEBUG
 						Log::debug << "(" << vtemp << ")";
 #endif // ROOT_NODE_DEBUG
@@ -541,7 +551,7 @@ revaluation:
 #endif // ROOT_NODE_DEBUG
 				// 手を戻す。
 				unmakeMove(tree);
-				if (isInterrupted()) {
+				if (isInterrupted(tree)) {
 					goto lab_search_end;
 				}
 				// fail-high
@@ -597,7 +607,7 @@ revaluation:
 				Log::debug << '\n';
 #endif // ROOT_NODE_DEBUG
 				config.pvHandler->pvHandler(tree.getPv(), maxValue,
-						counter.nodes, depth + 1, timer.elapsed());
+						counter.nodes, depth + 1, timer.get());
 			}
 
 			// 詰み
@@ -614,7 +624,7 @@ lab_search_end:
 #endif // ROOT_NODE_DEBUG
 			int lastDepth = depth < config.depth ? depth + 1 : config.depth;
 			config.pvHandler->pvHandler(tree.getPv(), maxValue,
-					counter.nodes, lastDepth, timer.elapsed());
+					counter.nodes, lastDepth, timer.get());
 		}
 
 		// 後処理

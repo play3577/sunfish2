@@ -35,6 +35,7 @@ namespace Cui {
 		{ "1", "mate1", MATE1, "search check-mate on 1 ply." },
 #ifndef NDEBUG
 		{ NULL, "see", SEE, "static exchange evaluation test.(DEBUG)" },
+		{ NULL, "eval", EVALUATE, "show evaluation.(DEBUG)" },
 #endif // ifndef NDEBUG
 	};
 
@@ -130,7 +131,7 @@ namespace Cui {
 		std::cout << '\n';
 	}
 
-	void Controller::SeeTest(const Position& pos, const Param& param) {
+	void Controller::seeTest(const Position& pos, const Param& param) {
 		MoveGenerator gen(pos);
 		gen.generateCapture();
 		const Move* pmove;
@@ -138,6 +139,11 @@ namespace Cui {
 			Attackers attackers(param, pos, *pmove);
 			std::cout << pmove->toString() << ':' << (int)attackers.see() << '\n';
 		}
+	}
+
+	void Controller::evaluate(const Position& pos, const Param& param) {
+		Evaluate eval(param, pos);
+		std::cout << eval.getValue() << '\n';
 	}
 
 	void Controller::printPosition(const Record& record) const {
@@ -165,7 +171,7 @@ namespace Cui {
 		char line[1024];
 		Command prevCommand = EMPTY;
 		Record record;
-		Searcher searcher(*pparam);
+		Searcher searcher(*pparam, config.worker);
 		SearchConfig searchConfig = SearchConfig::getDefault();
 		SearchResult result;
 
@@ -300,7 +306,10 @@ namespace Cui {
 				break;
 #ifndef NDEBUG
 			case SEE:
-				SeeTest(record.getPosition(), *pparam);
+				seeTest(record.getPosition(), *pparam);
+				break;
+			case EVALUATE:
+				evaluate(record.getPosition(), *pparam);
 				break;
 #endif // ifndef NDEBUG
 			default: // 指し手入力

@@ -56,6 +56,10 @@ namespace Shek {
 				return NONE;
 			}
 		}
+
+		std::string toString() const {
+			return Util::Int::toString64(handSet);
+		}
 	};
 }
 #endif // HANDSET_H_

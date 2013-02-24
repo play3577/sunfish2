@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
 			("auto-white,w", "search will be begun automatically on white turn.")
 			("depth,d", value<int>(), "search depth")
 			("limit,l", value<int>(), "search limit(sec)")
+			("parallel,p", value<int>(), "number of worker threads")
 			("file,f", value<std::string>(), "CSA file name to read")
 			;
 	variables_map argmap;
@@ -147,6 +148,9 @@ int main(int argc, char* argv[]) {
 	}
 	if (argmap.count("limit")) {
 		controller.setLimit(argmap["limit"].as<int>());
+	}
+	if (argmap.count("parallel")) {
+		controller.setWorker(argmap["parallel"].as<int>());
 	}
 	if (argmap.count("file")) {
 		controller.setFilename(argmap["file"].as<std::string>().c_str());
