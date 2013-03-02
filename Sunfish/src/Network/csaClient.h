@@ -25,6 +25,8 @@
 namespace Network {
 	class CsaClient : public Search::PvHandler {
 	private:
+		boost::mutex recvMutex;
+
 		enum RECV_FLAG {
 			RECV_NULL      = 0x000000,
 
@@ -84,8 +86,6 @@ namespace Network {
 			const char* name;
 		};
 		static const ReceiveFlagSet flagSets[RECV_NUM];
-
-		boost::mutex recvMutex;
 
 		const char* configFilename;
 		CsaClientConfig config;

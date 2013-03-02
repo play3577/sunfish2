@@ -43,6 +43,12 @@ namespace Search {
 					&Worker::waitForJob, this, (Tree*)NULL));
 		}
 
+		void startCurrentThread(int tree) {
+			this->tree = tree;
+			shutdown = false;
+			job = true;
+		}
+
 		void stop() {
 			shutdown = true;
 			thread->join();

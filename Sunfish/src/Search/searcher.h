@@ -16,6 +16,7 @@
 #include "pvHandler.h"
 #include "tree.h"
 #include "worker.h"
+#include <vector>
 #include <algorithm>
 #define BOOST_THREAD_USE_LIB
 #include <boost/thread.hpp>
@@ -45,29 +46,19 @@ namespace Search {
 		Pv pv;
 		Evaluates::Value value;
 		SearchCounter counter;
+		std::vector<SearchCounter> counters;
 		double sec;
 		double nps;
 
-		std::string toString() const {
-			Util::TableString table("* ", " :", "");
-			table.row() << "VALUE" << value;
-			table.row() << "NODES" << counter.nodes;
-			table.row() << "SEC" << sec;
-			table.row() << "NPS" << nps;
-			table.row() << "HASH PRUNING" << counter.hashPruning;
-			table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
-			table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
-			table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
-			table.row() << "SHEK PRUNING" << counter.shekPruning;
-			if (!resign) {
-				table.row() << "MOVE" << move.toString();
-			}
-			return table.get();
-		}
+		std::string toString() const;
 	};
 
 	class Searcher {
 	private:
+		// mutex
+		boost::mutex splitMutex;
+		boost::mutex flagMutex;
+
 		static const int DEFAULT_WORKER_SIZE = 1;
 		static const int NO_SET_TREE_SIZE = 0;
 		Tree* trees;
@@ -76,7 +67,6 @@ namespace Search {
 		Worker* workers;
 		int workerSize;
 		int idleWorker;
-		boost::mutex splitMutex;
 
 		Table::TT tt;
 		History history;
@@ -87,10 +77,9 @@ namespace Search {
 		Records::HashStack hashStack;
 
 		//flags 
-		bool running;
-		bool signalInterrupt;
-		bool signalForceInterrupt;
-		boost::mutex flagMutex;
+		volatile bool running;
+		volatile bool signalInterrupt;
+		volatile bool signalForceInterrupt;
 
 		Evaluates::Value quies(Tree& tree, int ply,
 				Evaluates::Value alpha,
@@ -112,98 +101,20 @@ namespace Search {
 				Evaluates::Value standPat,
 				bool mateThreat, bool pvNode);
 
-		void before(SearchResult& result) {
-			{
-				boost::mutex::scoped_lock lock(flagMutex);
-				running = true;
-				signalInterrupt = false;
-				signalForceInterrupt = false;
-			}
-			if (hashStack.stack != NULL) {
-				for (int i = 0; i < treeSize; i++) {
-					trees[i].shekSet(hashStack);
-				}
-			}
-			memset(&result, 0, sizeof(SearchResult));
-			memset(&gain, 0, sizeof(gain));
-			history.clear();
-			tt.init();
-			// 並列探索用
-			idleTree = treeSize - 1;
-			idleWorker = workerSize - 1;
-			trees[0].use(0);
-			for (int i = 1; i < treeSize; i++) {
-				trees[i].unuse();
-			}
-			for (int i = 0; i < workerSize; i++) {
-			}
-			workers[0].setJob(0);
-			workers[0].getCounter().init();
-			for (int i = 1; i < workerSize; i++) {
-				workers[i].start();
-				workers[i].getCounter().init();
-			}
-			// 時間計測開始
-			timer.set();
-		}
+		void before(SearchResult& result);
 
-		bool after(SearchResult& result, Evaluates::Value value) {
-			// 並列探索用
-			SearchCounter counter;
-			counter += workers[0].getCounter();
-			for (int i = 1; i < workerSize; i++) {
-				workers[i].stop();
-				counter += workers[i].getCounter();
-			}
+		bool after(SearchResult& result, Evaluates::Value value);
 
-			if (hashStack.stack != NULL) {
-				for (int i = 0; i < treeSize; i++) {
-					trees[i].shekUnset(hashStack);
-				}
-			}
-			result.value = value;
-			const Shogi::Move* pmove = trees[0].getPv().getTop();
-			result.pv.copy(trees[0].getPv());
-			result.sec = timer.get();
-			result.counter = counter;
-			result.nps = result.counter.nodes / result.sec;
-			bool ok;
-			if (pmove != NULL) {
-				result.resign = false;
-				result.move = *pmove;
-				ok = true;
-			} else {
-				result.resign = true;
-				ok = false;
-			}
-			{
-				boost::mutex::scoped_lock lock(flagMutex);
-				running = false;
-				signalInterrupt = false;
-				signalForceInterrupt = false;
-			}
-			return ok;
-		}
-
-		void updateGain(const Search::Tree& tree,
+		void updateGain(const Shogi::Move& move,
 				const Evaluates::Value& before, const Evaluates::Value& after) {
-			const Shogi::Move* pmove = tree.getCurrentMove();
-			if (pmove != NULL) {
-				updateGain(pmove->getPiece(), pmove->getTo(), before, after);
-			}
+			updateGain(move.getPiece(), move.getTo(), before, after);
 		}
 
 		void updateGain(const Shogi::Piece& piece, const Shogi::Square& square,
 				const Evaluates::Value& before, const Evaluates::Value& after) {
+			assert(piece <= Shogi::Piece::WDRAGON);
+			assert(square <= Shogi::Square::END);
 			gain[piece][square] = std::max(-(before + after), gain[piece][square] - 1);
-		}
-
-		Evaluates::Value getGain(const Search::Tree& tree) const {
-			const Shogi::Move* pmove = tree.getCurrentMove();
-			if (pmove != NULL) {
-				return getGain(*pmove);
-			}
-			return Evaluates::Value(0);
 		}
 
 		Evaluates::Value getGain(const Shogi::Move& move) const {
@@ -368,28 +279,11 @@ namespace Search {
 		// iterative-deepening search
 		bool idSearch(SearchResult& result);
 
-		bool interrupt() {
-			boost::mutex::scoped_lock lock(flagMutex);
-			if (running) {
-				bool ret = !signalInterrupt;
-				signalInterrupt = true;
-				return ret;
-			}
-			return false;
-		}
+		bool interrupt();
 
-		bool forceInterrupt() {
-			boost::mutex::scoped_lock lock(flagMutex);
-			if (running) {
-				bool ret = !signalForceInterrupt;
-				signalForceInterrupt = true;
-				return ret;
-			}
-			return false;
-		}
+		bool forceInterrupt();
 
 		bool isRunning() {
-			boost::mutex::scoped_lock lock(flagMutex);
 			return running;
 		}
 
@@ -401,7 +295,7 @@ namespace Search {
 
 		void releaseTree(int index) {
 			trees[index].unuse();
-			idleTree--;
+			idleTree++;
 			int parent = trees[index].split.parent;
 			trees[parent].split.childCount--;
 		}
@@ -475,6 +369,10 @@ namespace Search {
 			}
 
 			void executeInterior();
+
+			const Shogi::Move& getMove() const {
+				return move;
+			}
 
 			bool isPruning() const {
 				return pruning;

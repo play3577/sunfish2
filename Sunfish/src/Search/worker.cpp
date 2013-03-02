@@ -33,7 +33,7 @@ namespace Search {
 
 			// worker の終了
 			if (shutdown) {
-				break;
+				return;
 			}
 
 			if (job) {

@@ -11,6 +11,7 @@
 #include "shekEntity.h"
 #include "../Shogi/position.h"
 #include "../Records/hashStack.h"
+#include "../Table/baseTable.h"
 
 namespace Shek {
 	class ShekTable : public Table::BaseTable<ShekEntity> {
@@ -23,20 +24,9 @@ namespace Shek {
 				Table::BaseTable<ShekEntity>(bits) {
 		}
 
-		void set(const Records::HashStack& hashStack) {
-			for (int i = 0; i < hashStack.size; i++) {
-				const Records::HashData& hashData = hashStack.stack[i];
-				_getEntity(hashData.boardHash)
-					.set(hashData.handSet, hashData.blackTurn);
-			}
-		}
+		void set(const Records::HashStack& hashStack);
 
-		void unset(const Records::HashStack& hashStack) {
-			for (int i = 0; i < hashStack.size; i++) {
-				const Records::HashData& hashData = hashStack.stack[i];
-				_getEntity(hashData.boardHash).unset();
-			}
-		}
+		void unset(const Records::HashStack& hashStack);
 
 		void set(const Shogi::Position& pos) {
 			const Shogi::Hand& hand = pos.isBlackTurn()

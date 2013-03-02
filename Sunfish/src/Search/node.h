@@ -61,8 +61,16 @@ namespace Search {
 			pgen->getKiller().add(move, value);
 		}
 
+		void setKiller(const Node& node) {
+			pgen->getKiller() = node.pgen->getKiller();
+		}
+
 		int setPv(const Node& node) {
 			return pv.set(*pmove, node.pv);
+		}
+
+		int setPv(const Shogi::Move& move, const Node& node) {
+			return pv.set(move, node.pv);
 		}
 
 		const Pv& getPv() const {
@@ -157,7 +165,8 @@ namespace Search {
 		}
 
 		void addHistory(History& history, int depth, int index) const {
-			assert(pmove != NULL);
+			assert((unsigned)index-1 <= pgen->getCurrent());
+			assert((unsigned)index-1 < pgen->getNumber());
 			for (int i = 0; i < index; i++) {
 				history.addAppear(pgen->get(i), depth);
 			}

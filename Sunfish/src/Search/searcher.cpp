@@ -6,7 +6,9 @@
  */
 
 #include "aspWindow.h"
+#include "timeManager.h"
 #include "searcher.h"
+#include <sstream>
 
 #define ROOT_NODE_DEBUG				0
 #define NODE_DEBUG					0
@@ -16,6 +18,128 @@ namespace Search {
 	using namespace Shogi;
 	using namespace Evaluates;
 	using namespace Table;
+
+	std::string SearchResult::toString() const {
+		Util::TableString table("* ", " :", "");
+		table.row() << "VALUE" << value;
+		for (unsigned i = 0; i < counters.size(); i++) {
+			std::ostringstream oss;
+			oss << "NODES(" << i << ")";
+			table.row() << oss.str() << counters[i].nodes;
+		}
+		table.row() << "NODES(ALL)" << counter.nodes;
+		table.row() << "SEC" << sec;
+		table.row() << "NPS" << nps;
+		table.row() << "HASH PRUNING" << counter.hashPruning;
+		table.row() << "NULL MOVE PRUNING" << counter.nullMovePruning;
+		table.row() << "FUTILITY PRUNING" << counter.futilityPruning;
+		table.row() << "EXTENDED FUTILITY PRUNING" << counter.exFutilityPruning;
+		table.row() << "SHEK PRUNING" << counter.shekPruning;
+		if (!resign) {
+			table.row() << "MOVE" << move.toString();
+		}
+		return table.get();
+	}
+
+	bool Searcher::interrupt() {
+		boost::mutex::scoped_lock lock(flagMutex);
+		if (running) {
+			bool ret = !signalInterrupt;
+			signalInterrupt = true;
+			return ret;
+		}
+		return false;
+	}
+
+	bool Searcher::forceInterrupt() {
+		boost::mutex::scoped_lock lock(flagMutex);
+		if (running) {
+			bool ret = !signalForceInterrupt;
+			signalForceInterrupt = true;
+			return ret;
+		}
+		return false;
+	}
+
+	void Searcher::before(SearchResult& result) {
+		// 探索状態フラグ
+		{
+			boost::mutex::scoped_lock lock(flagMutex);
+			running = true;
+			signalInterrupt = false;
+			signalForceInterrupt = false;
+		}
+		// SHEKテーブルのセット
+		if (hashStack.stack != NULL) {
+			for (int i = 0; i < treeSize; i++) {
+				trees[i].shekSet(hashStack);
+			}
+		}
+		// 初期化
+		memset(&result, 0, sizeof(SearchResult));
+		memset(&gain, 0, sizeof(gain));
+		history.clear();
+		tt.init();
+		// 並列探索用
+		idleTree = treeSize - 1;
+		idleWorker = workerSize - 1;
+		trees[0].use(0);
+		for (int i = 1; i < treeSize; i++) {
+			trees[i].unuse();
+		}
+		for (int i = 0; i < workerSize; i++) {
+		}
+		workers[0].startCurrentThread(0);
+		workers[0].getCounter().init();
+		for (int i = 1; i < workerSize; i++) {
+			workers[i].start();
+			workers[i].getCounter().init();
+		}
+		// 時間計測開始
+		timer.set();
+	}
+
+	bool Searcher::after(SearchResult& result, Evaluates::Value value) {
+		// 並列探索用
+		for (int i = 1; i < workerSize; i++) {
+			workers[i].stop();
+		}
+		// SHEKテーブルのアンセット
+		if (hashStack.stack != NULL) {
+			for (int i = 0; i < treeSize; i++) {
+				trees[i].shekUnset(hashStack);
+			}
+		}
+		// 結果のセット
+		result.value = value;
+		const Shogi::Move* pmove = trees[0].getPv().getTop();
+		result.pv.copy(trees[0].getPv());
+		result.sec = timer.get();
+		SearchCounter counter;
+		for (int i = 0; i < workerSize; i++) {
+			result.counters.push_back(workers[i].getCounter());
+			counter += workers[i].getCounter();
+		}
+		result.counter = counter;
+		result.nps = result.counter.nodes / result.sec;
+		bool ok;
+		if (pmove != NULL) {
+			result.resign = false;
+			result.move = *pmove;
+			ok = true;
+		} else {
+			result.resign = true;
+			ok = false;
+		}
+		// 探索状態フラグ
+		{
+			boost::mutex::scoped_lock lock(flagMutex);
+			running = false;
+			signalInterrupt = false;
+			signalForceInterrupt = false;
+		}
+		return ok;
+	}
 
 	/***************************************************************
 	 * mate 1 ply search                                           *
@@ -311,7 +435,8 @@ namespace Search {
 				continue;
 			}
 
-			updateGain(tree, standPat + node.getEstimate().getValue(),
+			updateGain(node.getMove(),
+					standPat + node.getEstimate().getValue(),
 					node.getNewStandPat());
 
 #if NODE_DEBUG
@@ -345,7 +470,7 @@ namespace Search {
 					}
 #endif // NODE_DEBUG
 				}
-				if (!isInterrupted(tree) && newValue > newAlpha && beta > newAlpha + 1) {
+				if (!isInterrupted(tree) && newValue > newAlpha && !node.isNullWindow()) {
 					// windowを広げて再探索
 					newValue = -negaMax<pvNode>(tree,
 							node.getDepth(false),
@@ -395,8 +520,9 @@ namespace Search {
 			}
 
 			if (workerSize >= 2 &&
-					(depth >= PLY1 * 4 || (depth >= PLY1 * 3 && rootDepth <= 10)) &&
-					(tree.isCheck() || tree.getNumberOfMoves() >= 4)) {
+					(depth >= 6 || (!node.isNullWindow() && (depth >= PLY1 * 4 ||
+							(depth >= PLY1 * 3 && rootDepth <= 10)))) &&
+					(!tree.isCheck() || tree.getNumberOfMoves() >= 4)) {
 				if (split(tree, depth, alpha, beta, value, stat, standPat, mate, pvNode)) {
 					if (isInterrupted(tree)) {
 						return Value(0);
@@ -472,6 +598,7 @@ namespace Search {
 		// TODO: 指し手がない場合
 		// TODO: 確定手
 		// 反復進化探索
+		TimeManager tm(config.limitEnable, config.limitSeconds);
 		unsigned depth;
 		for (depth = 0; depth < config.depth; depth++) {
 			Value minValue = Value::MIN;
@@ -599,6 +726,9 @@ revaluation:
 				if (vtemp >= Value::MATE) {
 					goto lab_search_end;
 				}
+
+				// 時間制御
+				tm.value(vtemp);
 			}
 
 			if (config.pvHandler != NULL) {
@@ -614,6 +744,12 @@ revaluation:
 			if (maxValue <= -Value::MATE) {
 				break;
 			}
+
+			// 時間制御
+			if (tm.closure(timer.get())) {
+				break;
+			}
+			tm.next();
 		}
 lab_search_end:
 

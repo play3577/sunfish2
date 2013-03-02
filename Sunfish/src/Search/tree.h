@@ -20,6 +20,7 @@
 namespace Search {
 	class Tree {
 	private:
+		boost::mutex mutex;
 		Shogi::Position pos;
 		Evaluates::Evaluate eval;
 		Shek::ShekTable shekTable;
@@ -27,7 +28,6 @@ namespace Search {
 		Node* nodes;
 		int depth;
 		int maxDepth;
-		boost::mutex mutex;
 
 	public:
 		// 並列探索用
@@ -115,8 +115,8 @@ namespace Search {
 			return nodes[depth].setPv(nodes[depth+1]);
 		}
 
-		int updatePv(const Tree& child) {
-			return nodes[depth].setPv(child.nodes[depth+1]);
+		int updatePv(const Shogi::Move& move, const Tree& child) {
+			return nodes[depth].setPv(move, child.nodes[depth+1]);
 		}
 
 		const Pv& getPv() const {
@@ -144,8 +144,8 @@ namespace Search {
 		}
 
 		bool makeMove(bool shek) {
-			nodes[depth].setShek(shek);
 			if (depth < maxDepth) {
+				nodes[depth].setShek(shek);
 				if (shek) { shekSet(); }
 				nodes[depth++].makeMove(pos, eval);
 				return true;
@@ -154,13 +154,15 @@ namespace Search {
 		}
 
 		bool nullMove(bool shek) {
-			nodes[depth].setShek(shek);
-			if (shek) { shekSet(); }
-			if (depth < maxDepth && nodes[depth].nullMove(pos, eval)) {
-				depth++;
-				return true;
+			if (depth < maxDepth) {
+				nodes[depth].setShek(shek);
+				if (shek) { shekSet(); }
+				if (nodes[depth].nullMove(pos, eval)) {
+					depth++;
+					return true;
+				}
+				if (shek) { shekUnset(); }
 			}
-			if (shek) { shekUnset(); }
 			return false;
 		}
 

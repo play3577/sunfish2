@@ -20,9 +20,9 @@ namespace Evaluates {
 	public:
 		//typedef decltype(*this) X; // C++11
 		typedef TempValue<T, vmax> X;
-		static const T MAX = (T)vmax;
-		static const T MIN = -(T)vmax;
-		static const T MATE = (T)vmax / 2;
+		static const T MAX;
+		static const T MIN;
+		static const T MATE;
 
 		TempValue() {
 		}
@@ -165,12 +165,24 @@ namespace Evaluates {
 		static X min(X a, X b) {
 			return a < b ? a : b;
 		}
+
+		static X abs(X a) {
+			return a >= 0 ? a : -a;
+		}
 	};
+
+	template<class T, int vmax>
+	const T TempValue<T, vmax>::MAX = (T)vmax;
+	template<class T, int vmax>
+	const T TempValue<T, vmax>::MIN = -(T)vmax;
+	template<class T, int vmax>
+	const T TempValue<T, vmax>::MATE = (T)vmax / 2;
 
 	typedef TempValue<int, INT_MAX> Value;
 	typedef TempValue<short, SHRT_MAX> ValueS;
 	typedef TempValue<float, INT_MAX> ValueF;
 	typedef TempValue<double, INT_MAX> ValueD;
+
 }
 
 #endif // VALUE_H_

@@ -20,6 +20,16 @@ namespace Search {
 		Evaluates::Value value2;
 
 	public:
+		Killer() {
+		}
+
+		Killer(const Killer& source) {
+			killer1 = source.killer1;
+			killer2 = source.killer2;
+			value1 = source.value1;
+			value2 = source.value2;
+		}
+
 		void init() {
 			killer1.setEmpty();
 			killer2.setEmpty();
