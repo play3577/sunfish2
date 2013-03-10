@@ -28,10 +28,10 @@ namespace Tests {
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
-		std::cout << pos.toStringCsa();
+		//std::cout << pos.toStringCsa();
 		boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 		for (int i = 0; i < 10000; i++) {
-			std::cout << '[' << i << ']' << '\n';
+			//std::cout << '[' << i << ']' << '\n';
 			MoveGenerator gen(pos);
 			gen.generate();
 			MoveGenerator gen2(pos);
@@ -41,19 +41,22 @@ namespace Tests {
 			gen2.sort();
 			if (!gen.equals(gen2)) {
 				const Move* pmove;
+				Log::test << pos.toStringCsa();
+				Log::test << pos.toStringEffect(true);
+				Log::test << Util::Int::toString64(pos.getHash()) << '\n';
 				while ((pmove = gen.next()) != NULL) {
-					std::cout << pmove->toString() << ' ';
+					Log::test << pmove->toString() << ' ';
 				}
-				std::cout << std::endl;
+				Log::test << '\n';
 				while ((pmove = gen2.next()) != NULL) {
-					std::cout << pmove->toString() << ' ';
+					Log::test << pmove->toString() << ' ';
 				}
-				std::cout << std::endl;
+				Log::test << '\n';
 				return TEST_RESULT(false);
 			}
 	
 			if (gen.getNumber() == 0) {
-				std::cout << "There is no a legal move.\n";
+				//std::cout << "There is no a legal move.\n";
 				return TEST_RESULT(true);
 			}
 	
@@ -61,19 +64,21 @@ namespace Tests {
 			boost::variate_generator<boost::mt19937&, boost::uniform_smallint<> > r(rgen, dst);
 			const Move& move = gen.get(r());
 			pos.moveUnsafe(move);
-			std::cout << move.toString() << '\n';
-			std::cout << pos.toStringCsa();
-			std::cout << pos.toStringEffect(true);
-			std::cout << Util::Int::toString64(pos.getHash()) << '\n';
-			std::cout.flush();
+			//std::cout << move.toString() << '\n';
+			//std::cout << pos.toStringCsa();
+			//std::cout << pos.toStringEffect(true);
+			//std::cout << Util::Int::toString64(pos.getHash()) << '\n';
+			//std::cout.flush();
 
 			if (!Debug::positionOk(pos)) {
+				Log::test << pos.toStringCsa();
 				return TEST_RESULT(false);
 			}
 		}
 		return TEST_RESULT(true);
 	}
 
+	// TODO: ディレクトリ内のすべてのファイルに対して行うように
 	Test::TestResult ShogiTest::generatorTest(const char* filename) {
 		Position pos(EVEN);
 		if (filename) {
@@ -90,15 +95,17 @@ namespace Tests {
 		MoveGenerator gen2(pos);
 		gen2.generateTardy();
 		gen2.sort();
-		const Move* pmove;
-		while ((pmove = gen.next()) != NULL) {
-			std::cout << pmove->toString() << ' ';
+		if (!gen.equals(gen2)) {
+			const Move* pmove;
+			while ((pmove = gen.next()) != NULL) {
+				Log::test << pmove->toString() << ' ';
+			}
+			Log::test << '\n';
+			while ((pmove = gen2.next()) != NULL) {
+				Log::test << pmove->toString() << ' ';
+			}
+			Log::test << '\n';
 		}
-		std::cout << std::endl;
-		while ((pmove = gen2.next()) != NULL) {
-			std::cout << pmove->toString() << ' ';
-		}
-		std::cout << std::endl;
 		return TEST_RESULT(true);
 	}
 }

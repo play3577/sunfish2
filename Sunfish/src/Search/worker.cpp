@@ -14,20 +14,22 @@ namespace Search {
 		if (suspend != NULL) {
 			boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
 			// worker を解放
-			job = false;
+			unsetJob();
 			psearcher->addIdleWorker();
 		}
 
 		while (true) {
 			// 他のスレッドが終了したらもとの処理に戻る。
 			if (suspend != NULL) {
-				boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
-				if (!job && suspend->split.childCount == 0) {
-					// worker の状態をもとに戻して再開
-					tree = suspend->split.self;
-					job = true;
-					psearcher->reduceIdleWorker();
-					return;
+				//boost::mutex::scoped_lock lock(suspend->getMutex());
+				if (suspend->split.childCount == 0) {
+					boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
+					if (!hasJob()) {
+						// worker の状態をもとに戻して再開
+						setJob(suspend->split.self);
+						psearcher->reduceIdleWorker();
+						return;
+					}
 				}
 			}
 
@@ -36,7 +38,7 @@ namespace Search {
 				return;
 			}
 
-			if (job) {
+			if (hasJob()) {
 				// job の実行
 				psearcher->searchChildTree(tree);
 
@@ -45,8 +47,14 @@ namespace Search {
 					// tree の解放
 					psearcher->releaseTree(tree);
 					// worker (自分)の解放
-					job = false;
+					unsetJob();
 					psearcher->addIdleWorker();
+					if (suspend != NULL && suspend->split.childCount == 0) {
+						// worker の状態をもとに戻して再開
+						setJob(suspend->split.self);
+						psearcher->reduceIdleWorker();
+						return;
+					}
 				}
 			}
 

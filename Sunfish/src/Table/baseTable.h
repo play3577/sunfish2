@@ -21,6 +21,10 @@ namespace Table {
 			return table[hash&mask];
 		}
 
+		Entity& _getEntity(unsigned index) {
+			return table[index];
+		}
+
 	public:
 		static const unsigned DEF_BITS = 21;
 
@@ -49,6 +53,14 @@ namespace Table {
 
 		const Entity& getEntity(Util::uint64 hash) const {
 			return table[hash&mask];
+		}
+
+		const Entity& getEntity(unsigned index) const {
+			return table[index];
+		}
+
+		unsigned getSize() const {
+			return size;
 		}
 	};
 }

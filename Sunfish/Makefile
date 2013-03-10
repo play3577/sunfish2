@@ -13,9 +13,9 @@ $(wildcard ./src/Csa/*.cpp) \
 $(wildcard ./src/Records/*.cpp) \
 $(wildcard ./src/Cui/*.cpp) \
 $(wildcard ./src/Network/*.cpp) \
+$(wildcard ./src/Books/*.cpp) \
 $(wildcard ./src/Util/*.cpp) \
 $(wildcard ./src/Tools/*.cpp) \
-$(wildcard ./src/Log/*.cpp) \
 $(wildcard ./src/Log/*.cpp) \
 $(wildcard ./src/Test/*.cpp)
 OBJECTS:=$(SOURCES:.cpp=.o)
@@ -34,11 +34,11 @@ DEV_PROGRAMS:=$(ATTACK_TABLE) $(CHECK_TABLE)
 override CFLAGS+=-DPOSIX
 override CFLAGS+=-Wall
 override CFLAGS+=-W
-override CFLAGS+=-O2
+#override CFLAGS+=-O2
 #override CFLAGS+=-O3
 #override CFLAGS+=-NDEBUG
 #override CFLAGS+=-DNLEARN
-#override CFLAGS+=-g
+override CFLAGS+=-g
 #override CFLAGS+=-pg
 override LIBS+=-lrt
 #override LIBS+=-lboost_thread-mt

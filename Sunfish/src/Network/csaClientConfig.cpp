@@ -23,6 +23,7 @@ namespace Network {
 		items[i++] = ConfigItem("depth", INTEGER, &depth, "32");
 		items[i++] = ConfigItem("limit", INTEGER, &limit, "10");
 		items[i++] = ConfigItem("repeat", INTEGER, &repeat, "1");
+		items[i++] = ConfigItem("worker", INTEGER, &worker, "1");
 		items[i++] = ConfigItem("enemy", BOOL, &enemy, "1");
 		items[i++] = ConfigItem("keepalive", INTEGER, &keepalive, "1");
 		items[i++] = ConfigItem("keepidle", INTEGER, &keepidle, "120");

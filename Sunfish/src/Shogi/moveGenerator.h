@@ -62,10 +62,10 @@ namespace Shogi {
 		template <bool black, unsigned piece>
 		void generateDropPieces();
 
-		template <bool black, bool genCap, bool genNocap, bool genCheckOnly>
+		template <bool black, bool genCap, bool genNocap, bool genCheckOnly, bool full>
 		void generateEvasion();
 
-		template <bool black, bool genCheckOnly>
+		template <bool black, bool genCheckOnly, bool full>
 		void generateEvasionOnBoard(Square to);
 
 		template <bool black, unsigned piece, bool genCheckOnly>
@@ -82,6 +82,12 @@ namespace Shogi {
 
 		template <bool black, unsigned piece, bool longRange>
 		void generateCheckDropStraight(Direction dir);
+
+		static bool promotionOnly(const Piece& piece) {
+			return piece == Piece::BPAWN || piece == Piece::BBISHOP ||
+					piece == Piece::BROOK || piece == Piece::WPAWN ||
+					piece == Piece::WBISHOP || piece == Piece::WROOK;
+		}
 
 	public:
 		MoveGenerator(const Position& pos) : pos(pos) {

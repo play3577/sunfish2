@@ -60,7 +60,7 @@ namespace Search {
 		boost::mutex flagMutex;
 
 		static const int DEFAULT_WORKER_SIZE = 1;
-		static const int NO_SET_TREE_SIZE = 0;
+		static const int NON_TREE_SIZE = 0;
 		Tree* trees;
 		int treeSize;
 		int idleTree;
@@ -101,6 +101,8 @@ namespace Search {
 				Evaluates::Value standPat,
 				bool mateThreat, bool pvNode);
 
+		void shutdownTree(Tree& tree);
+
 		void before(SearchResult& result);
 
 		bool after(SearchResult& result, Evaluates::Value value);
@@ -130,15 +132,14 @@ namespace Search {
 		bool isInterrupted(Tree& tree) const {
 			if (signalForceInterrupt) {
 				return true;
+			} else if (tree.split.parent != Tree::SPLIT::TREE_NULL
+					&& tree.split.shutdown) {
+				return true;
 			} else if (trees[0].getPv().getTop() != NULL) {
 				if (signalInterrupt) {
 					return true;
-				}
-				if (config.limitEnable && timer.get() >= config.limitSeconds) {
-					return true;
-				}
-				if (tree.split.parent != Tree::SPLIT::TREE_NULL
-						&& trees[tree.split.parent].split.shutdown) {
+				} else if (config.limitEnable &&
+						timer.get() >= config.limitSeconds) {
 					return true;
 				}
 			}
@@ -171,7 +172,7 @@ namespace Search {
 		}
 
 		static int genTreeSize(int workerSize, int treeSize) {
-			return treeSize != NO_SET_TREE_SIZE ? treeSize : (workerSize * 4 - 3);
+			return treeSize != NON_TREE_SIZE ? treeSize : (workerSize * 4 - 3);
 		}
 
 		void buildWorkers() {
@@ -212,7 +213,7 @@ namespace Search {
 
 		Searcher(const Evaluates::Param& param,
 				int workerSize = DEFAULT_WORKER_SIZE,
-				int treeSize = NO_SET_TREE_SIZE) :
+				int treeSize = NON_TREE_SIZE) :
 				treeSize(genTreeSize(workerSize, treeSize)),
 				workerSize(workerSize),
 				hashStack(Records::HashStack::nan()),
@@ -225,7 +226,7 @@ namespace Search {
 		Searcher(const Evaluates::Param& param,
 				const Shogi::Position& pos,
 				int workerSize = DEFAULT_WORKER_SIZE,
-				int treeSize = NO_SET_TREE_SIZE) :
+				int treeSize = NON_TREE_SIZE) :
 				treeSize(genTreeSize(workerSize, treeSize)),
 				workerSize(workerSize),
 				hashStack(Records::HashStack::nan()),
@@ -297,6 +298,7 @@ namespace Search {
 			trees[index].unuse();
 			idleTree++;
 			int parent = trees[index].split.parent;
+			assert(parent != Tree::SPLIT::TREE_NULL);
 			trees[parent].split.childCount--;
 		}
 

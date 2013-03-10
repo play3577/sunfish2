@@ -6,6 +6,7 @@
  */
 
 #include "controller.h"
+#include "../Books/bookManager.h"
 #include "../Util/tableString.h"
 #include "../Search/searcher.h"
 #include "../Search/attackers.h"
@@ -18,6 +19,7 @@ namespace Cui {
 	using namespace Evaluates;
 	using namespace Records;
 	using namespace Csa;
+	using namespace Books;
 
 	const Controller::CommandSet Controller::commandSet[CMD_NUM] = {
 		{ "q", "quit", QUIT, "quit." },
@@ -174,6 +176,7 @@ namespace Cui {
 		Searcher searcher(*pparam, config.worker);
 		SearchConfig searchConfig = SearchConfig::getDefault();
 		SearchResult result;
+		BookManager book;
 
 		// 棋譜読み込み
 		if (config.filename != NULL) {

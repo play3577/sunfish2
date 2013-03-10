@@ -250,7 +250,7 @@ namespace Search {
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-7374GI +6655KA")) {
+		if (tree.is("-5142OU")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
@@ -500,7 +500,7 @@ namespace Search {
 			if (newValue > value) {
 				value = newValue;
 				tree.updatePv();
-				best = *tree.getCurrentMove();
+				best = node.getMove();
 
 				// beta cut
 				if (value >= beta) {
@@ -530,8 +530,8 @@ namespace Search {
 					if (tree.split.value > value) {
 						value = tree.split.value;
 						best = tree.split.best;
-						break;
 					}
+					break;
 				}
 			}
 		}

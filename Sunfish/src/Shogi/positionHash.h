@@ -32,8 +32,6 @@ namespace Shogi {
 		Util::uint64 black;
 
 	public:
-		static const char* FILE_NAME;
-
 		PositionHash(Util::Hash& hash) {
 			init(hash);
 		}

@@ -13,7 +13,7 @@
 namespace Network {
 	class CsaClientConfig : public Configures::Configure {
 	private:
-		Configures::ConfigItem items[14];
+		Configures::ConfigItem items[15];
 
 		std::string host;
 		int port;
@@ -23,6 +23,7 @@ namespace Network {
 		int depth;
 		int limit;
 		int repeat;
+		int worker;
 		bool enemy;
 
 		int keepalive;
@@ -72,6 +73,10 @@ namespace Network {
 
 		int getRepeat() const {
 			return repeat;
+		}
+
+		int getWorker() const {
+			return worker;
 		}
 
 		bool getEnemy() const {

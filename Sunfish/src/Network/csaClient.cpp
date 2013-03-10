@@ -78,7 +78,7 @@ namespace Network {
 			// wait for match-make and agree
 			if (waitGameSummary() && agree()) {
 				Record record(pos);
-				Searcher searcher(*pparam);
+				Searcher searcher(*pparam, config.getWorker());
 
 				SearchConfig searchConfig = SearchConfig::getDefault();
 				searchConfig.depth = config.getDepth();

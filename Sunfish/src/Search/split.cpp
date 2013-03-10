@@ -77,14 +77,28 @@ namespace Search {
 			releaseTree(myTree);
 		}
 
-		// 兄弟の終了を待つあいだに他の job を拾う。
-		workers[tree.split.worker].waitForJob(&tree);
+		if (!trees[myTree].split.shutdown) {
+			// 兄弟の終了を待つあいだに他の job を拾う。
+			workers[tree.split.worker].waitForJob(&tree);
+		} else {
+			// beta-cut の場合は単に兄弟の終了を待つ。
+			while (true) {
+				{
+					//boost::mutex::scoped_lock lock(splitMutex);
+					if (tree.split.childCount == 0) {
+						break;
+					}
+				}
+				boost::thread::yield();
+			}
+		}
 
 		return true;
 	}
 
 	void Searcher::searchChildTree(Tree& tree) {
 		{
+			// バリア同期
 			boost::mutex::scoped_lock lock(splitMutex);
 		}
 		Tree& parent = trees[tree.split.parent];
@@ -99,10 +113,6 @@ namespace Search {
 		bool pvNode = parent.split.pvNode;
 
 		while (true) {
-			if (worker.mustShutdown()) {
-				return;
-			}
-
 			// 未展開の指し手を取得
 			Move move;
 			int moveCount;
@@ -164,12 +174,12 @@ namespace Search {
 			newValue = -negaMax<false>(tree, node.getDepth(), -newAlpha-1, -newAlpha, node.getStat());
 			if (!isInterrupted(tree) && newValue > newAlpha
 					&& node.isReduced() != 0) {
-					// reductionをなくして再探索
-					newValue = -negaMax<false>(tree,
-							node.getDepth(false),
-							-newAlpha-1, -newAlpha, node.getStat());
+				// reductionをなくして再探索
+				newValue = -negaMax<false>(tree,
+						node.getDepth(false),
+						-newAlpha-1, -newAlpha, node.getStat());
 			}
-			if (!isInterrupted(tree) && newValue > newAlpha && beta > newAlpha + 1) {
+			if (!isInterrupted(tree) && newValue > newAlpha && !node.isNullWindow()) {
 				// windowを広げて再探索
 				if (pvNode) {
 					newValue = -negaMax<true>(tree,
@@ -193,16 +203,16 @@ namespace Search {
 			{
 				boost::mutex::scoped_lock lock(parent.getMutex());
 				// 兄弟が beta-cut を起こしていたら直ちに終了
-				if (parent.split.shutdown) {
+				if (tree.split.shutdown) {
 					return;
 				}
 				if (newValue > parent.split.value) {
 					parent.split.value = newValue;
-					parent.split.best = move;
 					parent.updatePv(move, tree);
+					parent.split.best = move;
 
 					// beta cut
-					if (newValue > beta) {
+					if (newValue >= beta) {
 						if (!node.isCapture()) {
 							parent.addHistory(depth, moveCount);
 							parent.addKiller(newValue - standPat);
@@ -210,9 +220,22 @@ namespace Search {
 							tree.addKiller(newValue - standPat);
 						}
 						// 兄弟ノードの終了
-						parent.split.shutdown = true;
+						shutdownTree(parent);
 						return;
 					}
+				}
+			}
+		}
+	}
+
+	void Searcher::shutdownTree(Tree& tree) {
+		boost::mutex::scoped_lock lock(splitMutex);
+		for (int i = 1; i < treeSize; i++) {
+			int j = trees[i].split.parent;
+			for (; j != Tree::SPLIT::TREE_NULL; j = trees[j].split.parent) {
+				if (j == tree.split.self) {
+					trees[i].split.shutdown = true;
+					break;
 				}
 			}
 		}

@@ -21,7 +21,7 @@ namespace Tests {
 	protected:
 		void execute() {
 			addResult("generatorRandomTest", generatorRandomTest());
-			addResult("generatorTest", generatorTest());
+			//addResult("generatorTest", generatorTest());
 		}
 
 		const char* name() {

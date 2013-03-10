@@ -57,6 +57,7 @@ namespace Shogi {
 		{
 			m.from = from.getIndex();
 		}
+
 		Square getTo() const {
 			return Square(m.to);
 		}
