@@ -14,13 +14,13 @@
 namespace Books {
 	class Book : public Table::BaseTable<BookEntity> {
 	private:
+		unsigned threshold;
 		Util::Random random;
 
 	public:
-		static const unsigned DEF_BITS = 8;
-
-		Book(unsigned bits = DEF_BITS)
-				: Table::BaseTable<BookEntity>(bits) {
+		Book(unsigned bits, unsigned threshold) :
+				Table::BaseTable<BookEntity>(bits),
+				threshold(threshold) {
 		}
 
 		~Book() {
@@ -36,17 +36,20 @@ namespace Books {
 
 		unsigned addMove(Util::uint64 hash,
 				const Shogi::Move& move) {
-			return _getEntity(hash).addMove(hash, move);
+			return _getEntity(hash)
+					.addMove(hash, move, threshold);
 		}
 
 		void setMove(Util::uint64 hash, const Shogi::Move& move,
 				unsigned count, bool overwrite = true) {
-			_getEntity(hash).setMove(hash, move, count, overwrite);
+			_getEntity(hash).setMove(hash, move,
+					count, threshold, overwrite);
 		}
 
 		BookMoves& putMoves(Util::uint64 hash,
 				bool overwrite = true) {
-			return _getEntity(hash).putMoves(hash, overwrite);
+			return _getEntity(hash)
+					.putMoves(hash, overwrite, threshold);
 		}
 	};
 }

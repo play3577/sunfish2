@@ -30,10 +30,11 @@ namespace Books {
 		void init() {
 		}
 
-		int addMove(Util::uint64 hash, const Shogi::Move& move) {
+		int addMove(Util::uint64 hash,
+				const Shogi::Move& move, unsigned threshold) {
 			int index = getIndex(hash);
 			if (index == NOT_EXISTS) {
-				chain.push_back(BookMoves(hash, move));
+				putMoves(hash, threshold).addMove(move);
 				return 1;
 			} else {
 				return chain[index].addMove(move);
@@ -41,24 +42,25 @@ namespace Books {
 		}
 
 		void setMove(Util::uint64 hash, const Shogi::Move& move,
-				unsigned count, bool overwrite = true) {
+				unsigned count, unsigned threshold,
+				bool overwrite = true) {
 			int index;
 			if (overwrite &&
 					(index = getIndex(hash)) != NOT_EXISTS) {
 				chain[index].setMove(move, count);
 			} else {
-				chain.push_back(BookMoves(hash, move, count));
+				putMoves(hash, threshold).setMove(move, count);
 			}
 		}
 
 		BookMoves& putMoves(Util::uint64 hash,
-				bool overwrite = true) {
+				unsigned threshold, bool overwrite = true) {
 			int index;
 			if (overwrite && 
 					(index = getIndex(hash)) != NOT_EXISTS) {
 				return chain[index];
 			}
-			chain.push_back(hash);
+			chain.push_back(BookMovesBase(hash, threshold));
 			return chain[chain.size()-1];
 		}
 

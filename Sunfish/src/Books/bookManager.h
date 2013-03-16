@@ -15,13 +15,19 @@
 namespace Books {
 	class BookManager {
 	private:
+		static const unsigned DEFAULT_BITS = 8;
+		const static unsigned DEFAULT_THRESHOLD = 2;
+
 		const char* filename;
 		Book book;
 
 	public:
 		BookManager(const char* filename = "book",
-				bool autoRead = true)
-				: filename(filename) {
+				bool autoRead = true,
+				unsigned bits = DEFAULT_BITS,
+				unsigned threshold = DEFAULT_THRESHOLD) :
+				filename(filename),
+				book(bits, threshold) {
 			if (autoRead) {
 				read();
 			}
