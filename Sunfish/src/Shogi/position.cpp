@@ -489,7 +489,10 @@ namespace Shogi {
 			Square from = square;
 			for (from += dir; getBoard(from) == Piece::EMPTY; from += dir)
 				;
-			if (pin(from, !black).isZero()) {
+			if (pin(from, !black).isSubsetOf(
+					DirectionFlags(black
+					? DirectionFlags::LONG_UP
+					: DirectionFlags::LONG_DOWN))) {
 				return true;
 			}
 		}
@@ -533,7 +536,10 @@ namespace Shogi {
 			Square from = square;
 			for (from += dir; getBoard(from) == Piece::EMPTY; from += dir)
 				;
-			if (pin(from, black).isZero()) {
+			if (pin(from, black).isSubsetOf(
+					DirectionFlags(black
+					? DirectionFlags::LONG_DOWN
+					: DirectionFlags::LONG_UP))) {
 				return true;
 			}
 		}

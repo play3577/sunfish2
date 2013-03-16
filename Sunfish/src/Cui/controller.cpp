@@ -6,7 +6,6 @@
  */
 
 #include "controller.h"
-#include "../Books/bookManager.h"
 #include "../Util/tableString.h"
 #include "../Search/searcher.h"
 #include "../Search/attackers.h"
@@ -39,6 +38,7 @@ namespace Cui {
 		{ NULL, "see", SEE, "static exchange evaluation test.(DEBUG)" },
 		{ NULL, "eval", EVALUATE, "show evaluation.(DEBUG)" },
 #endif // ifndef NDEBUG
+		{ NULL, "book", BOOK, "show opening-book moves" },
 	};
 
 	Controller::Command Controller::inputCommand(const char* str) {
@@ -148,6 +148,19 @@ namespace Cui {
 		std::cout << eval.getValue() << '\n';
 	}
 
+	void Controller::showBook(const Shogi::Position& pos, const Books::BookManager& book) {
+		const BookMoves* moves = book.getAllMoves(pos.getHash());
+		if (moves == NULL) {
+			std::cout << "there is no moves.";
+		} else {
+			for (unsigned index = 0; index < moves->getSize(); index++) {
+				std::cout << moves->getMove(index)->toString()
+						<< '[' << moves->getCount(index) << "] ";
+			}
+			std::cout << '\n';
+		}
+	}
+
 	void Controller::printPosition(const Record& record) const {
 		std::cout << record.toString();
 #ifndef NDEBUG
@@ -206,10 +219,22 @@ namespace Cui {
 			// コンピュータによる着手
 			if ((record.getPosition().isBlackTurn() && config.autoBlack) ||
 					(record.getPosition().isWhiteTurn() && config.autoWhite)) {
-				searcher.init(record);
-				searcher.idSearch(result);
-				std::cout << result.toString();
-				if (result.resign || !record.move(result.move)) {
+				// 定跡
+				const Move* pmove = book.getMove(record.getPosition().getHash());
+				if (pmove != NULL) {
+					std::cout << "opening-book.\n";
+				} else {
+					// 探索
+					searcher.init(record);
+					searcher.idSearch(result);
+					std::cout << result.toString();
+					if (!result.resign) {
+						pmove = &result.move;
+					}
+				}
+				// 着手
+				if (pmove == NULL || !record.move(*pmove)) {
+					// 着手をマニュアルモードに切り替え
 					if (config.autoBlack) {
 						std::cout << "black :auto => manual\n";
 						config.autoBlack = false;
@@ -315,6 +340,9 @@ namespace Cui {
 				evaluate(record.getPosition(), *pparam);
 				break;
 #endif // ifndef NDEBUG
+			case BOOK:
+				showBook(record.getPosition(), book);
+				break;
 			default: // 指し手入力
 				if (CsaReader::parseLineMove(line, record.getPosition(), move) ||
 						inputMove(line, record.getPosition(), move)) {

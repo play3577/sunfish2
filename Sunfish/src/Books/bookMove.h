@@ -22,6 +22,11 @@ namespace Books {
 			count = 1;
 		}
 
+		BookMove(const Shogi::Move& move, unsigned count) {
+			this->move = move;
+			this->count = count;
+		}
+
 		BookMove(const BookMove& bookMove) {
 			move = bookMove.move;
 			count = bookMove.count;
@@ -29,6 +34,10 @@ namespace Books {
 
 		unsigned addCount() {
 			return ++count;
+		}
+
+		void setCount(unsigned count) {
+			this->count = count;
 		}
 
 		unsigned getCount() const {

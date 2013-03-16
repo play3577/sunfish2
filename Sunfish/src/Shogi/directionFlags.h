@@ -188,6 +188,14 @@ namespace Shogi {
 			return !isZero();
 		}
 
+		bool isSubset(const DirectionFlags& flags) const {
+			return (bits & flags.bits) == flags.bits;
+		}
+
+		bool isSubsetOf(const DirectionFlags& flags) const {
+			return (bits & flags.bits) == bits;
+		}
+
 		bool longOrShortRange() const {
 			return (bits & (LONG_MASK | SHORT_MASK)) != 0U;
 		}

@@ -41,6 +41,14 @@ namespace Shogi {
 			setPiece(piece);
 		}
 
+		Move(unsigned um) {
+			m.piece = (um >> 18);
+			m.hand = (um >> 17) & 0x01;
+			m.promote = (um >> 16) & 0x01;
+			m.to = (um >> 8) & 0xff;
+			m.from = um & 0xff;
+		}
+
 		void setEmpty() {
 			m.to = 0;
 		}

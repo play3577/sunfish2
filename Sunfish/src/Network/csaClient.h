@@ -14,6 +14,7 @@
 #include "../Evaluates/initializer.h"
 #include "../Records/record.h"
 #include "../Search/searcher.h"
+#include "../Books/bookManager.h"
 #include "connection.h"
 #include <iomanip>
 #include <queue>
@@ -76,6 +77,21 @@ namespace Network {
 			std::string str;
 		};
 
+		struct SendingMove {
+			Shogi::Move move;
+			Evaluates::Value value;
+			std::string pv;
+			void set(const Shogi::Move& move) {
+				this->move = move;
+				this->value = 0;
+			}
+			void set(const Search::SearchResult& result) {
+				this->move = result.move;
+				this->value = result.value;
+				this->pv = result.pv.toStringCsa(1);
+			}
+		};
+
 		std::queue<RECV_DATA> recvQueue;
 		unsigned endFlags;
 
@@ -92,6 +108,7 @@ namespace Network {
 
 		Shogi::Position pos;
 		Evaluates::Param* pparam;
+		Books::BookManager book;
 
 		Connection con; // コネクション
 
@@ -110,7 +127,7 @@ namespace Network {
 
 		bool agree();
 
-		bool sendMove(const Search::SearchResult& result);
+		bool sendMove(const SendingMove& move);
 
 		bool sendResign();
 

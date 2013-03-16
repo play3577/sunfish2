@@ -43,6 +43,13 @@ namespace Books {
 			count = 1;
 		}
 
+		BookMoves(Util::uint64 hash, const Shogi::Move& move,
+				unsigned count) {
+			this->hash = hash;
+			moves.push_back(BookMove(move));
+			this->count = count;
+		}
+
 		Util::uint64 getHash() const {
 			return hash;
 		}
@@ -55,6 +62,15 @@ namespace Books {
 				return 1;
 			} else {
 				return moves[index].addCount();
+			}
+		}
+
+		void setMove(const Shogi::Move& move, unsigned count) {
+			int index = getIndex(move);
+			if (index == NOT_EXISTS) {
+				moves.push_back(BookMove(move, count));
+			} else {
+				moves[index].setCount(count);
 			}
 		}
 

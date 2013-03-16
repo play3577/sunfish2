@@ -9,6 +9,7 @@
 #define BOOKMANAGER_H_
 
 #include "book.h"
+#include "bookReader.h"
 #include "bookWriter.h"
 
 namespace Books {
@@ -30,8 +31,8 @@ namespace Books {
 			return read(filename);
 		}
 
-		bool read(const char*) {
-			// TODO
+		bool read(const char* filename) {
+			return BookReader::read(filename, book);
 			return false;
 		}
 
@@ -43,7 +44,17 @@ namespace Books {
 			return BookWriter::write(filename, book);
 		}
 
-		bool import(const char* dirname);
+		bool importFile(const char* path);
+
+		bool importDirectory(const char* directory);
+
+		const Shogi::Move* getMove(Util::uint64 hash) {
+			return book.getMove(hash);
+		}
+
+		const BookMoves* getAllMoves(Util::uint64 hash) const {
+			return book.getAllMoves(hash);
+		}
 	};
 }
 

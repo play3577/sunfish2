@@ -96,12 +96,23 @@ namespace Network {
 					Log::message << record.toString();
 					if (black == record.getPosition().isBlackTurn()) {
 						// my turn
+						// 定跡
+						const Move* pmove = book.getMove(record.getPosition().getHash());
+						SendingMove sendingMove;
 						SearchResult result;
-						searcher.setSearchConfig(searchConfig);
-						searcher.init(record);
-						searcher.idSearch(result);
-						if (!result.resign && record.move(result.move)) {
-							if (!sendMove(result)) {
+						if (pmove != NULL) {
+							sendingMove.set(*pmove);
+						} else {
+							searcher.setSearchConfig(searchConfig);
+							searcher.init(record);
+							searcher.idSearch(result);
+							if (!result.resign) {
+								pmove = &result.move;
+								sendingMove.set(result);
+							}
+						}
+						if (pmove != NULL && record.move(*pmove)) {
+							if (!sendMove(sendingMove)) {
 								// TODO: ここでログアウトするのは危険
 								Log::error << "ERROR :could not send a move\n";
 								break;
@@ -179,15 +190,15 @@ lab_end:
 		return (response & RECV_START) != 0U;
 	}
 
-	bool CsaClient::sendMove(const Search::SearchResult& result) {
+	bool CsaClient::sendMove(const SendingMove& sendingMove) {
 		std::ostringstream oss;
-		oss << result.move.toStringCsa();
+		oss << sendingMove.move.toStringCsa();
 		if (config.getFloodgate()) {
 			// 評価値
 			int sign = black ? 1 : -1;
-			oss << ",\'* " << (result.value * sign);
+			oss << ",\'* " << (sendingMove.value * sign);
 			// 読み筋
-			oss << ' ' << result.pv.toStringCsa(1);
+			oss << ' ' << sendingMove.pv;
 		}
 		if (!send(oss.str().c_str())) { return false; }
 		unsigned mask = black ? RECV_MOVE_B : RECV_MOVE_W;

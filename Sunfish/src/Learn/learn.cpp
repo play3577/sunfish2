@@ -105,7 +105,7 @@ namespace Learns {
 		searchConfig.isLearning = true;
 		searcher.setSearchConfig(searchConfig);
 
-		// 初手から順に棋譜を見ていく。
+		// 最終手から順に棋譜を見ていく。
 		record.end();
 		while (record.prev()) {
 			// 棋譜の指し手

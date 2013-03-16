@@ -27,12 +27,20 @@ namespace Books {
 		}
 
 		const Shogi::Move* getMove(Util::uint64 hash) {
-			return _getEntity(hash).getMove(hash, random);
+			return getEntity(hash).getMove(hash, random);
+		}
+
+		const BookMoves* getAllMoves(Util::uint64 hash) const {
+			return getEntity(hash).getMoves(hash);
 		}
 
 		unsigned addMove(Util::uint64 hash,
 				const Shogi::Move& move) {
 			return _getEntity(hash).addMove(hash, move);
+		}
+
+		void setMove(Util::uint64 hash, const Shogi::Move& move, unsigned count) {
+			_getEntity(hash).setMove(hash, move, count);
 		}
 	};
 }

@@ -8,6 +8,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include "../Books/bookManager.h"
 #include "../Evaluates/param.h"
 #include "../Evaluates/initializer.h"
 #include "../Search/pvHandler.h"
@@ -38,6 +39,7 @@ namespace Cui {
 			SEE,
 			EVALUATE,
 #endif // ifndef NDEBUG
+			BOOK,
 			CMD_NUM,
 
 			UNKNOWN,
@@ -66,6 +68,8 @@ namespace Cui {
 		void seeTest(const Shogi::Position& pos, const Evaluates::Param& param);
 
 		void evaluate(const Shogi::Position& pos, const Evaluates::Param& param);
+
+		void showBook(const Shogi::Position& pos, const Books::BookManager& book);
 
 		Evaluates::Param* pparam;
 

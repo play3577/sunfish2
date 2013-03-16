@@ -6,14 +6,17 @@
  */
 
 #include "bookWriter.h"
+#include "../Log/logger.h"
 #include <fstream>
 
 namespace Books {
 	using namespace Shogi;
 
 	bool BookWriter::write(const char* filename, const Book& book) {
+		Log::message << "writing opening-books:[" << filename << "]\n";
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
 		if (!fout) {
+			Log::warning << "could not open:[" << filename << "]\n";
 			return false;
 		}
 		bool ok = true;
