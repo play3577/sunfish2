@@ -41,13 +41,25 @@ namespace Books {
 		}
 
 		void setMove(Util::uint64 hash, const Shogi::Move& move,
-				unsigned count) {
-			int index = getIndex(hash);
-			if (index == NOT_EXISTS) {
-				chain.push_back(BookMoves(hash, move, count));
-			} else {
+				unsigned count, bool overwrite = true) {
+			int index;
+			if (overwrite &&
+					(index = getIndex(hash)) != NOT_EXISTS) {
 				chain[index].setMove(move, count);
+			} else {
+				chain.push_back(BookMoves(hash, move, count));
 			}
+		}
+
+		BookMoves& putMoves(Util::uint64 hash,
+				bool overwrite = true) {
+			int index;
+			if (overwrite && 
+					(index = getIndex(hash)) != NOT_EXISTS) {
+				return chain[index];
+			}
+			chain.push_back(hash);
+			return chain[chain.size()-1];
 		}
 
 		const Shogi::Move* getMove(Util::uint64 hash,

@@ -39,8 +39,14 @@ namespace Books {
 			return _getEntity(hash).addMove(hash, move);
 		}
 
-		void setMove(Util::uint64 hash, const Shogi::Move& move, unsigned count) {
-			_getEntity(hash).setMove(hash, move, count);
+		void setMove(Util::uint64 hash, const Shogi::Move& move,
+				unsigned count, bool overwrite = true) {
+			_getEntity(hash).setMove(hash, move, count, overwrite);
+		}
+
+		BookMoves& putMoves(Util::uint64 hash,
+				bool overwrite = true) {
+			return _getEntity(hash).putMoves(hash, overwrite);
 		}
 	};
 }

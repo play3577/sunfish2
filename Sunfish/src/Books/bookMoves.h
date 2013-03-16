@@ -32,6 +32,12 @@ namespace Books {
 		}
 
 	public:
+		BookMoves(const BookMoves& bookMoves) :
+				hash(bookMoves.hash),
+				moves(bookMoves.moves),
+				count(bookMoves.count) {
+		}
+
 		BookMoves(Util::uint64 hash) {
 			this->hash = hash;
 			count = 0;
@@ -65,12 +71,15 @@ namespace Books {
 			}
 		}
 
-		void setMove(const Shogi::Move& move, unsigned count) {
-			int index = getIndex(move);
-			if (index == NOT_EXISTS) {
-				moves.push_back(BookMove(move, count));
-			} else {
+		void setMove(const Shogi::Move& move, unsigned count,
+				bool overwrite = true) {
+			this->count += count;
+			int index;
+			if (overwrite &&
+					(index = getIndex(move)) != NOT_EXISTS) {
 				moves[index].setCount(count);
+			} else {
+				moves.push_back(BookMove(move, count));
 			}
 		}
 

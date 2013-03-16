@@ -40,6 +40,7 @@ namespace Books {
 	}
 
 	bool BookReader::read(std::istream& in, Book& book, Util::uint64 hash) {
+		BookMoves& bookMoves = book.putMoves(hash, false);
 		while (true) {
 			unsigned m, count;
 			in.read((char*)&m, sizeof(m));
@@ -53,7 +54,7 @@ namespace Books {
 				Log::error << __THIS__ << ": unknown error\n";
 			}
 			Move move(m);
-			book.setMove(hash, move, count);
+			bookMoves.setMove(move, count, false);
 		}
 		return true;
 	}
