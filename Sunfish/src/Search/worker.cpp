@@ -19,9 +19,8 @@ namespace Search {
 		}
 
 		while (true) {
-			// 他のスレッドが終了したらもとの処理に戻る。
 			if (suspend != NULL) {
-				//boost::mutex::scoped_lock lock(suspend->getMutex());
+				// 兄弟のノードの待機が終わった場合
 				if (suspend->split.childCount == 0) {
 					boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
 					if (!hasJob()) {
@@ -45,16 +44,20 @@ namespace Search {
 				{
 					boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
 					// tree の解放
-					psearcher->releaseTree(tree);
-					// worker (自分)の解放
-					unsetJob();
-					psearcher->addIdleWorker();
+					psearcher->releaseTree(tree,
+#ifndef NDEBUG
+							2
+#endif
+							);
+					// 兄弟のノードの待機が終わった場合
 					if (suspend != NULL && suspend->split.childCount == 0) {
 						// worker の状態をもとに戻して再開
 						setJob(suspend->split.self);
-						psearcher->reduceIdleWorker();
 						return;
 					}
+					// worker (自分)の解放
+					unsetJob();
+					psearcher->addIdleWorker();
 				}
 			}
 

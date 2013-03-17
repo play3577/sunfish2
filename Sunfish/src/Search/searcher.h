@@ -294,12 +294,31 @@ namespace Search {
 
 		void searchChildTree(Tree& tree);
 
-		void releaseTree(int index) {
+		void releaseTree(int index
+#ifndef NDEBUG
+				, int from
+#endif
+				) {
 			trees[index].unuse();
 			idleTree++;
 			int parent = trees[index].split.parent;
 			assert(parent != Tree::SPLIT::TREE_NULL);
 			trees[parent].split.childCount--;
+#ifndef NDEBUG
+			trees[parent].split.releaseLog
+					[trees[parent].split.releaseCount++]
+					= index * 100 + from;
+			if (trees[parent].split.childCount < 0) {
+				for (int i = 0;
+						i < trees[parent].split.releaseCount;
+						i++) {
+					Log::debug << trees[parent].split.releaseLog
+							[i] << ' ';
+				}
+				Log::debug << '\n';
+				assert(false);
+			}
+#endif
 		}
 
 		void addIdleWorker() {

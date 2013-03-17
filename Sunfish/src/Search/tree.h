@@ -48,6 +48,11 @@ namespace Search {
 			volatile bool pvNode;
 			Evaluates::Value value; // 暫定解 (workerが更新)
 			Shogi::Move best; // 暫定解 (workerが更新)
+#ifndef NDEBUG
+			// デバッグ用
+			int releaseLog[10];
+			int releaseCount;
+#endif
 		} split;
 
 		static const int DEF_MAX_DEPTH = 64;
@@ -397,6 +402,9 @@ namespace Search {
 			split.mateThreat = mateThreat;
 			split.pvNode = pvNode;
 			split.childCount = childCount;
+#ifndef NDEBUG
+			split.releaseCount = 0;
+#endif
 		}
 
 		// split した時の子 tree に対して呼ぶ

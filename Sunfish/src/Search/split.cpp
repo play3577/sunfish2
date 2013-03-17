@@ -74,7 +74,11 @@ namespace Search {
 		// tree の解放
 		{
 			boost::mutex::scoped_lock lock(splitMutex);
-			releaseTree(myTree);
+			releaseTree(myTree,
+#ifndef NDEBUG
+				1
+#endif
+				);
 		}
 
 		if (!trees[myTree].split.shutdown) {
