@@ -13,7 +13,7 @@ namespace Books {
 	using namespace Shogi;
 
 	bool BookReader::read(const char* filename, Book& book) {
-		Log::message << "reading opening-books:[" << filename << "]\n";
+		Log::message << "reading a file:[" << filename << "]\n";
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {
 			Log::warning << "could not open:[" << filename << "]\n";

@@ -16,29 +16,37 @@ namespace Books {
 	using namespace Shogi;
 	using namespace Util;
 
-	bool BookManager::importFile(const char* path) {
+	bool BookManager::importFile(
+			const char* path, int threshold) {
 		// 棋譜の読み込み
-		Log::message << path << '\n';
 		Record record;
 		if (!CsaReader::read(path, record)) {
 			return false;
 		}
-		// 最終手から順に棋譜を見ていく。
-		record.end();
-		while (record.prev()) {
+		// 初手から順に棋譜を見ていく。
+		record.begin();
+		while (record.getCurrent() < threshold) {
 			Move move;
-			record.getNextMove(move);
+			if (!record.getNextMove(move)) {
+				break;
+			}
 			book.addMove(record.getPosition().getHash(), move);
+			record.next();
 		}
 		return true;
 	}
 
-	bool BookManager::importDirectory(const char* directory) {
+	bool BookManager::importDirectory(
+			const char* directory, int threshold) {
 		// 棋譜の列挙
 		FileList fileList;
 		fileList.enumerate(directory, "csa");
+		int count = 0;
 		while (!fileList.isEnd()) {
-			if (!importFile(fileList.pop().c_str())) {
+			const std::string& path = fileList.pop();
+			count++;
+			Log::message << count << '\t' << path << '\n';
+			if (!importFile(path.c_str(), threshold)) {
 				return false;
 			}
 		}

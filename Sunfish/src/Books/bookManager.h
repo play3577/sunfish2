@@ -15,8 +15,9 @@
 namespace Books {
 	class BookManager {
 	private:
-		static const unsigned DEFAULT_BITS = 8;
-		const static unsigned DEFAULT_THRESHOLD = 2;
+		static const unsigned DEFAULT_BITS = 15;
+		const static unsigned DEFAULT_COUNT_THRESHOLD = 2;
+		const static unsigned DEFAULT_RECORD_THRESHOLD = 60;
 
 		const char* filename;
 		Book book;
@@ -25,9 +26,9 @@ namespace Books {
 		BookManager(const char* filename = "book",
 				bool autoRead = true,
 				unsigned bits = DEFAULT_BITS,
-				unsigned threshold = DEFAULT_THRESHOLD) :
+				unsigned countThreshold = DEFAULT_COUNT_THRESHOLD) :
 				filename(filename),
-				book(bits, threshold) {
+				book(bits, countThreshold) {
 			if (autoRead) {
 				read();
 			}
@@ -50,16 +51,18 @@ namespace Books {
 			return BookWriter::write(filename, book);
 		}
 
-		bool importFile(const char* path);
+		bool importFile(const char* path,
+				int threshold = DEFAULT_RECORD_THRESHOLD);
 
-		bool importDirectory(const char* directory);
+		bool importDirectory(const char* directory,
+				int threshold = DEFAULT_RECORD_THRESHOLD);
 
 		const Shogi::Move* getMove(Util::uint64 hash) {
 			return book.getMove(hash);
 		}
 
-		const BookMoves* getAllMoves(Util::uint64 hash) const {
-			return book.getAllMoves(hash);
+		const BookMoves* getMoves(Util::uint64 hash) const {
+			return book.getMoves(hash);
 		}
 	};
 }

@@ -149,9 +149,9 @@ namespace Cui {
 	}
 
 	void Controller::showBook(const Shogi::Position& pos, const Books::BookManager& book) {
-		const BookMoves* moves = book.getAllMoves(pos.getHash());
+		const BookMoves* moves = book.getMoves(pos.getHash());
 		if (moves == NULL) {
-			std::cout << "there is no moves.";
+			std::cout << "there is no moves.\n";
 		} else {
 			for (unsigned index = 0; index < moves->getSize(); index++) {
 				std::cout << moves->getMove(index)->toString()

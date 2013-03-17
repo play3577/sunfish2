@@ -11,6 +11,7 @@
 #include "bookMove.h"
 #include "../Util/int.h"
 #include "../Util/random.h"
+#include "../Log/logger.h"
 #include <vector>
 
 namespace Books {

@@ -58,6 +58,7 @@ namespace Evaluates {
 
 	template <class T, class U>
 	bool TempParam<T, U>::read(const char* filename) {
+		Log::message << "reading a file:[" << filename << "]\n";
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {
 			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";
@@ -79,6 +80,7 @@ namespace Evaluates {
 
 	template <class T, class U>
 	bool TempParam<T, U>::write(const char* filename) {
+		Log::message << "writing a file:[" << filename << "]\n";
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
 		if (!fout) {
 			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";

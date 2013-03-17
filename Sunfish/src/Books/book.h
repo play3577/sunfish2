@@ -30,7 +30,7 @@ namespace Books {
 			return getEntity(hash).getMove(hash, random);
 		}
 
-		const BookMoves* getAllMoves(Util::uint64 hash) const {
+		const BookMoves* getMoves(Util::uint64 hash) const {
 			return getEntity(hash).getMoves(hash);
 		}
 
@@ -49,7 +49,7 @@ namespace Books {
 		BookMoves& putMoves(Util::uint64 hash,
 				bool overwrite = true) {
 			return _getEntity(hash)
-					.putMoves(hash, overwrite, threshold);
+					.putMoves(hash, threshold, overwrite);
 		}
 	};
 }

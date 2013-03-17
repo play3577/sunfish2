@@ -32,9 +32,10 @@ namespace Books {
 	}
 
 	bool BookWriter::write(std::ostream& out, const BookEntity& entity) {
-		for (unsigned index = 0; index < entity.getSize(); index++) {
-			const BookMoves& moves = entity.getMoves(index);
-			if (!write(out, moves)) {
+		const std::list<BookMoves>& chain = entity.getChain();
+		std::list<BookMoves>::const_iterator it = chain.begin();
+		for (; it != chain.end(); it++) {
+			if (!write(out, *it)) {
 				return false;
 			}
 		}

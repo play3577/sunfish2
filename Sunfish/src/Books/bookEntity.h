@@ -9,21 +9,21 @@
 #define BOOKENTITY_H_
 
 #include "bookMoves.h"
+#include <list>
 
 namespace Books {
 	class BookEntity {
 	private:
-		static const int NOT_EXISTS = -1;
+		std::list<BookMoves> chain;
 
-		std::vector<BookMoves> chain;
-
-		int getIndex(Util::uint64 hash) const {
-			for (unsigned i = 0; i < chain.size(); i++) {
-				if (chain[i].getHash() == hash) {
-					return i;
+		BookMoves* _getMoves(Util::uint64 hash) {
+			std::list<BookMoves>::iterator it = chain.begin();
+			for (; it != chain.end(); it++) {
+				if ((*it).getHash() == hash) {
+					return &(*it);
 				}
 			}
-			return NOT_EXISTS;
+			return NULL;
 		}
 
 	public:
@@ -32,22 +32,21 @@ namespace Books {
 
 		int addMove(Util::uint64 hash,
 				const Shogi::Move& move, unsigned threshold) {
-			int index = getIndex(hash);
-			if (index == NOT_EXISTS) {
+			BookMoves* p = _getMoves(hash);
+			if (p != NULL) {
+				return p->addMove(move);
+			} else {
 				putMoves(hash, threshold).addMove(move);
 				return 1;
-			} else {
-				return chain[index].addMove(move);
 			}
 		}
 
 		void setMove(Util::uint64 hash, const Shogi::Move& move,
 				unsigned count, unsigned threshold,
 				bool overwrite = true) {
-			int index;
-			if (overwrite &&
-					(index = getIndex(hash)) != NOT_EXISTS) {
-				chain[index].setMove(move, count);
+			BookMoves* p;
+			if (overwrite && (p = _getMoves(hash)) != NULL) {
+				p->setMove(move, count);
 			} else {
 				putMoves(hash, threshold).setMove(move, count);
 			}
@@ -55,20 +54,19 @@ namespace Books {
 
 		BookMoves& putMoves(Util::uint64 hash,
 				unsigned threshold, bool overwrite = true) {
-			int index;
-			if (overwrite && 
-					(index = getIndex(hash)) != NOT_EXISTS) {
-				return chain[index];
+			BookMoves* p;
+			if (overwrite && (p = _getMoves(hash)) != NULL) {
+				return *p;
 			}
 			chain.push_back(BookMovesBase(hash, threshold));
-			return chain[chain.size()-1];
+			return (*chain.rbegin());
 		}
 
 		const Shogi::Move* getMove(Util::uint64 hash,
 				Util::Random& random) const {
-			int index = getIndex(hash);
-			if (index != NOT_EXISTS) {
-				return chain[index].getMove(random);
+			const BookMoves* p = getMoves(hash);
+			if (p != NULL) {
+				return p->getMove(random);
 			}
 			return NULL;
 		}
@@ -77,16 +75,18 @@ namespace Books {
 			return chain.size();
 		}
 
-		const BookMoves& getMoves(unsigned index) const {
-			return chain[index];
-		}
-
 		const BookMoves* getMoves(Util::uint64 hash) const {
-			int index = getIndex(hash);
-			if (index != NOT_EXISTS) {
-				return &chain[index];
+			std::list<BookMoves>::const_iterator it = chain.begin();
+			for (; it != chain.end(); it++) {
+				if ((*it).getHash() == hash) {
+					return &(*it);
+				}
 			}
 			return NULL;
+		}
+
+		const std::list<BookMoves>& getChain() const {
+			return chain;
 		}
 	};
 }
