@@ -154,9 +154,11 @@ namespace Search {
 			return tree.getShekCount();
 		}
 
+#ifndef NDEBUG
 		void shekDebug(Tree& tree) const {
 			tree.shekDebug();
 		}
+#endif
 
 		bool nullMove(Tree& tree, bool shek = true) {
 			return tree.nullMove(shek);
@@ -294,32 +296,30 @@ namespace Search {
 
 		void searchChildTree(Tree& tree);
 
-		void releaseTree(int index
-#ifndef NDEBUG
-				, int from
-#endif
-				) {
+		void releaseTree(int index) {
 			trees[index].unuse();
 			idleTree++;
 			int parent = trees[index].split.parent;
 			assert(parent != Tree::SPLIT::TREE_NULL);
 			trees[parent].split.childCount--;
-#ifndef NDEBUG
-			trees[parent].split.releaseLog
-					[trees[parent].split.releaseCount++]
-					= index * 100 + from;
-			if (trees[parent].split.childCount < 0) {
-				for (int i = 0;
-						i < trees[parent].split.releaseCount;
-						i++) {
-					Log::debug << trees[parent].split.releaseLog
-							[i] << ' ';
-				}
-				Log::debug << '\n';
-				assert(false);
-			}
-#endif
 		}
+
+#ifndef NDEBUG
+		void debugPrintSplit() {
+			for (int i = 0; i < treeSize; i++) {
+				Log::debug << 't' << i << '\t'
+						<< trees[i].split.self << '\t'
+						<< trees[i].split.parent << '\t'
+						<< trees[i].split.childCount << '\t'
+						<< trees[i].split.worker << '\t'
+						<< trees[i].split.used << '\n';
+			}
+			for (int i = 0; i < workerSize; i++) {
+				Log::debug << 'w' << i << '\t'
+						<< workers[i].hasJob() << '\n';
+			}
+		}
+#endif
 
 		void addIdleWorker() {
 			idleWorker++;

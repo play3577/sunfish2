@@ -5,6 +5,8 @@
  *      Author: ryosuke
  */
 
+#ifndef NDEBUG
+
 #include <boost/random.hpp>
 #include <boost/thread.hpp>
 #include <ctime>
@@ -16,7 +18,6 @@
 #include "../Tools/debug.h"
 #include "shogiTest.h"
 
-#ifndef NDEBUG
 namespace Tests {
 	using namespace Shogi;
 	using namespace Evaluates;
@@ -109,4 +110,5 @@ namespace Tests {
 		return TEST_RESULT(true);
 	}
 }
+
 #endif // NDEBUG

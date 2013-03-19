@@ -66,6 +66,10 @@ namespace Search {
 			job = false;
 		}
 
+		void setTree(int tree) {
+			this->tree = tree;
+		}
+
 		bool hasJob() const {
 			return job;
 		}

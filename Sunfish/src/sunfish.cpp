@@ -13,10 +13,13 @@
 #include "sunfish.h"
 #include "Network/csaClient.h"
 #include "Log/logger.h"
-#include "Test/shogiTest.h"
 #include "Learn/learn.h"
 #include "Evaluates/paramAnalyzer.h"
 #include "Books/bookManager.h"
+
+#ifndef NDEBUG
+#include "Test/shogiTest.h"
+#endif
 
 using boost::program_options::options_description;
 using boost::program_options::variables_map;
@@ -151,14 +154,17 @@ bool test() {
 		Log::message.addStream(fout);
 		Log::send.addStream(fout);
 		Log::receive.addStream(fout);
+#ifndef NDEBUG
 		Log::debug.addStream(fout);
 		Log::test.addStream(fout);
+#endif
 	}
 	// テストの実行
 	return ShogiTest().test();
 }
 #endif //NDEBUG
 
+#ifndef NLEARN
 // 機械学習
 bool learn() {
 	using namespace Learns;
@@ -174,6 +180,7 @@ bool learn() {
 	learn.execute();
 	return true;
 }
+#endif
 
 // パラメータの解析
 bool analyze() {

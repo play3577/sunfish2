@@ -61,8 +61,8 @@ namespace Log {
 	extern Logger message;
 	extern Logger send;
 	extern Logger receive;
-	extern Logger debug;
 #ifndef NDEBUG
+	extern Logger debug;
 	extern Logger test;
 #endif //NDEBUG
 }

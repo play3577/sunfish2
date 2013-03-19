@@ -44,11 +44,7 @@ namespace Search {
 				{
 					boost::mutex::scoped_lock lock(psearcher->getSplitMutex());
 					// tree の解放
-					psearcher->releaseTree(tree,
-#ifndef NDEBUG
-							2
-#endif
-							);
+					psearcher->releaseTree(tree);
 					// 兄弟のノードの待機が終わった場合
 					if (suspend != NULL && suspend->split.childCount == 0) {
 						// worker の状態をもとに戻して再開

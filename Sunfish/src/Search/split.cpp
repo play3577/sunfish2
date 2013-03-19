@@ -16,6 +16,7 @@ namespace Search {
 			Value alpha, Value beta, Value value,
 			NodeStat stat, Value standPat,
 			bool mateThreat, bool pvNode) {
+		Worker& worker = workers[tree.split.worker];
 		int myTree = Tree::SPLIT::TREE_NULL;
 		{
 			boost::mutex::scoped_lock lock(splitMutex);
@@ -69,21 +70,19 @@ namespace Search {
 		}
 
 		// カレントスレッドも job の処理に入る。
+		worker.setTree(myTree);
 		searchChildTree(trees[myTree]);
+		worker.setTree(tree.split.self);
 
 		// tree の解放
 		{
 			boost::mutex::scoped_lock lock(splitMutex);
-			releaseTree(myTree,
-#ifndef NDEBUG
-				1
-#endif
-				);
+			releaseTree(myTree);
 		}
 
 		if (!trees[myTree].split.shutdown) {
 			// 兄弟の終了を待つあいだに他の job を拾う。
-			workers[tree.split.worker].waitForJob(&tree);
+			worker.waitForJob(&tree);
 		} else {
 			// beta-cut の場合は単に兄弟の終了を待つ。
 			while (true) {

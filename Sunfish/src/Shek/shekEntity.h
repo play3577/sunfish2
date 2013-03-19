@@ -56,7 +56,8 @@ namespace Shek {
 		unsigned getCount() const {
 			return cnt;
 		}
-
+ 
+#ifndef NDEBUG
 		void debugPrint(const HandSet& handSet, bool blackTurn) const {
 			Log::debug << "********** SHEK DEBUG **********\n";
 			Log::debug << "cnt=[" << cnt << "]\n";
@@ -67,6 +68,7 @@ namespace Shek {
 			Log::debug << "blackTurn=[" << this->blackTurn << "]\n";
 			Log::debug << "********************************\n";
 		}
+#endif
 	};
 }
 #endif // SHEKENTITY_H_

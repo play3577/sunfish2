@@ -50,12 +50,14 @@ namespace Shek {
 			return getEntity(pos.getBoardHash()).getCount();
 		}
 
+#ifndef NDEBUG
 		void debugPrint(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
 			getEntity(pos.getBoardHash()).debugPrint(
 					HandSet(hand), pos.isBlackTurn());
 		}
+#endif
 	};
 }
 
