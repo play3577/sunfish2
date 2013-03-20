@@ -8,6 +8,7 @@
 #include "aspWindow.h"
 #include "timeManager.h"
 #include "searcher.h"
+#include "../Util/tableString.h"
 #include <sstream>
 
 #define ROOT_NODE_DEBUG				0

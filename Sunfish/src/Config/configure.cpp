@@ -7,6 +7,7 @@
 
 #include "configure.h"
 #include "../Log/logger.h"
+#include "../Util/tableString.h"
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -19,6 +20,8 @@ namespace Configures {
 			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
 			return false;
 		}
+		// set default values
+		init();
 		// input
 		for (int l = 0; ; l++) {
 			char line[LINE_BUFFER_SIZE];
@@ -87,5 +90,24 @@ namespace Configures {
 			return false;
 		}
 		return true;
+	}
+
+	std::string Configure::toString() {
+		Util::TableString table(":");
+		ConfigItem* items = itemList();
+		int size = itemSize();
+		for (int i = 0; i < size; i++){
+			table.row() << items[i].name;
+			if (items[i].type == STRING) {
+				table << *(std::string*)items[i].data;
+			} else if (items[i].type == INTEGER) {
+				table << *(int*)items[i].data;
+			} else if (items[i].type == BOOL) {
+				table << *(bool*)items[i].data;
+			} else {
+				table << "error";
+			}
+		}
+		return table.get();
 	}
 }

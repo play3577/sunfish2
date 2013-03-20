@@ -52,6 +52,7 @@ namespace Network {
 			Log::error << "ERROR : can not read configurations.\n";
 			return false;
 		}
+		Log::message << config.toString();
 
 		con.setHost(config.getHost());
 		con.setPort(config.getPort());

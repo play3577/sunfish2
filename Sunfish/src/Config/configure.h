@@ -52,6 +52,8 @@ namespace Configures {
 	public:
 		bool read(const char* filename);
 
+		std::string toString();
+
 	};
 }
 

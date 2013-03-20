@@ -9,7 +9,6 @@
 #define SEARCHER_H_
 
 #include "../Util/timer.h"
-#include "../Util/tableString.h"
 #include "../Table/tt.h"
 #include "../Shek/shekTable.h"
 #include "../Records/record.h"

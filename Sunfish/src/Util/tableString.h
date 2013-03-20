@@ -46,21 +46,20 @@ namespace Util{
 		}
 
 	public:
-		TableString(std::string separator) {
-			TableString("", separator, "");
+		TableString(const char* separator) : prefix(""),
+				separator(separator), suffix("") {
+			changed = true;
 		}
 
-		TableString(std::string prefix,
-				std::string separator,
-				std::string suffix) {
-			this->prefix = prefix;
-			this->separator = separator;
-			this->suffix = suffix;
+		TableString(const char* prefix, const char* separator,
+				const char* suffix) : prefix(prefix),
+				separator(separator), suffix(suffix) {
 			changed = true;
 		}
 
 		TableString& row() {
 			table.push_back(std::list<std::string>());
+			changed = true;
 			return *this;
 		}
 
@@ -69,6 +68,7 @@ namespace Util{
 			std::ostringstream oss;
 			oss << t;
 			(*table.rbegin()).push_back(oss.str());
+			changed = true;
 			return *this;
 		}
 
@@ -102,6 +102,7 @@ namespace Util{
 					oss << suffix << '\n';
 				}
 				result = oss.str();
+				changed = false;
 			}
 			return result;
 		}
