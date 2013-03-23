@@ -33,8 +33,10 @@ bool test();
 bool learn();
 bool analyze();
 bool network();
-bool book(const char* directory);
-bool bookOne(const char* path);
+bool book(const std::string& directory, int limit);
+bool bookOne(const std::string& path, int limit);
+
+static const int DEFAULT_BOOK_LIMIT = 60;
 
 int main(int argc, char* argv[]) {
 	// information
@@ -72,6 +74,7 @@ int main(int argc, char* argv[]) {
 #endif //NLEARN
 			("book", value<std::string>(), "import records into opening-book.")
 			("book-one", value<std::string>(), "import one record into opening-book.")
+			("book-limit", value<int>(), "limit of opening-book.(default:60)")
 			("network,n", "CSA client moode")
 			("auto-black,b", "search will be begun automatically on black turn.")
 			("auto-white,w", "search will be begun automatically on white turn.")
@@ -108,10 +111,20 @@ int main(int argc, char* argv[]) {
 #endif //NLEARN
 	} else if (argmap.count("book")) {
 		// ** ディレクトリから全ての棋譜を定跡にインポート
-		return book(argmap["book"].as<std::string>().c_str()) ? 0 : 1;
+		std::string directory = argmap["book"].as<std::string>();
+		int limit = DEFAULT_BOOK_LIMIT;
+		if (argmap.count("book-limit")) {
+			limit = argmap["book-limit"].as<int>();
+		}
+		return book(directory, limit) ? 0 : 1;
 	} else if (argmap.count("book-one")) {
 		// ** 1つの棋譜を定跡にインポート
-		return bookOne(argmap["book-one"].as<std::string>().c_str()) ? 0 : 1;
+		std::string path = argmap["book-one"].as<std::string>();
+		int limit = DEFAULT_BOOK_LIMIT;
+		if (argmap.count("book-limit")) {
+			limit = argmap["book-limit"].as<int>();
+		}
+		return bookOne(path, limit) ? 0 : 1;
 	} else if (argmap.count("network")) {
 		// ** CSA Client の起動
 		return network() ? 0 : 1;
@@ -213,16 +226,16 @@ bool network() {
 	return true;
 }
 
-bool book(const char* directory) {
+bool book(const std::string& directory, int limit) {
 	Books::BookManager manager;
-	manager.importDirectory(directory);
+	manager.importDirectory(directory.c_str(), limit);
 	manager.write();
 	return true;
 }
 
-bool bookOne(const char* path) {
+bool bookOne(const std::string& path, int limit) {
 	Books::BookManager manager;
-	manager.importFile(path);
+	manager.importFile(path.c_str(), limit);
 	manager.write();
 	return true;
 }

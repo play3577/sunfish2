@@ -17,12 +17,13 @@ namespace Books {
 	private:
 		static const unsigned DEFAULT_BITS = 15;
 		const static unsigned DEFAULT_COUNT_THRESHOLD = 2;
-		const static unsigned DEFAULT_RECORD_THRESHOLD = 60;
 
 		const char* filename;
 		Book book;
 
 	public:
+		const static int IMPORT_UNLIMITED = 0;
+
 		BookManager(const char* filename = "book",
 				bool autoRead = true,
 				unsigned bits = DEFAULT_BITS,
@@ -52,10 +53,10 @@ namespace Books {
 		}
 
 		bool importFile(const char* path,
-				int threshold = DEFAULT_RECORD_THRESHOLD);
+				int threshold = IMPORT_UNLIMITED);
 
 		bool importDirectory(const char* directory,
-				int threshold = DEFAULT_RECORD_THRESHOLD);
+				int threshold = IMPORT_UNLIMITED);
 
 		const Shogi::Move* getMove(Util::uint64 hash) {
 			return book.getMove(hash);

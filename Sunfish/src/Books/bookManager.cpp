@@ -25,7 +25,8 @@ namespace Books {
 		}
 		// 初手から順に棋譜を見ていく。
 		record.begin();
-		while (record.getCurrent() < threshold) {
+		while (threshold == IMPORT_UNLIMITED ||
+				record.getCurrent() < threshold) {
 			Move move;
 			if (!record.getNextMove(move)) {
 				break;

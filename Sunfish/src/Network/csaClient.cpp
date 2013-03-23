@@ -93,8 +93,8 @@ namespace Network {
 				searchConfigEnemy.depth = Tree::DEF_MAX_DEPTH; // TODO: 実際の値を取得
 				searchConfigEnemy.limitEnable = false;
 				// 残り時間の初期化
-				blackTime.init(gameSummary.totalTime);
-				whiteTime.init(gameSummary.totalTime);
+				blackTime.init(gameSummary.totalTime, gameSummary.readoff);
+				whiteTime.init(gameSummary.totalTime, gameSummary.readoff);
 
 				while (1) {
 #ifndef NDEBUG
@@ -415,7 +415,7 @@ lab_end:
 			gameSummary.totalTime = boost::lexical_cast<int>(tokens[1]);
 		} else if (tokens[0] == "Byoyomi") {
 			// 秒読み
-			// TODO
+			gameSummary.readoff = boost::lexical_cast<int>(tokens[1]);
 		} else {
 			return false;
 		}

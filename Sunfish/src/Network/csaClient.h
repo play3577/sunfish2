@@ -122,6 +122,7 @@ namespace Network {
 			std::string blackName; // 先手の名前
 			std::string whiteName; // 後手の名前
 			int totalTime; // 持ち時間
+			int readoff; // 秒読み
 		} gameSummary;
 
 		Search::SearchConfig buildSearchConfig(
