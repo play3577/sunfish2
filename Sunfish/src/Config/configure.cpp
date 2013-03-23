@@ -15,9 +15,10 @@
 namespace Configures {
 	bool Configure::read(const char* filename) {
 		// open a configure file.
+		Log::message.fileOpenMessage(filename);
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		// set default values
@@ -28,11 +29,11 @@ namespace Configures {
 			fin.getline(line, sizeof(line));
 			if (fin.eof()) { break; }
 			if (fin.fail()) {
-				Log::error << "ERROR: unknown i/o error.\n";
+				Log::error.fileIoError(filename);
 				return false;
 			}
 			if (!readLine(line)) {
-				Log::error << "ERROR: line(" << l << ") :\"" << line << "\"\n";
+				Log::error.fileFormatError(filename, l, line);
 			}
 		}
 		fin.close(); // close a configure file.
@@ -46,7 +47,7 @@ namespace Configures {
 		for (int i = 0; i < size; i++){
 			// 設定項目のデータ型毎に変換
 			if (!convert(items[i], items[i].defaultValue)) {
-				Log::error << "Unknown Error.." << __FILE__ << "(" << __LINE__ << ")\n";
+				Log::error.unknownError();
 			}
 		}
 	}
@@ -70,7 +71,7 @@ namespace Configures {
 				if (convert(items[i], tokens[1])) {
 					return true;
 				} else {
-					Log::error << "Unknown Error.." << __FILE__ << "(" << __LINE__ << ")\n";
+					Log::error.unknownError();
 					return false;
 				}
 			}

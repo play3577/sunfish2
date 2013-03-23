@@ -13,10 +13,10 @@ namespace Books {
 	using namespace Shogi;
 
 	bool BookReader::read(const char* filename, Book& book) {
-		Log::message << "reading a file:[" << filename << "]\n";
+		Log::message.fileOpenMessage(filename);
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {
-			Log::warning << "could not open:[" << filename << "]\n";
+			Log::warning.fileOpenError(filename);
 			return false;
 		}
 		bool ok = read(fin, book);
@@ -30,7 +30,7 @@ namespace Books {
 			in.read((char*)&hash, sizeof(hash));
 			if (in.eof()) { break; }
 			if (!in) {
-				Log::error << __THIS__ << ": unknown error\n";
+				Log::error.ioError();
 			}
 			if (!read(in, book, hash)) {
 				return false;
@@ -47,11 +47,11 @@ namespace Books {
 			if (in && m == 0) { break; }
 			in.read((char*)&count, sizeof(count));
 			if (in.eof()) {
-				Log::error << __THIS__ << ": invalid format\n";
+				Log::error.formatError();
 				return false;
 			}
 			if (!in) {
-				Log::error << __THIS__ << ": unknown error\n";
+				Log::error.ioError();
 			}
 			Move move(m);
 			bookMoves.setMove(move, count, false);

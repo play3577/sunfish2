@@ -49,7 +49,6 @@ namespace Network {
 	bool CsaClient::execute() {
 		// 設定の読み込み
 		if (!config.read(configFilename)) {
-			Log::error << "ERROR : can not read configurations.\n";
 			return false;
 		}
 		Log::message << config.toString();
@@ -62,8 +61,8 @@ namespace Network {
 		// 連続対局
 		for (int i = 0; i < config.getRepeat(); i++) {
 			if (!con.connect()) {
-				Log::error << "ERROR : can not connect to [" << config.getHost()
-						<< "] (port:" << config.getPort() << ")\n";
+				Log::error << "ERROR: can not connect to " << config.getHost()
+						<< ':' << config.getPort() << "\n";
 				return false;
 			}
 			init();
@@ -126,7 +125,7 @@ namespace Network {
 							std::string recvStr;
 							if (!sendMove(sendingMove, &recvStr)) {
 								// TODO: エラーの詳細を出力
-								Log::error << "ERROR :could not send a move\n";
+								Log::error << "ERROR:could not send a move\n";
 								break;
 							}
 							// 消費時間の読み込み
@@ -163,7 +162,7 @@ namespace Network {
 						if (flags & mask) {
 							// 受信した指し手の読み込み
 							if (!CsaReader::parseLineMove(recvStr.c_str(), record)) {
-								Log::error << "ERROR :illegal move!!\n";
+								Log::error << "ERROR:illegal move!!\n";
 								break;
 							}
 							// 消費時間の読み込み
@@ -178,7 +177,7 @@ namespace Network {
 							break;
 						} else {
 							// エラー
-							Log::error << "ERROR :unknown error. :" << __FILE__ << '(' << __LINE__ << ")\n";
+							Log::error << "ERROR:unknown error. :" << __FILE__ << '(' << __LINE__ << ")\n";
 							break;
 						}
 					}

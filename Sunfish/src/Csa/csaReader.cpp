@@ -154,14 +154,14 @@ namespace Csa {
 			in.getline(line, sizeof(line));
 			if (in.eof()) { break; }
 			if (in.fail()) {
-				Log::error << "ERROR: unknown i/o error.\n";
+				Log::error.ioError();
 				return false;
 			}
 			LineStat stat = parseLine(line, pos);
 			if (stat == LINE_TURN) {
 				break;
 			} else if (stat == LINE_ERROR) {
-				Log::error << "ERROR: CSA syntax :\"" << line << "\"\n";
+				Log::error.formatError(line);
 				return false;
 			}
 		}
@@ -172,7 +172,7 @@ namespace Csa {
 	bool CsaReader::read(const char* filename, Position& pos) {
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		if (!read(fin, pos)) {
@@ -187,7 +187,7 @@ namespace Csa {
 		Position pos;
 		std::ifstream fin(filename);
 		if (!fin) {
-			Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 
@@ -204,12 +204,12 @@ namespace Csa {
 			fin.getline(line, sizeof(line));
 			if (fin.eof()) { break; }
 			if (fin.fail()) {
-				Log::error << "ERROR: unknown i/o error.\n";
+				Log::error.fileIoError(filename);
 				return false;
 			}
 			LineStat stat = parseLine(line, record);
 			if (stat == LINE_ERROR) {
-				Log::error << "ERROR: CSA syntax :\"" << line << "\"\n";
+				Log::error.fileFormatError(filename, line);
 				fin.close();
 				return false;
 			}

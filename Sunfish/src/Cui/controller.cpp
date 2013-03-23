@@ -193,9 +193,7 @@ namespace Cui {
 
 		// 棋譜読み込み
 		if (config.filename != NULL) {
-			if (!CsaReader::read(config.filename, record)) {
-				std::cerr << "ERROR: failed to read a file :\"" << config.filename << "\"\n";
-			}
+			CsaReader::read(config.filename, record);
 		}
 
 		// 探索設定

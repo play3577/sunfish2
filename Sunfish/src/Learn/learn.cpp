@@ -118,7 +118,7 @@ namespace Learns {
 				searcher.search(recResult); // 探索
 				record.prev(); // 一手戻す。
 			} else {
-				Log::error << "ERROR:" << __THIS__ << ":illegal move!!\n";
+				Log::error << "ERROR: " << __THIS__ << ":illegal move!!\n";
 				Log::error << record.getPosition().toString();
 				Log::error << recMove.toString() << '\n';
 				exit(1);
@@ -169,7 +169,7 @@ namespace Learns {
 					searcher.search(result, alpha, beta); // 探索
 					record.prev(); // 一手戻す。
 				} else {
-					Log::error << "ERROR" << __THIS__ << ":illegal move!!\n";
+					Log::error << "ERROR: " << __THIS__ << ":illegal move!!\n";
 					Log::error << record.getPosition().toString();
 					Log::error << pmove->toString() << '\n';
 					exit(1);

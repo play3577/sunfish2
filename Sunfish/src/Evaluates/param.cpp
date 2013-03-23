@@ -58,17 +58,17 @@ namespace Evaluates {
 
 	template <class T, class U>
 	bool TempParam<T, U>::read(const char* filename) {
-		Log::message << "reading a file:[" << filename << "]\n";
+		Log::message.fileOpenMessage(filename);
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {
-			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		fin.read((char*)&piece[1], sizeof(piece[0])*Piece::DRAGON);
 		fin.read((char*)kpp, sizeof(kpp));
 		fin.read((char*)kkp, sizeof(kkp));
 		if (fin.fail()) {
-			Log::error << "ERROR : failed to read.. \"" << filename << "\"\n";
+			Log::error.fileIoError(filename);
 			return false;
 		}
 		fin.close();
@@ -80,17 +80,17 @@ namespace Evaluates {
 
 	template <class T, class U>
 	bool TempParam<T, U>::write(const char* filename) {
-		Log::message << "writing a file:[" << filename << "]\n";
+		Log::message.fileOpenMessage(filename);
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
 		if (!fout) {
-			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		fout.write((char*)&piece[1], sizeof(piece[0])*Piece::DRAGON);
 		fout.write((char*)kpp, sizeof(kpp));
 		fout.write((char*)kkp, sizeof(kkp));
 		if (fout.fail()) {
-			Log::error << "ERROR : failed to open.. \"" << filename << "\"\n";
+			Log::error.fileIoError(filename);
 			return false;
 		}
 		fout.close();

@@ -95,9 +95,7 @@ namespace Cui {
 		Controller() {
 			pparam = new Evaluates::Param();
 			Evaluates::Initializer::apply(*pparam);
-			if (!pparam->read("evdata")) {
-				Log::error << "ERROR : can not read \"evdata\"\n";
-			}
+			pparam->read("evdata");
 			initSettings();
 		}
 

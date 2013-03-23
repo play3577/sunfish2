@@ -13,10 +13,10 @@ namespace Books {
 	using namespace Shogi;
 
 	bool BookWriter::write(const char* filename, const Book& book) {
-		Log::message << "writing opening-books:[" << filename << "]\n";
+		Log::message.fileOpenMessage(filename);
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
 		if (!fout) {
-			Log::warning << "could not open:[" << filename << "]\n";
+			Log::warning.fileOpenError(filename);
 			return false;
 		}
 		bool ok = true;

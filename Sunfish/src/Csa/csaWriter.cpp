@@ -20,7 +20,7 @@ namespace Csa {
 		bool CsaWriter::write(const char* filename, const Position& pos) {
 			std::ofstream fout(filename);
 			if (!fout) {
-				Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
+				Log::error.fileOpenError(filename);
 				return false;
 			}
 			if (!write(fout, pos)) {
@@ -34,7 +34,7 @@ namespace Csa {
 		bool CsaWriter::write(const char* filename, Records::Record& record) {
 			std::ofstream fout(filename);
 			if (!fout) {
-				Log::error << "ERROR: can't open a file :\"" << filename << "\"\n";
+				Log::error.fileOpenError(filename);
 				return false;
 			}
 			int index = record.getCurrent();

@@ -22,10 +22,16 @@ namespace Log {
 			const char* after;
 		};
 
+		const char* name;
+
 		std::vector<STREAM> os;
 
+		void putPrefix();
+
+		void _formatError(const char* str = NULL, int column = -1);
+
 	public:
-		Logger() {
+		Logger(const char* name = NULL) : name(name) {
 		}
 
 		void addStream(std::ostream& o) {
@@ -54,6 +60,27 @@ namespace Log {
 			}
 			return *this;
 		}
+
+		void unknownError(const char* detail = NULL);
+
+		void fileOpenMessage(const char* filename);
+
+		void fileOpenError(const char* filename);
+
+		void fileIoError(const char* filename,
+				const char* detail = NULL);
+
+		void ioError(const char* detail = NULL);
+
+		void fileFormatError(const char* filename,
+				const char* str = NULL, int column = -1);
+
+		void fileFormatError(const char* filename, int line,
+				const char* str = NULL, int column = -1);
+
+		void formatError(const char* str = NULL, int column = -1);
+
+		void formatError(int line, const char* str = NULL, int column = -1);
 	};
 
 	extern Logger error;

@@ -28,12 +28,12 @@ namespace Util {
 	bool Hash::read(const char* filename) {
 		std::ifstream fin(filename, std::ios::in | std::ios::binary);
 		if (!fin) {
-			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		fin.read((char*)values, sizeof(Util::uint64) * size);
 		if (fin.fail()) {
-			Log::error << "ERROR : failed to read.. \"" << filename << "\"\n";
+			Log::error.fileIoError(filename);
 			return false;
 		}
 		fin.close();
@@ -43,12 +43,12 @@ namespace Util {
 	bool Hash::write(const char* filename) {
 		std::ofstream fout(filename, std::ios::out | std::ios::binary);
 		if (!fout) {
-			Log::error << "ERROR : can not open.. \"" << filename << "\"\n";
+			Log::error.fileOpenError(filename);
 			return false;
 		}
 		fout.write((char*)values, sizeof(Util::uint64) * size);
 		if (fout.fail()) {
-			Log::error << "ERROR : failed to read.. \"" << filename << "\"\n";
+			Log::error.fileIoError(filename);
 			return false;
 		}
 		fout.close();
