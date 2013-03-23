@@ -8,6 +8,7 @@
 #ifndef CSACLIENT_H_
 #define CSACLIENT_H_
 
+#include "remainingTime.h"
 #include "csaClientConfig.h"
 #include "../Log/logger.h"
 #include "../Evaluates/param.h"
@@ -92,9 +93,6 @@ namespace Network {
 			}
 		};
 
-		std::queue<RECV_DATA> recvQueue;
-		unsigned endFlags;
-
 		struct ReceiveFlagSet {
 			boost::regex regex;
 			RECV_FLAG flag;
@@ -103,19 +101,32 @@ namespace Network {
 		};
 		static const ReceiveFlagSet flagSets[RECV_NUM];
 
-		const char* configFilename;
-		CsaClientConfig config;
+		std::queue<RECV_DATA> recvQueue; // 受信データ
+		unsigned endFlags; // 対局終了フラグ
 
-		Shogi::Position pos;
-		Evaluates::Param* pparam;
-		Books::BookManager book;
+		const char* configFilename; // 設定ファイル
+		CsaClientConfig config; // 設定
 
-		Connection con; // コネクション
+		Shogi::Position pos; // 開始局面
+		Evaluates::Param* pparam; // 局面評価パラメータ
+		Books::BookManager book; // 定跡
 
-		bool black; // 自分の手番が黒か
-		std::string gameId; // 対局ID
-		std::string blackName; // 先手の名前
-		std::string whiteName; // 後手の名前
+		Connection con; // サーバとのコネクション
+
+		RemainingTime blackTime; // 先手の持ち時間
+		RemainingTime whiteTime; // 後手の持ち時間
+
+		struct GameSummary {
+			bool black; // 自分の手番が黒か
+			std::string gameId; // 対局ID
+			std::string blackName; // 先手の名前
+			std::string whiteName; // 後手の名前
+			int totalTime; // 持ち時間
+		} gameSummary;
+
+		Search::SearchConfig buildSearchConfig(
+				Search::SearchConfig& searchConfig,
+				const Search::SearchConfig& searchConfigBase);
 
 		void receiver();
 
@@ -127,7 +138,7 @@ namespace Network {
 
 		bool agree();
 
-		bool sendMove(const SendingMove& move);
+		bool sendMove(const SendingMove& move, std::string* str);
 
 		bool sendResign();
 
@@ -145,12 +156,15 @@ namespace Network {
 				recvQueue.pop();
 			}
 			endFlags = RECV_NULL;
-			gameId = "";
-			blackName = "";
-			whiteName = "";
+			gameSummary.gameId = "";
+			gameSummary.blackName = "";
+			gameSummary.whiteName = "";
+			gameSummary.totalTime = 0;
 		}
 
 		unsigned waitReceive(unsigned flags, std::string* str = NULL);
+
+		int getUsedTime(const std::string& recvStr);
 
 		static void _recvGameSummary(CsaClient* p) {
 			p->recvGameSummary();
@@ -177,12 +191,8 @@ namespace Network {
 			Log::send << '<' << str << '\n';
 		}
 
-		void printReceivedString(std::string recvStr, bool ok) {
-			Log::receive << '>' << recvStr;
-			if (!ok) {
-				Log::receive << " ..!!!parsing error!!!";
-			}
-			Log::receive << '\n';
+		void printReceivedString(std::string recvStr) {
+			Log::receive << '>' << recvStr << '\n';
 		}
 
 		void writeResult(Records::Record record);
