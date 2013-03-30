@@ -14,7 +14,6 @@
 #include "../Search/nodeStat.h"
 
 namespace Table {
-	// TODO: lock less hash
 	class TTEntity {
 	private:
 		Util::uint64 hash;
@@ -23,6 +22,7 @@ namespace Table {
 		int depth;
 		Search::HashMove hashMove;
 		Search::NodeStat stat;
+		int age;
 		Util::uint64 checkSum;
 
 		Util::uint64 generateCheckSum() const {
@@ -30,6 +30,7 @@ namespace Table {
 					^ ((Util::uint64)valueType << 16)
 					^ ((Util::uint64)depth << 32)
 					^ (Util::uint64)hashMove
+					^ (Util::uint64)age
 					^ ((Util::uint64)(unsigned)stat << 48);
 		}
 
@@ -38,7 +39,8 @@ namespace Table {
 				int newValueType,
 				int newDepth,
 				const Search::NodeStat& newStat,
-				const Shogi::Move& move) {
+				const Shogi::Move& move,
+				int newAge) {
 			if (newDepth < 0) { newDepth = 0; }
 
 			if (isOk()) {
@@ -58,6 +60,7 @@ namespace Table {
 			depth = newDepth;
 			stat = newStat;
 			if (!move.isEmpty()) { hashMove.update(move); }
+			age = newAge;
 			checkSum = generateCheckSum();
 
 			return true;
@@ -76,7 +79,7 @@ namespace Table {
 		}
 
 		void init() {
-			valueType = UNKNOWN;
+			checkSum = U64(0);
 		}
 
 		bool update(Util::uint64 newHash,
@@ -85,7 +88,8 @@ namespace Table {
 				Evaluates::Value newValue,
 				int newDepth,
 				const Search::NodeStat& newStat,
-				const Shogi::Move& move) {
+				const Shogi::Move& move,
+				int newAge) {
 			int newValueType;
 			if (newValue >= beta) {
 				newValueType = LOWER;
@@ -94,7 +98,8 @@ namespace Table {
 			} else {
 				newValueType = EXACT;
 			}
-			return update(newHash, newValue, newValueType, newDepth, newStat, move);
+			return update(newHash, newValue, newValueType,
+					newDepth, newStat, move, newAge);
 		}
 
 		bool isOk() const {
@@ -145,6 +150,62 @@ namespace Table {
 
 		const Search::HashMove getHashMove() const {
 			return hashMove;
+		}
+
+		int getAge() const {
+			return age;
+		}
+	};
+
+	class TTEntities {
+	private:
+		static const unsigned SIZE = 4;
+		TTEntity entities[SIZE];
+		volatile unsigned lastAccess;
+
+	public:
+		TTEntities() : lastAccess(0) {
+		}
+
+		void init() {
+			for (unsigned i = 0; i < SIZE; i++) {
+				entities[i].init();
+			}
+		}
+
+		void set(const TTEntity& entity) {
+			const unsigned l = lastAccess;
+			for (unsigned i = 0; i < SIZE; i++) {
+				unsigned index = (l + i) % SIZE;
+				if (entities[index].getHash() == entity.getHash()) {
+					entities[index] = entity;
+					lastAccess = index;
+					return;
+				}
+			}
+			for (unsigned i = 0; i < SIZE; i++) {
+				unsigned index = (l + i) % SIZE;
+				if (entities[index].isBroken() ||
+						entities[index].getAge() != entity.getAge()) {
+					entities[index] = entity;
+					lastAccess = index;
+					return;
+				}
+			}
+			unsigned index = (l + 1) % SIZE;
+			entities[index] = entity;
+			lastAccess = index;
+		}
+
+		bool get(Util::uint64 hash, TTEntity& entity) {
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == hash) {
+					entity = entities[i];
+					lastAccess = i;
+					return true;
+				}
+			}
+			return false;
 		}
 	};
 }

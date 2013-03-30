@@ -6,7 +6,7 @@
 - 香車2段目不成不生成
 * 時間制御
 * 序盤定跡
-? 機械学習
++ 機械学習
 	? 並列化
 - 入玉対策
 ? 稲庭対策
@@ -52,4 +52,5 @@
 	* aspiration search
 	+ parallel search
 		* lockless hash
-		? history
+		+ history
+			- 排他制御(?)

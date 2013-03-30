@@ -13,12 +13,20 @@
 #include "ttEntity.h"
 
 namespace Table {
-	class TT : public BaseTable<TTEntity> {
+	class TT : public BaseTable<TTEntities> {
+	private:
+		static const int AGE_MAX = 8;
+		int age;
+
 	public:
-		TT() : BaseTable<TTEntity>() {
+		TT() : BaseTable<TTEntities>(), age(0) {
 		}
 
-		TT(unsigned bits) : BaseTable<TTEntity>(bits) {
+		TT(unsigned bits) : BaseTable<TTEntities>(bits), age(0) {
+		}
+
+		void evolve() {
+			age = (age + 1) % AGE_MAX;
 		}
 
 		bool entry(Util::uint64 hash,
@@ -28,12 +36,20 @@ namespace Table {
 				int depth,
 				const Search::NodeStat& stat,
 				const Shogi::Move& move) {
-			TTEntity entity = getEntity(hash);
-			if (entity.update(hash, alpha, beta, value, depth, stat, move)) {
-				_getEntity(hash) = entity;
+			TTEntity entity;
+			TTEntities& entities = _getEntity(hash);
+			entities.get(hash, entity);
+			if (entity.update(hash, alpha, beta, value,
+					depth, stat, move, age)) {
+				entities.set(entity);
 				return true;
 			}
 			return false;
+		}
+
+		bool get(Util::uint64 hash, TTEntity& entity) {
+			return _getEntity(hash).get(hash, entity)
+					&& entity.is(hash);
 		}
 	};
 }

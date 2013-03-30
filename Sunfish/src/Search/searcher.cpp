@@ -105,6 +105,8 @@ namespace Search {
 		for (int i = 1; i < workerSize; i++) {
 			workers[i].stop();
 		}
+		// 置換テーブルの世代更新
+		tt.evolve();
 		// SHEKテーブルのアンセット
 		if (hashStack.stack != NULL) {
 			for (int i = 0; i < treeSize; i++) {
@@ -306,11 +308,11 @@ namespace Search {
 		Util::uint64 hash = tree.getPosition().getHash();
 
 		// transposition table
-		TTEntity tte = tt.getEntity(hash);
+		TTEntity tte;
 		Move hash1;
 		Move hash2;
 		bool hashOk = false;
-		if (tte.is(hash)) { // 局面が一致したら
+		if (tt.get(hash, tte)) {
 			if (tte.isSuperior(depth)
 #ifndef NLEARN
 					&& !config.isLearning
@@ -395,8 +397,8 @@ namespace Search {
 			negaMax<pvNode>(tree, newDepth, alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
 			if (isInterrupted(tree)) { return Value(0); }
-			TTEntity tte = tt.getEntity(hash);
-			if (tte.is(hash)) {
+			TTEntity tte;
+			if (tt.get(hash, tte)) {
 				tree.setHashMove(tte.getHashMove());
 			}
 		}
