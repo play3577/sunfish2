@@ -111,15 +111,21 @@ namespace Search {
 			int prevNum = getNumber();
 			switch (phase) {
 			case PHASE_BEGIN:
-				if (getPosition().isLegalMove(hashMove.getHash1(), true)) {
-					add(hashMove.getHash1());
-					hashNum++;
+				if (!getPosition().isCheck()) {
+					if (getPosition().isLegalMove(hashMove.getHash1(), true)) {
+						add(hashMove.getHash1());
+						hashNum++;
+					}
+					if (getPosition().isLegalMove(hashMove.getHash2(), true)) {
+						add(hashMove.getHash2());
+						hashNum++;
+					}
+					phase = PHASE_CAPTURE;
+				} else {
+					generate();
+					sortSee<false>(prevNum, getNumber()-prevNum);
+					phase = PHASE_END;
 				}
-				if (getPosition().isLegalMove(hashMove.getHash2(), true)) {
-					add(hashMove.getHash2());
-					hashNum++;
-				}
-				phase = PHASE_CAPTURE;
 				break;
 			case PHASE_CAPTURE:
 				generateCapture();

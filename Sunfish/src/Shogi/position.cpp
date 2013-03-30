@@ -211,7 +211,7 @@ namespace Shogi {
 			Evaluates::Evaluate* eval) {
 #ifndef NDEBUG
 		if (!isLegalMove<black, false>(move)) {
-			Log::debug << "ERROR " << __FILE__ << '(' << __LINE__ << ") : ILEGAL MOVE!!";
+			Log::debug << "ERROR " << __FILE__ << '(' << __LINE__ << ") : ILLEGAL MOVE!!\n";
 			Log::debug << toString();
 			Log::debug << move.toString() << '\n';
 			abort();

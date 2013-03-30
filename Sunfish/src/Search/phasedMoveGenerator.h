@@ -58,10 +58,14 @@ namespace Search {
 			init();
 		}
 
-		void init(PHASE firstPhase = PHASE_BEGIN) {
-			clear();
-			phase = firstPhase;
+		void clear() {
+			Shogi::MoveGenerator::clear();
 			hashMove.init();
+		}
+
+		void init(PHASE firstPhase = PHASE_BEGIN) {
+			Shogi::MoveGenerator::clear();
+			phase = firstPhase;
 			hashNum = 0;
 		}
 

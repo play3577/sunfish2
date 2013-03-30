@@ -251,7 +251,7 @@ namespace Search {
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-5142OU")) {
+		if (tree.is("-6171KI")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
@@ -306,39 +306,45 @@ namespace Search {
 		Util::uint64 hash = tree.getPosition().getHash();
 
 		// transposition table
-		const TTEntity& ttEntity = tt.getEntity(hash);
+		TTEntity tte = tt.getEntity(hash);
 		Move hash1;
 		Move hash2;
 		bool hashOk = false;
-		if (ttEntity.is(hash)) { // 局面が一致したら
-			if (ttEntity.isSuperior(depth)
+		if (tte.is(hash)) { // 局面が一致したら
+			if (tte.isSuperior(depth)
 #ifndef NLEARN
 					&& !config.isLearning
 #endif // NLEARN
 					) {
-				switch (ttEntity.getValueType()) {
+				switch (tte.getValueType()) {
 				case TTEntity::EXACT: // 確定
 					if (!pvNode && stat.isHashCut()) {
 						counter.hashPruning++;
-						return ttEntity.getValue();
+						return tte.getValue();
 					}
 				case TTEntity::LOWER: // 下界値
-					if (!pvNode && stat.isHashCut() && ttEntity.getValue() >= beta) {
+					if (!pvNode && stat.isHashCut() && tte.getValue() >= beta) {
 						counter.hashPruning++;
-						return ttEntity.getValue();
+						return tte.getValue();
 					}
 					break;
 				case TTEntity::UPPER: // 上界値
-					if (!pvNode && stat.isHashCut() && ttEntity.getValue() <= alpha) {
+					if (!pvNode && stat.isHashCut() && tte.getValue() <= alpha) {
 						counter.hashPruning++;
-						return ttEntity.getValue();
+						return tte.getValue();
 					}
 					break;
 				}
 			}
-			if (ttEntity.getDepth() >= depth - PLY1 * 3) {
-				tree.setHashMove(ttEntity.getHashMove());
+			if (tte.getDepth() >= depth - PLY1 * 3) {
+				tree.setHashMove(tte.getHashMove());
 				hashOk = true;
+#if NODE_DEBUG
+				if (debugNode) {
+					Log::warning << "hash=" << tte.getHashMove().getHash1().toString();
+					Log::warning << ' ' << tte.getHashMove().getHash2().toString();
+				}
+#endif // NODE_DEBUG
 			}
 		}
 
@@ -372,9 +378,9 @@ namespace Search {
 					if (newValue >= beta) {
 						counter.nullMovePruning++;
 						// TT entry
-						//if (nullDepth < PLY1) {
-						//	tt.entry(hash, alpha, beta, newValue, depth, stat);
-						//}
+						if (nullDepth < PLY1) {
+							tt.entry(hash, alpha, beta, newValue, depth, stat, Move());
+						}
 						return beta;
 					} else if (newValue <= -Value::MATE) {
 						// パスして詰まされたら自玉は詰めろ
@@ -389,7 +395,7 @@ namespace Search {
 			negaMax<pvNode>(tree, newDepth, alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
 			if (isInterrupted(tree)) { return Value(0); }
-			const TTEntity& tte = tt.getEntity(hash);
+			TTEntity tte = tt.getEntity(hash);
 			if (tte.is(hash)) {
 				tree.setHashMove(tte.getHashMove());
 			}
@@ -442,6 +448,7 @@ namespace Search {
 
 #if NODE_DEBUG
 			Util::uint64 beforeNodes = counter.nodes;
+			double beforeSec = timer.get();
 #endif // NODE_DEBUG
 			// recurcive search
 			if (node.getMoveCount() == 1) {
@@ -487,7 +494,10 @@ namespace Search {
 			if (debugNode) {
 				Util::uint64 afterNodes= counter.nodes;
 				Util::uint64 nodes = afterNodes - beforeNodes;
+				double afterSec = timer.get();
+				double sec = afterSec - beforeSec;
 				Log::debug << "(" << newValue << ")[" << nodes << "]";
+				Log::warning << (int)(sec*1000);
 			}
 #endif // NODE_DEBUG
 
@@ -542,6 +552,11 @@ namespace Search {
 			return Value::MIN + tree.getDepth();
 		}
 
+#if NODE_DEBUG
+		if (debugNode) {
+			Log::warning << ' ' << best.toString();
+		}
+#endif // NODE_DEBUG
 		// TT entry
 		tt.entry(hash, alpha, beta, value, depth, stat, best);
 
@@ -624,6 +639,7 @@ namespace Search {
 #if ROOT_NODE_DEBUG
 				// debug
 				Util::uint64 beforeNodes= counter.nodes;
+				double beforeSec = timer.get();
 				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
@@ -673,9 +689,12 @@ revaluation:
 				// debug
 				Util::uint64 afterNodes= counter.nodes;
 				Util::uint64 nodes = afterNodes - beforeNodes;
+				double afterSec = timer.get();
+				double sec = afterSec - beforeSec;
 				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")"
 						<< "[" << nodes << "]"
-						<< "{" << (int)alpha << "," << (int)aspBeta << "} ";
+						<< "{" << (int)alpha << "," << (int)aspBeta << "}";
+				Log::warning << (int)(sec*1000);
 #endif // ROOT_NODE_DEBUG
 				// 手を戻す。
 				unmakeMove(tree);

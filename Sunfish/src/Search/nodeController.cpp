@@ -16,6 +16,8 @@ namespace Search {
 		// extensions
 		if (isCheckMove()) {
 			depth += extension();
+		} else if (tree.isOneReply()) {
+			depth += extension();
 		} else if (stat.isRecapture() && isRecapture()) {
 			depth += extension() * 3 / 4;
 			newStat.unsetRecapture();

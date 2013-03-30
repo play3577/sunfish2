@@ -51,6 +51,7 @@ namespace Search {
 
 		void arrive() {
 			pv.init();
+			pgen->clear();
 		}
 
 		void initKiller() {

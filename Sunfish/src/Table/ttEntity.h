@@ -27,10 +27,10 @@ namespace Table {
 
 		Util::uint64 generateCheckSum() const {
 			return hash ^ (Util::uint64)(int)value
-					^ (Util::uint64)valueType
-					^ (Util::uint64)depth
+					^ ((Util::uint64)valueType << 16)
+					^ ((Util::uint64)depth << 32)
 					^ (Util::uint64)hashMove
-					^ (Util::uint64)(unsigned)stat;
+					^ ((Util::uint64)(unsigned)stat << 48);
 		}
 
 		bool update(Util::uint64 newHash,
@@ -41,10 +41,15 @@ namespace Table {
 				const Shogi::Move& move) {
 			if (newDepth < 0) { newDepth = 0; }
 
-			if (valueType == UNKNOWN) {
+			if (isOk()) {
+				if (valueType != UNKNOWN && newDepth < depth) {
+					return false;
+				}
+				if (hash != newHash) {
+					hashMove.init();
+				}
+			} else {
 				hashMove.init();
-			} else if (newDepth < depth) {
-				return false;
 			}
 
 			hash = newHash;
@@ -92,8 +97,16 @@ namespace Table {
 			return update(newHash, newValue, newValueType, newDepth, newStat, move);
 		}
 
+		bool isOk() const {
+			return checkSum == generateCheckSum();
+		}
+
+		bool isBroken() const {
+			return !isOk();
+		}
+
 		bool is(Util::uint64 hash) const {
-			return this->hash == hash && checkSum == generateCheckSum();
+			return this->hash == hash && isOk();
 		}
 
 		bool isSuperior(int curDepth) const {

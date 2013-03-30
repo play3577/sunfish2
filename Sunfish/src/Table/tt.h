@@ -28,7 +28,12 @@ namespace Table {
 				int depth,
 				const Search::NodeStat& stat,
 				const Shogi::Move& move) {
-			return _getEntity(hash).update(hash, alpha, beta, value, depth, stat, move);
+			TTEntity entity = getEntity(hash);
+			if (entity.update(hash, alpha, beta, value, depth, stat, move)) {
+				_getEntity(hash) = entity;
+				return true;
+			}
+			return false;
 		}
 	};
 }

@@ -255,6 +255,10 @@ namespace Search {
 			return false;
 		}
 
+		bool isOneReply() {
+			return isCheck() && nodes[depth].getNumberOfMoves() == 1;
+		}
+
 		Evaluates::Value evaluate() {
 			return eval.getValue();
 		}
@@ -392,15 +396,16 @@ namespace Search {
 				bool mateThreat,
 				bool pvNode,
 				int childCount) {
+			split.childCount = childCount;
 			split.depth = depth;
 			split.alpha = alpha;
 			split.beta = beta;
-			split.value = value;
 			split.stat = stat;
 			split.standPat = standPat;
 			split.mateThreat = mateThreat;
 			split.pvNode = pvNode;
-			split.childCount = childCount;
+			split.value = value;
+			split.best.setEmpty();
 		}
 
 		// split した時の子 tree に対して呼ぶ
