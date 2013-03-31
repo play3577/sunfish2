@@ -12,6 +12,7 @@
 #include "../Evaluates/value.h"
 #include "../Search/hashMove.h"
 #include "../Search/nodeStat.h"
+#include <cassert>
 
 namespace Table {
 	class TTEntity {
@@ -44,17 +45,16 @@ namespace Table {
 			if (newDepth < 0) { newDepth = 0; }
 
 			if (isOk()) {
-				if (valueType != UNKNOWN && newDepth < depth) {
+				// 深さが劣るものは登録させない。
+				if (newDepth < depth) {
 					return false;
 				}
-				if (hash != newHash) {
-					hashMove.init();
-				}
+				assert(hash == newHash);
 			} else {
+				hash = newHash;
 				hashMove.init();
 			}
 
-			hash = newHash;
 			value = newValue;
 			valueType = newValueType;
 			depth = newDepth;
@@ -68,8 +68,7 @@ namespace Table {
 
 	public:
 		enum {
-			UNKNOWN = 0,
-			EXACT,
+			EXACT = 0,
 			UPPER,
 			LOWER,
 		};
@@ -79,7 +78,7 @@ namespace Table {
 		}
 
 		void init() {
-			checkSum = U64(0);
+			checkSum = U64(0xE744ED2A771FF5DC);
 		}
 
 		bool update(Util::uint64 newHash,
@@ -174,17 +173,18 @@ namespace Table {
 		}
 
 		void set(const TTEntity& entity) {
-			const unsigned l = lastAccess;
+			unsigned l = lastAccess;
 			for (unsigned i = 0; i < SIZE; i++) {
-				unsigned index = (l + i) % SIZE;
+				const unsigned index = (l + i) % SIZE;
 				if (entities[index].getHash() == entity.getHash()) {
 					entities[index] = entity;
 					lastAccess = index;
 					return;
 				}
 			}
+			l++;
 			for (unsigned i = 0; i < SIZE; i++) {
-				unsigned index = (l + i) % SIZE;
+				const unsigned index = (l + i) % SIZE;
 				if (entities[index].isBroken() ||
 						entities[index].getAge() != entity.getAge()) {
 					entities[index] = entity;
@@ -192,16 +192,18 @@ namespace Table {
 					return;
 				}
 			}
-			unsigned index = (l + 1) % SIZE;
+			const unsigned index = l % SIZE;
 			entities[index] = entity;
 			lastAccess = index;
 		}
 
 		bool get(Util::uint64 hash, TTEntity& entity) {
+			unsigned l = lastAccess;
 			for (unsigned i = 0; i < SIZE; i++) {
-				if (entities[i].getHash() == hash) {
-					entity = entities[i];
-					lastAccess = i;
+				const unsigned index = (l + i) % SIZE;
+				if (entities[index].getHash() == hash) {
+					entity = entities[index];
+					lastAccess = index;
 					return true;
 				}
 			}
