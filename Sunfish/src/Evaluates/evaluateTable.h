@@ -16,11 +16,8 @@ namespace Evaluates {
 
 	class EvaluateTable : public BaseTable<EvEntity> {
 	public:
-		EvaluateTable() :
-				BaseTable<EvEntity>() {
-		}
-
-		EvaluateTable(unsigned bits) :
+		// TODO: サイズの指定を設定ファイルから読み込めるように
+		EvaluateTable(unsigned bits = 21) :
 				BaseTable<EvEntity>(bits) {
 		}
 

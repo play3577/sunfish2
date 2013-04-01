@@ -46,7 +46,7 @@ namespace Table {
 				table = new Entity[size];
 			} else {
 				for (unsigned i = 0; i < size; i++) {
-					table[i].init();
+					table[i].init(i);
 				}
 			}
 		}

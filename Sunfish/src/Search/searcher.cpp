@@ -253,13 +253,13 @@ namespace Search {
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-6171KI")) {
+		if (tree.is("+3524GI")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
-#if 0
-		if (tree.is("-2332GI")) {
+#if 1
+		if (tree.is("+3524GI")) {
 			tree.shekDebug();
 		}
 #endif
@@ -267,6 +267,8 @@ namespace Search {
 #if VARIATION_DEBUG
 		tree.debugPrint();
 #endif
+
+		tree.initNode();
 
 		// TODO: distance pruning
 
@@ -279,28 +281,41 @@ namespace Search {
 				break;
 			case Shek::SUPERIOR:
 				counter.shekPruning++;
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 				return Value::MAX;
 			case Shek::INFERIOR:
 				counter.shekPruning++;
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 				return Value::MIN;
 			case Shek::EQUAL:
 				counter.shekPruning++;
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 				return Value(0);
 			}
 		}
 
 		// end of stack
 		if (tree.isMaxDepth()) {
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 			return tree.negaEvaluate();
 		}
 
 		// leaf node
 		if (depth < PLY1) {
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
 		}
-
-		tree.initNode();
 
 		counter.nodes++;
 

@@ -27,7 +27,7 @@ namespace Books {
 		}
 
 	public:
-		void init() {
+		void init(unsigned) {
 		}
 
 		int addMove(Util::uint64 hash,

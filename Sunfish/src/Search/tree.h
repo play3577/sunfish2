@@ -376,10 +376,6 @@ namespace Search {
 			return shekTable.check(pos);
 		}
 
-		unsigned getShekCount() const {
-			return shekTable.getCount(pos);
-		}
-
 #ifndef NDEBUG
 		void shekDebug() const {
 			shekTable.debugPrint(pos);

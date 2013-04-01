@@ -13,15 +13,19 @@ namespace Shek {
 	void ShekTable::set(const HashStack& hashStack) {
 		for (int i = 0; i < hashStack.size; i++) {
 			const HashData& hashData = hashStack.stack[i];
-			_getEntity(hashData.boardHash)
-				.set(hashData.handSet, hashData.blackTurn);
+			_getEntity(hashData.boardHash).set(hashData.boardHash,
+					hashData.handSet, hashData.blackTurn
+#ifndef NDEBUG
+					, i
+#endif // NDEBUG
+					);
 		}
 	}
 
 	void ShekTable::unset(const HashStack& hashStack) {
 		for (int i = 0; i < hashStack.size; i++) {
 			const HashData& hashData = hashStack.stack[i];
-			_getEntity(hashData.boardHash).unset();
+			_getEntity(hashData.boardHash).unset(hashData.boardHash);
 		}
 	}
 }

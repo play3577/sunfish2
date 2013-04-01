@@ -19,10 +19,8 @@ namespace Table {
 		int age;
 
 	public:
-		TT() : BaseTable<TTEntities>(), age(0) {
-		}
-
-		TT(unsigned bits) : BaseTable<TTEntities>(bits), age(0) {
+		// TODO: サイズの指定を設定ファイルから読み込めるように
+		TT(unsigned bits = 21) : BaseTable<TTEntities>(bits), age(0) {
 		}
 
 		void evolve() {

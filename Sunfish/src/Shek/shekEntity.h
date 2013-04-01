@@ -15,58 +15,142 @@
 namespace Shek {
 	class ShekEntity {
 	private:
+		Util::uint64 hash;
+		int count;
 		HandSet handSet;
+#ifndef NDEBUG
+		int num;
+#endif // NDEBUG
 		bool blackTurn;
-		unsigned cnt;
 
 	public:
-		void init() {
-			cnt = 0;
+		void init(Util::uint64 none) {
+			hash = none;
 		}
 
 		ShekStat check(const HandSet& handSet, bool blackTurn) const {
-			if (cnt == 0) {
-				return NONE;
-			} else {
-				ShekStat stat = handSet.compareTo(this->handSet, blackTurn);
-				if (this->blackTurn != blackTurn) {
-					if (stat == EQUAL) {
-						stat = SUPERIOR;
-					} else if (stat == INFERIOR) {
-						stat = NONE;
-					}
+			ShekStat stat = handSet.compareTo(this->handSet, blackTurn);
+			if (this->blackTurn != blackTurn) {
+				if (stat == EQUAL) {
+					stat = SUPERIOR;
+				} else if (stat == INFERIOR) {
+					stat = NONE;
 				}
-				return stat;
+			}
+			return stat;
+		}
+
+		void set(Util::uint64 hash,
+				const HandSet& handSet, bool blackTurn
+#ifndef NDEBUG
+				, int num
+#endif // NDEBUG
+				) {
+			this->hash = hash;
+			this->handSet = handSet;
+			this->blackTurn = blackTurn;
+#ifndef NDEBUG
+			this->num = num;
+#endif // NDEBUG
+			count = 0;
+		}
+
+		void add() {
+			count++;
+		}
+
+		void unset(Util::uint64 none) {
+			if (count != 0) {
+				count--;
+			} else {
+				hash = none;
 			}
 		}
 
-		void set(const HandSet& handSet, bool blackTurn) {
-			if (cnt == 0) {
-				this->handSet = handSet;
-				this->blackTurn = blackTurn;
-			}
-			cnt++;
+		Util::uint64 getHash() const {
+			return hash;
 		}
 
-		void unset() {
-			assert(cnt > 0);
-			cnt--;
-		}
-
-		unsigned getCount() const {
-			return cnt;
-		}
- 
 #ifndef NDEBUG
 		void debugPrint(const HandSet& handSet, bool blackTurn) const {
 			Log::debug << "********** SHEK DEBUG **********\n";
-			Log::debug << "cnt=[" << cnt << "]\n";
+			Log::debug << "num=[" << num << "]\n";
 			Log::debug << "check=[" << check(handSet, blackTurn) << "]\n";
 			Log::debug << "handSet(current)=[" << handSet.toString() << "]\n";
 			Log::debug << "handSet=[" << this->handSet.toString() << "]\n";
 			Log::debug << "blackTurn(current)=[" << blackTurn << "]\n";
 			Log::debug << "blackTurn=[" << this->blackTurn << "]\n";
 			Log::debug << "********************************\n";
+		}
+#endif
+	};
+
+	class ShekEntities {
+	private:
+		static const unsigned SIZE = 4;
+		Util::uint64 none;
+		ShekEntity entities[SIZE];
+
+	public:
+		void init(unsigned key) {
+			none = key + 1; // 絶対にぶつからない値
+			for (unsigned i = 0; i < SIZE; i++) {
+				entities[i].init(none);
+			}
+		}
+
+		ShekStat check(Util::uint64 hash,
+				const HandSet& handSet, bool blackTurn) const {
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == hash) {
+					return entities[i].check(handSet, blackTurn);
+				}
+			}
+			return NONE;
+		}
+
+		void set(Util::uint64 hash,
+				const HandSet& handSet, bool blackTurn
+#ifndef NDEBUG
+				, int num
+#endif // NDEBUG
+				) {
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == hash) {
+					entities[i].add();
+					return;
+				}
+			}
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == none) {
+					entities[i].set(hash, handSet, blackTurn
+#ifndef NDEBUG
+							, num
+#endif // NDEBUG
+							);
+					return;
+				}
+			}
+		}
+
+		void unset(Util::uint64 hash) {
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == hash) {
+					entities[i].unset(none);
+					return;
+				}
+			}
+		}
+
+#ifndef NDEBUG
+		void debugPrint(Util::uint64 hash,
+				const HandSet& handSet, bool blackTurn) const {
+			for (unsigned i = 0; i < SIZE; i++) {
+				if (entities[i].getHash() == hash) {
+					entities[i].debugPrint(handSet, blackTurn);
+					return;
+				}
+			}
 		}
 #endif
 	};

@@ -1,5 +1,6 @@
-- 調査
+- 勝ち判定してしまう問題
 	- http://wdoor.c.u-tokyo.ac.jp/shogi/view/2013/03/23/wdoor+floodgate-900-0+Sunfish3-trial11+gps500+20130323220008.csa
+	- http://wdoor.c.u-tokyo.ac.jp/shogi/view/2013/03/31/wdoor+floodgate-900-0+Sunfish3-trial12+shinjin+20130331143012.csa
 
 ? 起動時パラメータ指定のバリデーション
 ? USI

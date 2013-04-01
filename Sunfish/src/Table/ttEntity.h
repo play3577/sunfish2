@@ -166,7 +166,7 @@ namespace Table {
 		TTEntities() : lastAccess(0) {
 		}
 
-		void init() {
+		void init(unsigned) {
 			for (unsigned i = 0; i < SIZE; i++) {
 				entities[i].init();
 			}

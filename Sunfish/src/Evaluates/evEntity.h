@@ -25,6 +25,10 @@ namespace Evaluates {
 			hash = U64(0);
 		}
 
+		void init(unsigned) {
+			init();
+		}
+
 		bool get(Util::uint64 hash, Value& value) const {
 			if (this->hash == hash) {
 				value = this->value;

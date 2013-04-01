@@ -165,10 +165,10 @@ namespace Cui {
 		std::cout << record.toString();
 #ifndef NDEBUG
 		Util::TableString table("", "=", "");
-		table.row() << "POSITION_HASH" << record.getPosition().getHash();
-		table.row() << "BOARD_HASH" << record.getPosition().getBoardHash();
-		table.row() << "HAND_HASH" << record.getPosition().getHandHash();
-		table.row() << "TURN_HASH" << record.getPosition().getTurnHash();
+		table.row() << "POSITION_HASH" << Util::Int::toString64(record.getPosition().getHash());
+		table.row() << "BOARD_HASH" << Util::Int::toString64(record.getPosition().getBoardHash());
+		table.row() << "HAND_HASH" << Util::Int::toString64(record.getPosition().getHandHash());
+		table.row() << "TURN_HASH" << Util::Int::toString64(record.getPosition().getTurnHash());
 		Log::debug << table.get();
 #endif
 	}

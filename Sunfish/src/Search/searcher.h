@@ -149,10 +149,6 @@ namespace Search {
 			return tree.shekCheck();
 		}
 
-		unsigned getShekCount(Tree& tree) const {
-			return tree.getShekCount();
-		}
-
 #ifndef NDEBUG
 		void shekDebug(Tree& tree) const {
 			tree.shekDebug();

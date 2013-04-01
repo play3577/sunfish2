@@ -14,14 +14,11 @@
 #include "../Table/baseTable.h"
 
 namespace Shek {
-	class ShekTable : public Table::BaseTable<ShekEntity> {
+	class ShekTable : public Table::BaseTable<ShekEntities> {
 	public:
-		ShekTable() : 
-				Table::BaseTable<ShekEntity>() {
-		}
-
-		ShekTable(unsigned bits) : 
-				Table::BaseTable<ShekEntity>(bits) {
+		// TODO: サイズの指定を設定ファイルから読み込めるように
+		ShekTable(unsigned bits = 21) : 
+				Table::BaseTable<ShekEntities>(bits) {
 		}
 
 		void set(const Records::HashStack& hashStack);
@@ -31,30 +28,34 @@ namespace Shek {
 		void set(const Shogi::Position& pos) {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			_getEntity(pos.getBoardHash())
-					.set(HandSet(hand), pos.isBlackTurn());
+			Util::uint64 hash = pos.getBoardHash();
+			_getEntity(hash).set(hash,
+					HandSet(hand), pos.isBlackTurn()
+#ifndef NDEBUG
+					, -1
+#endif // NDEBUG
+					);
 		}
 
 		void unset(const Shogi::Position& pos) {
-			_getEntity(pos.getBoardHash()).unset();
+			Util::uint64 hash = pos.getBoardHash();
+			_getEntity(hash).unset(hash);
 		}
 
 		ShekStat check(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			return getEntity(pos.getBoardHash())
-					.check(HandSet(hand), pos.isBlackTurn());
-		}
-
-		unsigned getCount(const Shogi::Position& pos) const {
-			return getEntity(pos.getBoardHash()).getCount();
+			Util::uint64 hash = pos.getBoardHash();
+			return getEntity(hash).check(hash,
+					HandSet(hand), pos.isBlackTurn());
 		}
 
 #ifndef NDEBUG
 		void debugPrint(const Shogi::Position& pos) const {
 			const Shogi::Hand& hand = pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand();
-			getEntity(pos.getBoardHash()).debugPrint(
+			Util::uint64 hash = pos.getBoardHash();
+			getEntity(hash).debugPrint(hash,
 					HandSet(hand), pos.isBlackTurn());
 		}
 #endif
