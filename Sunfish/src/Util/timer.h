@@ -27,7 +27,7 @@ namespace Util {
 #ifdef WIN32
 			QueryPerformanceCounter(&time_b);
 #else
-			clock_gettime(CLOCK_REALTIME, &time_b);
+			clock_gettime(CLOCK_MONOTONIC_RAW, &time_b);
 #endif
 		}
 
@@ -39,7 +39,7 @@ namespace Util {
 			return (time_n.QuadPart - time_b.QuadPart + 1) / (double)freq.QuadPart;
 #else
 			struct timespec time_n;
-			clock_gettime(CLOCK_REALTIME, &time_n);
+			clock_gettime(CLOCK_MONOTONIC_RAW, &time_n);
 			return (time_n.tv_sec - time_b.tv_sec)
 				+ (time_n.tv_nsec - time_b.tv_nsec + 1) * 1.0e-9;
 #endif

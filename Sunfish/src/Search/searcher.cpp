@@ -188,12 +188,14 @@ namespace Search {
 			return standPat;
 		}
 
+#if 1
 		// mate
 		if (!tree.isCheck()) {
 			if (isMate1Ply(tree)) {
 				return Value::MAX;
 			}
 		}
+#endif
 
 		Value value = standPat;
 
@@ -372,6 +374,7 @@ namespace Search {
 		bool mate = false;
 
 		if (!tree.isCheck()) {
+#if 1
 			// mate
 			if (stat.isMate()) {
 				if (isMate1Ply(tree)) {
@@ -379,6 +382,7 @@ namespace Search {
 					return Value::MAX;
 				}
 			}
+#endif
 
 			// null move pruning
 			if (stat.isNullMove() &&
@@ -773,6 +777,7 @@ revaluation:
 				// debug
 				Log::debug << '\n';
 #endif // ROOT_NODE_DEBUG
+				// TODO: node数の合計
 				config.pvHandler->pvHandler(tree.getPv(), maxValue,
 						counter.nodes, depth + 1, timer.get());
 			}

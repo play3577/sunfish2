@@ -53,6 +53,12 @@ namespace Search {
 
 			if (!isRoot) {
 				// futility pruning
+
+				// move count based pruning
+				//if (moveCount > 16 + (depth*depth) / (PLY1*PLY1*4) && ) {
+				//}
+
+				// value based pruning
 				if (standPat + estimate.getValue() + estimate.getError()
 						+ getFutMgn(depth - reduction, moveCount)
 						+ searcher.getGain(move) <= alpha) {
@@ -91,6 +97,6 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 120 * depth / PLY1 + 4 * count;
+		return 108 * depth / PLY1 + 2 * count;
 	}
 }
