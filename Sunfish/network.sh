@@ -9,7 +9,6 @@ LOGFILE=network.log
 
 if [ -e ${LOGFILE} ]; then
 	mv ${LOGFILE} ${LOGFILE}.`date "+%Y%m%d-%H%M%S"`
-	echo mv ${LOGFILE} ${LOGFILE}.`date "+%Y%m%d-%H%M%S"`
 fi
 
 ./sunfish -n&
