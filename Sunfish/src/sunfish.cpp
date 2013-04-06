@@ -162,14 +162,14 @@ bool test() {
 	// ログの出力先に test.log を追加
 	std::ofstream fout("test.log", std::ios::out | std::ios::app);
 	if (fout) {
-		Log::error.addStream(fout);
-		Log::warning.addStream(fout);
-		Log::message.addStream(fout);
-		Log::send.addStream(fout);
-		Log::receive.addStream(fout);
+		Log::error.addStream(fout, true);
+		Log::warning.addStream(fout, true);
+		Log::message.addStream(fout, true);
+		Log::send.addStream(fout, true);
+		Log::receive.addStream(fout, true);
 #ifndef NDEBUG
-		Log::debug.addStream(fout);
-		Log::test.addStream(fout);
+		Log::debug.addStream(fout, true);
+		Log::test.addStream(fout, true);
 #endif
 	}
 	// テストの実行
@@ -184,9 +184,9 @@ bool learn() {
 	// ログの出力先に learn.log を追加
 	std::ofstream fout("learn.log", std::ios::out | std::ios::app);
 	if (fout) {
-		Log::error.addStream(fout);
-		Log::warning.addStream(fout);
-		Log::message.addStream(fout);
+		Log::error.addStream(fout, true);
+		Log::warning.addStream(fout, true);
+		Log::message.addStream(fout, true);
 	}
 	// 機械学習の実行
 	Learn learn;
@@ -210,13 +210,13 @@ bool network() {
 	// ログの出力先に network.log を追加
 	std::ofstream fout("network.log", std::ios::out | std::ios::app);
 	if (fout) {
-		Log::error.addStream(fout);
-		Log::warning.addStream(fout);
-		Log::message.addStream(fout);
-		Log::send.addStream(fout);
-		Log::receive.addStream(fout);
+		Log::error.addStream(fout, true);
+		Log::warning.addStream(fout, true);
+		Log::message.addStream(fout, true);
+		Log::send.addStream(fout, true);
+		Log::receive.addStream(fout, true);
 #ifndef NDEBUG
-		Log::debug.addStream(fout);
+		Log::debug.addStream(fout, true);
 #endif
 	}
 	// client 起動
