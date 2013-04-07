@@ -15,6 +15,8 @@
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
+#define RAZOR_MGN(d)				(175 + 32 / PLY1 * (d))
+
 namespace Search {
 	using namespace Shogi;
 	using namespace Evaluates;
@@ -304,7 +306,7 @@ namespace Search {
 			}
 		}
 
-		// end of stack
+		// stack is full
 		if (tree.isMaxDepth()) {
 #if NODE_DEBUG
 				if (debugNode) { Log::debug << __LINE__ << ' '; }
@@ -376,6 +378,29 @@ namespace Search {
 		bool mate = false;
 
 		if (!tree.isCheck()) {
+			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3) {
+#if 1
+				// razoring
+				if (!hashOk) {
+					Value rbeta = beta - RAZOR_MGN(depth);
+					if (standPat < rbeta) {
+						Value vtemp = quies(tree, 0, rbeta-1, rbeta);
+						if (vtemp < rbeta) {
+							return vtemp + RAZOR_MGN(depth);
+						}
+					}
+				}
+#endif
+
+#if 1
+				// static null move pruning
+				if (stat.isNullMove() &&
+						standPat - getFutMgn(depth) >= beta) {
+					return standPat - getFutMgn(depth);
+				}
+#endif
+			}
+
 #if 1
 			// mate
 			if (stat.isMate()) {
@@ -387,28 +412,25 @@ namespace Search {
 #endif
 
 			// null move pruning
-			if (stat.isNullMove() &&
-					!pvNode &&
-					depth >= PLY1 * 2 &&
-					beta <= standPat){
+			if (!pvNode && stat.isNullMove() && depth >= PLY1 * 2 &&
+					beta <= standPat && nullMove(tree, false)) {
 				int nullDepth = 
 						(depth >= PLY1*15/2 ? depth - PLY1*4 :
 						(depth >= PLY1*9/2 ? depth - PLY1*3 : depth - PLY1*2));
-				if (nullMove(tree, false)) {
-					Value newValue = -negaMax<false>(tree, nullDepth, -beta, -beta+1, NodeStat().unsetNullMove());
-					unmakeMove(tree);
-					if (isInterrupted(tree)) { return Value(0); }
-					if (newValue >= beta) {
-						counter.nullMovePruning++;
-						// TT entry
-						if (nullDepth < PLY1) {
-							tt.entry(hash, alpha, beta, newValue, depth, stat, Move());
-						}
-						return beta;
-					} else if (newValue <= -Value::MATE) {
-						// パスして詰まされたら自玉は詰めろ
-						mate = true;
+				Value newValue = -negaMax<false>(tree, nullDepth,
+						-beta, -beta+1, NodeStat().unsetNullMove());
+				unmakeMove(tree);
+				if (isInterrupted(tree)) { return Value(0); }
+				if (newValue >= beta) {
+					counter.nullMovePruning++;
+					// TT entry
+					if (nullDepth < PLY1) {
+						tt.entry(hash, alpha, beta, newValue, depth, stat, Move());
 					}
+					return beta;
+				} else if (newValue <= -Value::MATE) {
+					// パスして詰まされたら自玉は詰めろ
+					mate = true;
 				}
 			}
 		}

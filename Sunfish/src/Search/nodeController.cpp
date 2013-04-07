@@ -60,7 +60,7 @@ namespace Search {
 
 				// value based pruning
 				if (standPat + estimate.getValue() + estimate.getError()
-						+ getFutMgn(depth - reduction, moveCount)
+						+ Searcher::getFutMgn(depth - reduction, moveCount)
 						+ searcher.getGain(move) <= alpha) {
 					pruning = true;
 					return;
@@ -75,7 +75,7 @@ namespace Search {
 		// extended futility pruning
 		if (!isHash() && !isMateThreat()
 				&& !isCheckMove() && !isTacticalMove()) {
-			if (newStandPat - getFutMgn(getDepth(), getMoveCount()) >= -alpha) {
+			if (newStandPat - Searcher::getFutMgn(getDepth(), getMoveCount()) >= -alpha) {
 				pruning = true;
 			}
 		}
@@ -93,7 +93,7 @@ namespace Search {
 		}
 	}
 
-	Value Searcher::NodeController::getFutMgn(int depth, int count) {
+	Value Searcher::getFutMgn(int depth, int count) {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}

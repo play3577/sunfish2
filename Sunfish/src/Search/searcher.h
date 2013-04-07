@@ -327,6 +327,8 @@ namespace Search {
 		}
 
 	private:
+		static Evaluates::Value getFutMgn(int depth, int count = 0);
+
 		class NodeController {
 		private:
 			Searcher& searcher;
@@ -355,8 +357,6 @@ namespace Search {
 			void execute();
 
 			int extension() const;
-
-			static Evaluates::Value getFutMgn(int depth, int count);
 
 		public:
 			NodeController(Searcher& searcher, Tree& parent, Tree& tree,
