@@ -367,4 +367,30 @@ namespace Evaluates {
 		assert(num0 == num1);
 		return num0;
 	}
+
+	Estimate Feature::estimate(
+			const Shogi::Position& pos, const Param* pparam,
+			const Shogi::Move& move, int scale) {
+		Value value0(0);
+		Value value1(0);
+		Value error(0);
+		Shogi::Piece cap = pos.getBoard(move.getTo());
+		if (!cap.isEmpty()) {
+			value0 -= pparam->getPieceExchange(cap);
+		}
+		if (move.getPiece().isKing()) {
+			error = 1280;
+		} else {
+			Kings kings(pos);
+			if (!move.isHand()) {
+				value1 -= pparam->getKKP(kings,
+					move.getPiece(), move.getFrom());
+			}
+			Shogi::Piece piece = move.isPromotion() ?
+				move.getPiece().getPromoted() : move.getPiece();
+			value1 += pparam->getKKP(kings, piece, move.getTo());
+		error = 458;
+		}
+		return Estimate(value0 + value1 / scale, error);
+	}
 }

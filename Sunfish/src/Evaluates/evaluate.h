@@ -129,7 +129,8 @@ namespace Evaluates {
 			return param;
 		}
 
-		Estimate estimate(const Shogi::Position& pos, const Shogi::Move move) const {
+		Estimate estimate(const Shogi::Position& pos,
+				const Shogi::Move move) const {
 			return Feature::estimate(pos, &param, move,
 					Param::SCALE);
 		}

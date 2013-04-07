@@ -202,7 +202,7 @@ namespace Search {
 		}
 #endif
 
-		Value value = standPat;
+		alpha = Value::max(alpha, standPat);
 
 		// 合法手の列挙
 		if (ply < 7) {
@@ -214,35 +214,32 @@ namespace Search {
 		}
 
 		while (tree.next()) {
-			// alpha値
-			Value newAlpha = Value::max(alpha, value);
-
 			// futility pruning
 			if (!tree.isCheck() && !tree.isCheckMove()) {
 				Estimate estimate = tree.negaEstimate();
-				if (standPat + estimate.getValue() + estimate.getError() <= newAlpha) {
+				if (standPat + estimate.getValue() + estimate.getError() <= alpha) {
 					continue;
 				}
 			}
 
 			// 子ノードを展開
 			makeMove(tree, false);
-			Value newValue = -quies(tree, ply+1, -beta, -newAlpha);
+			Value newValue = -quies(tree, ply+1, -beta, -alpha);
 			unmakeMove(tree);
 			if (isInterrupted(tree)) { return Value(0); }
 
-			if (newValue > value) {
-				value = newValue;
+			if (newValue > alpha) {
+				alpha = newValue;
 				tree.updatePv();
 
 				// beta cut
-				if (value >= beta) {
+				if (alpha >= beta) {
 					break;
 				}
 			}
 		}
 
-		return value;
+		return alpha;
 	}
 
 	/***************************************************************
@@ -478,7 +475,7 @@ namespace Search {
 #endif // NODE_DEBUG
 #if 1
 			// recurcive search
-			if (pvNode && newAlpha <= -Value::MATE && node.getMoveCount() == 1) {
+			if (pvNode && node.getMoveCount() == 1 && newAlpha <= -Value::MATE) {
 				newValue = -negaMax<true>(tree, node.getDepth(false), -beta, -newAlpha, node.getStat());
 #if NODE_DEBUG
 				if (debugNode) {
