@@ -11,7 +11,7 @@
 #include "../Util/tableString.h"
 #include <sstream>
 
-#define ROOT_NODE_DEBUG				1
+#define ROOT_NODE_DEBUG				0
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
