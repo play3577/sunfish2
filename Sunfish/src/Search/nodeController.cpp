@@ -92,11 +92,4 @@ namespace Search {
 			return Searcher::PLY1 / 4;
 		}
 	}
-
-	Value Searcher::getFutMgn(int depth, int count) {
-		if (depth < Searcher::PLY1) {
-			return 0;
-		}
-		return 108 * depth / PLY1 + 2 * count;
-	}
 }

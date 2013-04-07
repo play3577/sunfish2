@@ -15,7 +15,7 @@
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
-#define RAZOR_MGN(d)				(175 + 32 / PLY1 * (d))
+#define RAZOR_MGN(d)				(256 + 86 / PLY1 * (d))
 
 namespace Search {
 	using namespace Shogi;
@@ -167,6 +167,13 @@ namespace Search {
 			unmakeMove(tree);
 		}
 		return false; // 不詰め
+	}
+
+	Value Searcher::getFutMgn(int depth, int count) {
+		if (depth < Searcher::PLY1) {
+			return 0;
+		}
+		return 148 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -378,7 +385,8 @@ namespace Search {
 		bool mate = false;
 
 		if (!tree.isCheck()) {
-			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3) {
+			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3 &&
+					beta < Value::MATE && alpha > -Value::MATE) {
 #if 1
 				// razoring
 				if (!hashOk) {
