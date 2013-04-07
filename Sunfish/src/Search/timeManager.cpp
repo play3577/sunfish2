@@ -32,17 +32,17 @@ namespace Search {
 		Value second = stack[depth].second;
 		Value diff = first - second;
 
-		if (diff >= 400) {
-			if (easyDiff >= 600) {
-				if (first >= easy1st - 200 &&
-						first <= easy1st + 400 &&
-						Value::abs(first) <= 500) {
+		if (diff >= 500) {
+			if (easyDiff >= 800) {
+				if (first >= easy1st - 185 &&
+						first <= easy1st + 350 &&
+						Value::abs(first) <= 420) {
 					return true;
 				}
-			} else if (easyDiff >= 400) {
-				if (first >= easy1st - 100 &&
-						first <= easy1st + 200 &&
-						Value::abs(first) <= 200) {
+			} else if (easyDiff >= 600) {
+				if (first >= easy1st - 90 &&
+						first <= easy1st + 185 &&
+						Value::abs(first) <= 185) {
 					return true;
 				}
 			}
@@ -50,9 +50,9 @@ namespace Search {
 
 		double baseSeconds = limitEnable ?  limitSeconds / 10.0 : 5;
 		if (elapsed >= baseSeconds) {
-			if (first >= prev1st && first <= prev1st + 150) {
+			if (first >= prev1st && first <= prev1st + 128) {
 				return true;
-			} else if (diff >= 300 && first >= prev1st - 100) {
+			} else if (diff >= 400 && first >= prev1st - 80) {
 				return true;
 			}
 		}

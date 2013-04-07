@@ -11,7 +11,7 @@
 #include "../Util/tableString.h"
 #include <sstream>
 
-#define ROOT_NODE_DEBUG				0
+#define ROOT_NODE_DEBUG				1
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
@@ -118,12 +118,10 @@ namespace Search {
 		const Shogi::Move* pmove = trees[0].getPv().getTop();
 		result.pv.copy(trees[0].getPv());
 		result.sec = timer.get();
-		SearchCounter counter;
 		for (int i = 0; i < workerSize; i++) {
 			result.counters.push_back(workers[i].getCounter());
-			counter += workers[i].getCounter();
 		}
-		result.counter = counter;
+		totalCount(result.counter);
 		result.nps = result.counter.nodes / result.sec;
 		bool ok;
 		if (pmove != NULL) {
@@ -142,6 +140,13 @@ namespace Search {
 			signalForceInterrupt = false;
 		}
 		return ok;
+	}
+
+	void Searcher::totalCount(SearchCounter& counter) const {
+		counter.init();
+		for (int i = 0; i < workerSize; i++) {
+			counter += workers[i].getCounter();
+		}
 	}
 
 	/***************************************************************
@@ -471,15 +476,18 @@ namespace Search {
 			Util::uint64 beforeNodes = counter.nodes;
 			double beforeSec = timer.get();
 #endif // NODE_DEBUG
+#if 1
 			// recurcive search
-			if (node.getMoveCount() == 1) {
-				newValue = -negaMax<pvNode>(tree, node.getDepth(), -beta, -newAlpha, node.getStat());
+			if (pvNode && newAlpha <= -Value::MATE && node.getMoveCount() == 1) {
+				newValue = -negaMax<true>(tree, node.getDepth(false), -beta, -newAlpha, node.getStat());
 #if NODE_DEBUG
 				if (debugNode) {
 					Log::debug << ',' << __LINE__;
 				}
 #endif // NODE_DEBUG
-			} else {
+			} else 
+#endif
+			{
 				// nega-scout
 				newValue = -negaMax<false>(tree, node.getDepth(), -newAlpha-1, -newAlpha, node.getStat());
 #if NODE_DEBUG
@@ -615,8 +623,7 @@ namespace Search {
 	 ***************************************************************/
 	bool Searcher::idSearch(SearchResult& result) {
 		Tree& tree = trees[0];
-		Worker& worker = workers[tree.split.worker];
-		SearchCounter& counter = worker.getCounter();
+		SearchCounter counter;
 
 		// 最善手の評価値
 		Value maxValue = Value::MIN;
@@ -659,6 +666,7 @@ namespace Search {
 				unsigned moveCount = tree.getMoveIndex();
 #if ROOT_NODE_DEBUG
 				// debug
+				totalCount(counter);
 				Util::uint64 beforeNodes= counter.nodes;
 				double beforeSec = timer.get();
 				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
@@ -676,7 +684,7 @@ revaluation:
 				if (moveCount == 1) {
 					// 前回の最善手
 					vtemp = -negaMax<true>(tree,
-							depth * PLY1, -aspBeta, -alpha);
+							node.getDepth(false), -aspBeta, -alpha);
 #if ROOT_NODE_DEBUG
 					Log::debug << "f";
 #endif // ROOT_NODE_DEBUG
@@ -708,13 +716,14 @@ revaluation:
 				}
 #if ROOT_NODE_DEBUG
 				// debug
+				totalCount(counter);
 				Util::uint64 afterNodes= counter.nodes;
 				Util::uint64 nodes = afterNodes - beforeNodes;
 				double afterSec = timer.get();
 				double sec = afterSec - beforeSec;
-				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")"
-						<< "[" << nodes << "]"
-						<< "{" << (int)alpha << "," << (int)aspBeta << "}";
+				Log::debug << tree.getPrevMove()->toString() << "(" << vtemp << ")";
+				Log::warning << "[" << nodes << "]";
+				Log::debug << "{" << (int)alpha << "," << (int)aspBeta << "}";
 				Log::warning << (int)(sec*1000);
 #endif // ROOT_NODE_DEBUG
 				// 手を戻す。
@@ -725,25 +734,29 @@ revaluation:
 				// fail-high
 				if (vtemp < Value::MATE && vtemp >= aspBeta && aspBeta.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
-					// TODO: fail-softだから上げ幅が少なすぎるケースを検出すべき?
-#if ROOT_NODE_DEBUG
-					Log::debug << "fail-high ";
-#endif // ROOT_NODE_DEBUG
 					// 最善手の評価値とalpha値を更新
 					maxValue = alpha = vtemp - 1;
 					// PVを更新
 					tree.updatePv();
 					doNullWind = false;
+					if (config.pvHandler != NULL) {
+						totalCount(counter);
+						tree.updatePv();
+						config.pvHandler->failHigh(tree.getPv(), vtemp,
+								counter.nodes, depth + 1, timer.get());
+					}
 					goto revaluation;
 				}
 				// fail-low
 				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
 					// ウィンドウを広げたら再探索 (aspiration search)
-					// TODO: fail-softだから下げ幅が少なすぎるケースを検出すべき?
-#if ROOT_NODE_DEBUG
-					Log::debug << "fail-low ";
-#endif // ROOT_NODE_DEBUG
 					alpha = (int)aspAlpha;
+					if (config.pvHandler != NULL) {
+						totalCount(counter);
+						tree.updatePv();
+						config.pvHandler->failLow(tree.getPv(), vtemp,
+								counter.nodes, depth + 1, timer.get());
+					}
 					goto revaluation;
 				}
 
@@ -777,7 +790,7 @@ revaluation:
 				// debug
 				Log::debug << '\n';
 #endif // ROOT_NODE_DEBUG
-				// TODO: node数の合計
+				totalCount(counter);
 				config.pvHandler->pvHandler(tree.getPv(), maxValue,
 						counter.nodes, depth + 1, timer.get());
 			}
@@ -801,6 +814,7 @@ lab_search_end:
 			Log::debug << '\n';
 #endif // ROOT_NODE_DEBUG
 			int lastDepth = depth < config.depth ? depth + 1 : config.depth;
+			totalCount(counter);
 			config.pvHandler->pvHandler(tree.getPv(), maxValue,
 					counter.nodes, lastDepth, timer.get());
 		}

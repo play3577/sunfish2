@@ -106,6 +106,8 @@ namespace Search {
 
 		bool after(SearchResult& result, Evaluates::Value value);
 
+		void totalCount(SearchCounter& counter) const;
+
 		void updateGain(const Shogi::Move& move,
 				const Evaluates::Value& before, const Evaluates::Value& after) {
 			updateGain(move.getPiece(), move.getTo(), before, after);

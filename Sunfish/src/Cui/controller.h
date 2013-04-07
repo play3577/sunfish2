@@ -91,6 +91,13 @@ namespace Cui {
 
 		void printStatus(const Records::Record& record) const;
 
+		void printPv(const Search::Pv& pv, Evaluates::Value value,
+				Util::uint64 nodes, int depth, double seconds) {
+			std::cout << std::setw(2) << depth << std::setw(10) << nodes
+					<< ' ' << pv.toString() << ':' << value
+					<< " (" << seconds << "sec)\n";
+		}
+
 	public:
 		Controller() {
 			pparam = new Evaluates::Param();
@@ -138,9 +145,19 @@ namespace Cui {
 
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
 				Util::uint64 nodes, int depth, double seconds) {
-			std::cout << std::setw(2) << depth << std::setw(10) << nodes
-					<< ' ' << pv.toString() << ':' << value
-					<< " (" << seconds << "sec)\n";
+			printPv(pv, value, nodes, depth, seconds);
+		}
+
+		void failHigh(const Search::Pv& pv, Evaluates::Value value,
+				Util::uint64 nodes, int depth, double seconds) {
+			printPv(pv, value, nodes, depth, seconds);
+			std::cout << "fail-high\n";
+		}
+
+		void failLow(const Search::Pv& pv, Evaluates::Value value,
+				Util::uint64 nodes, int depth, double seconds) {
+			printPv(pv, value, nodes, depth, seconds);
+			std::cout << "fail-low\n";
 		}
 
 		bool play();
