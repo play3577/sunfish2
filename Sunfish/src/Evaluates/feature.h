@@ -9,8 +9,8 @@
 #define FEATURE_H_
 
 #include <cassert>
-#include "estimate.h"
 #include "../Shogi/position.h"
+#include "param.h"
 
 namespace Evaluates {
 	class Feature {
@@ -91,7 +91,7 @@ namespace Evaluates {
 				Shogi::Square to, Shogi::Piece fromBefore,
 				Shogi::Piece toBefore, Shogi::Piece toAfter);
 
-		static Estimate estimate(
+		static Value estimate(
 				const Shogi::Position& pos, const Param* pparam,
 				const Shogi::Move& move, int scale);
 	};

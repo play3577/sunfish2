@@ -9,6 +9,8 @@
 
 namespace Search {
 	void Tree::fastCopy(Tree& tree) {
+		// TODO: 評価値の差分計算をやめて最後にコピー
+
 		// root 局面まで戻る。
 		while (depth >= 1) {
 			unmakeMove();
@@ -24,7 +26,7 @@ namespace Search {
 			}
 		}
 
-		nodes[depth].arrive();
+		nodes[depth].arrive(_isCheck());
 		nodes[depth].setKiller(tree.nodes[depth]);
 	}
 }

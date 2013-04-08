@@ -368,7 +368,7 @@ namespace Evaluates {
 		return num0;
 	}
 
-	Estimate Feature::estimate(
+	Value Feature::estimate(
 			const Shogi::Position& pos, const Param* pparam,
 			const Shogi::Move& move, int scale) {
 		Value value0(0);
@@ -391,6 +391,6 @@ namespace Evaluates {
 			value1 += pparam->getKKP(kings, piece, move.getTo());
 		error = 458;
 		}
-		return Estimate(value0 + value1 / scale, error);
+		return value0 + value1 / scale + error;
 	}
 }

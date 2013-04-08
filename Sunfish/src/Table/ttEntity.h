@@ -23,7 +23,7 @@ namespace Table {
 		int depth;
 		Search::HashMove hashMove;
 		Search::NodeStat stat;
-		int age;
+		unsigned age;
 		Util::uint64 checkSum;
 
 		Util::uint64 generateCheckSum() const {
@@ -41,7 +41,7 @@ namespace Table {
 				int newDepth,
 				const Search::NodeStat& newStat,
 				const Shogi::Move& move,
-				int newAge);
+				unsigned newAge);
 
 	public:
 		enum {
@@ -65,7 +65,7 @@ namespace Table {
 				int newDepth,
 				const Search::NodeStat& newStat,
 				const Shogi::Move& move,
-				int newAge) {
+				unsigned newAge) {
 			int newValueType;
 			if (newValue >= beta) {
 				newValueType = LOWER;
@@ -128,7 +128,7 @@ namespace Table {
 			return hashMove;
 		}
 
-		int getAge() const {
+		unsigned getAge() const {
 			return age;
 		}
 	};
@@ -149,43 +149,9 @@ namespace Table {
 			}
 		}
 
-		void set(const TTEntity& entity) {
-			unsigned l = lastAccess;
-			for (unsigned i = 0; i < SIZE; i++) {
-				const unsigned index = (l + i) % SIZE;
-				if (entities[index].getHash() == entity.getHash()) {
-					entities[index] = entity;
-					lastAccess = index;
-					return;
-				}
-			}
-			l++;
-			for (unsigned i = 0; i < SIZE; i++) {
-				const unsigned index = (l + i) % SIZE;
-				if (entities[index].isBroken() ||
-						entities[index].getAge() != entity.getAge()) {
-					entities[index] = entity;
-					lastAccess = index;
-					return;
-				}
-			}
-			const unsigned index = l % SIZE;
-			entities[index] = entity;
-			lastAccess = index;
-		}
+		void set(const TTEntity& entity);
 
-		bool get(Util::uint64 hash, TTEntity& entity) {
-			unsigned l = lastAccess;
-			for (unsigned i = 0; i < SIZE; i++) {
-				const unsigned index = (l + i) % SIZE;
-				if (entities[index].getHash() == hash) {
-					entity = entities[index];
-					lastAccess = index;
-					return true;
-				}
-			}
-			return false;
-		}
+		bool get(Util::uint64 hash, TTEntity& entity);
 	};
 }
 

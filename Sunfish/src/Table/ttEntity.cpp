@@ -14,15 +14,15 @@ namespace Table {
 			int newDepth,
 			const Search::NodeStat& newStat,
 			const Shogi::Move& move,
-			int newAge) {
+			unsigned newAge) {
 		if (newDepth < 0) { newDepth = 0; }
 
 		if (isOk()) {
+			assert(hash == newHash);
 			// 深さが劣るものは登録させない。
-			if (newDepth < depth) {
+			if (newDepth < depth && age == newAge) {
 				return false;
 			}
-			assert(hash == newHash);
 		} else {
 			hash = newHash;
 			hashMove.init();
@@ -37,5 +37,43 @@ namespace Table {
 		checkSum = generateCheckSum();
 
 		return true;
+	}
+
+	void TTEntities::set(const TTEntity& entity) {
+		unsigned l = lastAccess;
+		for (unsigned i = 0; i < SIZE; i++) {
+			const unsigned index = (l + i) % SIZE;
+			if (entities[index].getHash() == entity.getHash()) {
+				entities[index] = entity;
+				lastAccess = index;
+				return;
+			}
+		}
+		l++;
+		for (unsigned i = 0; i < SIZE; i++) {
+			const unsigned index = (l + i) % SIZE;
+			if (entities[index].isBroken() ||
+					entities[index].getAge() != entity.getAge()) {
+				entities[index] = entity;
+				lastAccess = index;
+				return;
+			}
+		}
+		const unsigned index = l % SIZE;
+		entities[index] = entity;
+		lastAccess = index;
+	}
+
+	bool TTEntities::get(Util::uint64 hash, TTEntity& entity) {
+		unsigned l = lastAccess;
+		for (unsigned i = 0; i < SIZE; i++) {
+			const unsigned index = (l + i) % SIZE;
+			if (entities[index].getHash() == hash) {
+				entity = entities[index];
+				lastAccess = index;
+				return true;
+			}
+		}
+		return false;
 	}
 }

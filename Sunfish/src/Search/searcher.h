@@ -340,7 +340,7 @@ namespace Search {
 			int depth;
 			const Evaluates::Value alpha;
 			const Evaluates::Value standPat;
-			const Evaluates::Estimate estimate;
+			const Evaluates::Value estimate;
 			int reduction;
 			bool pruning;
 			const unsigned moveCount;
@@ -456,7 +456,7 @@ namespace Search {
 				return newStat;
 			}
 
-			const Evaluates::Estimate& getEstimate() const {
+			const Evaluates::Value& getEstimate() const {
 				return estimate;
 			}
 		};

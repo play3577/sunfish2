@@ -107,7 +107,7 @@ namespace Search {
 		}
 
 		void initNode() {
-			nodes[depth].arrive();
+			nodes[depth].arrive(_isCheck());
 			nodes[depth+1].initKiller();
 		}
 
@@ -214,8 +214,16 @@ namespace Search {
 			return pos.isMate();
 		}
 
-		bool isCheck() const {
+		bool _isCheck() const {
 			return pos.isCheck();
+		}
+
+		bool isCheck() const {
+			return nodes[depth].isCheck();
+		}
+
+		bool isEvasion() const {
+			return depth >= 1 && nodes[depth-1].isCheck();
 		}
 
 		bool isCheckMove() const {
@@ -271,15 +279,15 @@ namespace Search {
 			}
 		}
 
-		Evaluates::Estimate estimate() const {
+		Evaluates::Value estimate() const {
 			const Shogi::Move* pmove = getCurrentMove();
 			if (pmove != NULL) {
 				return eval.estimate(pos, *pmove);
 			}
-			return Evaluates::Estimate();
+			return Evaluates::Value(0);
 		}
 
-		Evaluates::Estimate negaEstimate() const {
+		Evaluates::Value negaEstimate() const {
 			return pos.isBlackTurn() ? estimate() : -estimate();
 		}
 

@@ -169,8 +169,7 @@ namespace Search {
 				continue;
 			}
 
-			updateGain(node.getMove(),
-					standPat + node.getEstimate().getValue(),
+			updateGain(node.getMove(), standPat + node.getEstimate(),
 					node.getNewStandPat());
 
 			// nega-scout

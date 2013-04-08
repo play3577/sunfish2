@@ -21,6 +21,7 @@ namespace Search {
 		Evaluates::Value baseValue;
 		Evaluates::Value posValue;
 		bool isNullMoveMaked;
+		bool check;
 		Pv pv;
 		bool shek;
 
@@ -49,9 +50,10 @@ namespace Search {
 			isNullMoveMaked = false;
 		}
 
-		void arrive() {
+		void arrive(bool check) {
 			pv.init();
 			pgen->clear();
+			this->check = check;
 		}
 
 		void initKiller() {
@@ -182,8 +184,12 @@ namespace Search {
 			this->shek = shek;
 		}
 
-		bool isShek() {
+		bool isShek() const {
 			return shek;
+		}
+
+		bool isCheck() const {
+			return check;
 		}
 	};
 }

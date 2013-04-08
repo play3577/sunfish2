@@ -15,7 +15,7 @@
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
-#define RAZOR_MGN(d)				(256 + 86 / PLY1 * (d))
+#define RAZOR_MGN(d)				(312 + 240 / PLY1 * (d))
 
 namespace Search {
 	using namespace Shogi;
@@ -173,7 +173,7 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 148 * depth / PLY1 + 4 * count;
+		return 158 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -223,16 +223,20 @@ namespace Search {
 		}
 
 		while (tree.next()) {
+			Value estimate = tree.negaEstimate();
+			Move move = *tree.getCurrentMove();
+#if 0
 			// futility pruning
 			if (!tree.isCheck() && !tree.isCheckMove()) {
-				Estimate estimate = tree.negaEstimate();
-				if (standPat + estimate.getValue() + estimate.getError() <= alpha) {
+				if (standPat + estimate <= alpha) {
 					continue;
 				}
 			}
+#endif
 
 			// 子ノードを展開
 			makeMove(tree, false);
+			updateGain(move, standPat + estimate, tree.negaEvaluate());
 			Value newValue = -quies(tree, ply+1, -beta, -alpha);
 			unmakeMove(tree);
 			if (isInterrupted(tree)) { return Value(0); }
@@ -386,21 +390,22 @@ namespace Search {
 
 		if (!tree.isCheck()) {
 			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3 &&
-					beta < Value::MATE && alpha > -Value::MATE) {
+					beta < Value::MATE && alpha > -Value::MATE &&
+					!tree.isEvasion() && !tree.isRecapture()) {
 #if 1
 				// razoring
 				if (!hashOk) {
 					Value rbeta = beta - RAZOR_MGN(depth);
-					if (standPat < rbeta) {
+					if (standPat + 480 < rbeta) {
 						Value vtemp = quies(tree, 0, rbeta-1, rbeta);
 						if (vtemp < rbeta) {
-							return vtemp + RAZOR_MGN(depth);
+							return vtemp/* + RAZOR_MGN(depth)*/;
 						}
 					}
 				}
 #endif
 
-#if 1
+#if 0
 				// static null move pruning
 				if (stat.isNullMove() &&
 						standPat - getFutMgn(depth) >= beta) {
@@ -495,8 +500,7 @@ namespace Search {
 				continue;
 			}
 
-			updateGain(node.getMove(),
-					standPat + node.getEstimate().getValue(),
+			updateGain(node.getMove(), standPat + node.getEstimate(),
 					node.getNewStandPat());
 
 #if NODE_DEBUG

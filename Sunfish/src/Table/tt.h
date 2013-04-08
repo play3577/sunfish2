@@ -15,8 +15,7 @@
 namespace Table {
 	class TT : public BaseTable<TTEntities> {
 	private:
-		static const int AGE_MAX = 8;
-		int age;
+		unsigned age;
 
 	public:
 		// TODO: サイズの指定を設定ファイルから読み込めるように
@@ -24,7 +23,7 @@ namespace Table {
 		}
 
 		void evolve() {
-			age = (age + 1) % AGE_MAX;
+			age = (age + 1);
 		}
 
 		bool entry(Util::uint64 hash,

@@ -59,7 +59,7 @@ namespace Search {
 				//}
 
 				// value based pruning
-				if (standPat + estimate.getValue() + estimate.getError()
+				if (standPat + estimate
 						+ Searcher::getFutMgn(depth - reduction, moveCount)
 						+ searcher.getGain(move) <= alpha) {
 					pruning = true;
@@ -83,13 +83,13 @@ namespace Search {
 
 	int Searcher::NodeController::extension() const {
 		if (tree.getDepth() < rootDepth) {
-			return Searcher::PLY1;
+			return Searcher::PLY1 * 3 / 2;
 		} else if (tree.getDepth() < rootDepth * 2) {
-			return Searcher::PLY1 * 3 / 4;
+			return Searcher::PLY1;
 		} else if (tree.getDepth() < rootDepth * 3) {
-			return Searcher::PLY1 / 2;
+			return Searcher::PLY1 * 3 / 4;
 		} else {
-			return Searcher::PLY1 / 4;
+			return Searcher::PLY1 / 2;
 		}
 	}
 }
