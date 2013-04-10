@@ -118,6 +118,7 @@ namespace Cui {
 			config.depth = 32;
 			config.limit = 10;
 			config.worker = 1;
+			config.autoQuit = false;
 		}
 
 		void setFilename(const char* filename) {

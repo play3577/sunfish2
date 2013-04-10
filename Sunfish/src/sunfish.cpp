@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
 			("limit,l", value<int>(), "search limit(sec)")
 			("parallel,p", value<int>(), "number of worker threads")
 			("file,f", value<std::string>(), "CSA file name to read")
+			("auto-quit,q", "automatical quit when a computer resign.")
 			;
 	variables_map argmap;
 	try {
@@ -149,6 +150,9 @@ int main(int argc, char* argv[]) {
 	}
 	if (argmap.count("file")) {
 		controller.setFilename(argmap["file"].as<std::string>().c_str());
+	}
+	if (argmap.count("auto-quit")) {
+		controller.setAutoQuit(true);
 	}
 	controller.play();
 

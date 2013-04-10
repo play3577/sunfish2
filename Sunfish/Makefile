@@ -55,11 +55,9 @@ override LIBS+=-lboost_filesystem
 all: $(PROGRAM) $(TEST) $(CLEAN_SH)
 
 pgo:
-	$(MAKE) clean
-	$(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-generate'
+	$(MAKE) clean; $(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-generate'
 	./$(PROGRAM) -b -w -q
-	$(MAKE) clean
-	$(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-use'
+	$(MAKE) clean; $(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-use'
 	$(MAKE)
 
 $(PROGRAM): $(OBJECTS)
