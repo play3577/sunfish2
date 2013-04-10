@@ -81,6 +81,7 @@ namespace Cui {
 			int depth;
 			int limit;
 			int worker;
+			bool autoQuit;
 		} config;
 
 		Command inputCommand(const char* str);
@@ -141,6 +142,10 @@ namespace Cui {
 
 		void setWorker(int worker) {
 			config.worker = worker;
+		}
+
+		void setAutoQuit(bool autoQuit) {
+			config.autoQuit = autoQuit;
 		}
 
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,

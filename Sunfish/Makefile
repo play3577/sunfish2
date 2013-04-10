@@ -50,9 +50,17 @@ override LIBS+=-lboost_program_options
 override LIBS+=-lboost_system
 override LIBS+=-lboost_filesystem
 
-.PHONY: all clean
+.PHONY: all pgo
 
-all: $(PROGRAM) $(TEST)
+all: $(PROGRAM) $(TEST) $(CLEAN_SH)
+
+pgo:
+	$(MAKE) clean
+	$(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-generate'
+	./$(PROGRAM) -b -w -q
+	$(MAKE) clean
+	$(MAKE) $(PROGRAM) 'CFLAGS+=-fprofile-use'
+	$(MAKE)
 
 $(PROGRAM): $(OBJECTS)
 	$(GPP) -o $(PROGRAM) $(CFLAGS) $^ $(LIBS)
@@ -76,13 +84,13 @@ src/Shogi/Attack/attackTable.o
 $(CHECK_TABLE_SRC) : $(CHECK_TABLE)
 	./$(CHECK_TABLE) $@
 
-clean:
-	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
-
 .cpp.o:
 	$(GPP) $(CFLAGS) -o $@ -c $<
 
 %.d: %.cpp
 	@$(SHELL) -c '$(CC) -MM $(CFLAGS) $< | sed "s|^.*:|$*.o $@:|g" > $@; [ -s $@ ] || rm -f $@'
+
+clean:
+	$(RM) $(PROGRAM) $(OBJECTS) $(DEPENDS) $(DEV_PROGRAMS) src/*.o src/*.d
 
 -include $(DEPENDS)

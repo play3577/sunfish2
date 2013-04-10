@@ -241,6 +241,10 @@ namespace Cui {
 						std::cout << "white :auto => manual\n";
 						config.autoWhite = false;
 					}
+					// 自動終了
+					if (config.autoQuit) {
+						break;
+					}
 				}
 				std::cout << record.toString();
 				continue;
