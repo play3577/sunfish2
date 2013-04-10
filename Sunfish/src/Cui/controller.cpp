@@ -232,6 +232,11 @@ namespace Cui {
 				}
 				// 着手
 				if (pmove == NULL || !record.move(*pmove)) {
+					// 自動終了
+					if (config.autoQuit) {
+						std::cout << "quit.\n";
+						break;
+					}
 					// 着手をマニュアルモードに切り替え
 					if (config.autoBlack) {
 						std::cout << "black :auto => manual\n";
@@ -240,10 +245,6 @@ namespace Cui {
 					if (config.autoWhite) {
 						std::cout << "white :auto => manual\n";
 						config.autoWhite = false;
-					}
-					// 自動終了
-					if (config.autoQuit) {
-						break;
 					}
 				}
 				std::cout << record.toString();
