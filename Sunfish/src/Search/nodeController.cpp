@@ -54,10 +54,15 @@ namespace Search {
 			if (!isRoot) {
 				// futility pruning
 
+#if !defined(PRUN_EXPR)
 				// move count based pruning
-				//if (moveCount > 16 + (depth*depth) / (PLY1*PLY1*4) && ) {
-				//}
+				if (moveCount > 16 + (depth*depth) / (PLY1*PLY1*4)
+						&& connectedThreat(tree, threat, move)) {
+					return;
+				}
+#endif
 
+#if !defined(PRUN_EXPR)
 				// value based pruning
 				if (standPat + estimate
 						+ Searcher::getFutMgn(depth - reduction, moveCount)
@@ -65,6 +70,7 @@ namespace Search {
 					pruning = true;
 					return;
 				}
+#endif
 			}
 		}
 	}
@@ -91,5 +97,24 @@ namespace Search {
 		} else {
 			return Searcher::PLY1 / 2;
 		}
+	}
+
+	bool Searcher::NodeController::connectedThreat(
+			Tree& tree, const Move& threat, const Move& move) {
+		if (threat.isEmpty() || move.isEmpty()) {
+			return false;
+		}
+
+		if (threat.getTo() == move.getFrom()) {
+			return true;
+		}
+
+		if (threat.getTo() == move.getTo()) {
+			return true;
+		}
+
+		// TODO
+
+		return false;
 	}
 }

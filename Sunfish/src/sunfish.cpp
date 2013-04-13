@@ -5,9 +5,7 @@
  *      Author: ryosuke
  */
 
-#include <iostream>
-#include <fstream>
-#include <boost/program_options.hpp>
+#include "Search/pruningExpr.h"
 #include "Cui/controller.h"
 #include "Shogi/position.h"
 #include "sunfish.h"
@@ -16,6 +14,9 @@
 #include "Learn/learn.h"
 #include "Evaluates/paramAnalyzer.h"
 #include "Books/bookManager.h"
+#include <iostream>
+#include <fstream>
+#include <boost/program_options.hpp>
 
 #ifndef NDEBUG
 #include "Test/shogiTest.h"
@@ -131,6 +132,11 @@ int main(int argc, char* argv[]) {
 		return network() ? 0 : 1;
 	}
 
+#ifdef PRUN_EXPR
+	std::ofstream exprOut("expr.csv", std::ios::out | std::ios::app);
+	Log::expr.addStream(exprOut);
+#endif // PRUN_EXPR
+
 	// ** CLI の起動
 	Cui::Controller controller;
 	if (argmap.count("auto-black")) {
@@ -155,6 +161,10 @@ int main(int argc, char* argv[]) {
 		controller.setAutoQuit(true);
 	}
 	controller.play();
+
+#ifdef PRUN_EXPR
+	Search::PruningExpr::print();
+#endif
 
 	return 0;
 }

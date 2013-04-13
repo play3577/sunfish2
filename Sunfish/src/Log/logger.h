@@ -130,6 +130,9 @@ namespace Log {
 	extern Logger debug;
 	extern Logger test;
 #endif //NDEBUG
+#ifdef PRUN_EXPR
+	extern Logger expr;
+#endif //PRUN_EXPR
 }
 
 #endif // LOGGER_H_

@@ -5,6 +5,7 @@
  *      Author: ryosuke
  */
 
+#include "pruningExpr.h"
 #include "aspWindow.h"
 #include "timeManager.h"
 #include "searcher.h"
@@ -386,13 +387,17 @@ namespace Search {
 		Value standPat = tree.negaEvaluate();
 
 		// 詰めろ
-		bool mate = false;
+		Move threat;
 
+#ifdef PRUN_EXPR
+		int razorMgn = beta - quies(tree, 0, beta-800, beta);
+		int statMgn = standPat - beta;
+#endif
 		if (!tree.isCheck()) {
 			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3 &&
 					beta < Value::MATE && alpha > -Value::MATE &&
 					!tree.isEvasion() && !tree.isRecapture()) {
-#if 1
+#if 1 && !defined(PRUN_EXPR)
 				// razoring
 				if (!hashOk) {
 					Value rbeta = beta - RAZOR_MGN(depth);
@@ -405,7 +410,7 @@ namespace Search {
 				}
 #endif
 
-#if 0
+#if 1 && !defined(PRUN_EXPR)
 				// static null move pruning
 				if (stat.isNullMove() &&
 						standPat - getFutMgn(depth) >= beta) {
@@ -443,7 +448,10 @@ namespace Search {
 					return beta;
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
-					mate = true;
+					const Move* pmove = tree.getInnerPv().getTop();
+					if (pmove != NULL) {
+						threat = *pmove;
+					}
 				}
 			}
 		}
@@ -472,11 +480,16 @@ namespace Search {
 			}
 #endif // NODE_DEBUG
 
+#ifdef PRUN_EXPR
+			int countMgn = tree.getMoveIndex();
+			int futMgn = alpha - standPat + tree.negaEstimate() + getGain(*tree.getCurrentMove());
+#endif
+
 			Value newAlpha = Value::max(alpha, value);
 
 			NodeController node(*this, tree, tree, rootDepth, stat,
 					depth - PLY1, newAlpha, standPat,
-					beta == alpha + 1, mate);
+					beta == alpha + 1, threat);
 			node.execute();
 
 			if (node.isPruning()) {
@@ -568,6 +581,14 @@ namespace Search {
 				return Value(0);
 			}
 
+#ifdef PRUN_EXPR
+			if (newValue <= value) {
+				PruningExpr::success1(depth, futMgn, countMgn);
+			} else {
+				PruningExpr::error1(depth, futMgn, countMgn);
+			}
+#endif
+
 			if (newValue > value) {
 				value = newValue;
 				tree.updatePv();
@@ -594,7 +615,7 @@ namespace Search {
 					(depth >= 6 || (!node.isNullWindow() && (depth >= PLY1 * 4 ||
 							(depth >= PLY1 * 3 && rootDepth <= 10)))) &&
 					(!tree.isCheck() || tree.getNumberOfMoves() >= 4)) {
-				if (split(tree, depth, alpha, beta, value, stat, standPat, mate, pvNode)) {
+				if (split(tree, depth, alpha, beta, value, stat, standPat, threat, pvNode)) {
 					if (isInterrupted(tree)) {
 						return Value(0);
 					}
@@ -619,6 +640,14 @@ namespace Search {
 #endif // NODE_DEBUG
 		// TT entry
 		tt.entry(hash, alpha, beta, value, depth, stat, best);
+
+#ifdef PRUN_EXPR
+		if (value <= alpha) {
+			PruningExpr::success2(depth, razorMgn, statMgn);
+		} else {
+			PruningExpr::error2(depth, razorMgn, statMgn);
+		}
+#endif
 
 		return value;
 	}
@@ -705,7 +734,7 @@ namespace Search {
 
 				NodeController node(*this, tree, tree, rootDepth,
 						NodeStat(), depth * PLY1, alpha,
-						standPat, false, false);
+						standPat, false, Move());
 				node.execute(true);
 
 revaluation:

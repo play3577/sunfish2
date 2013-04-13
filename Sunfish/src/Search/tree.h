@@ -44,7 +44,7 @@ namespace Search {
 			Evaluates::Value beta; // beta値
 			NodeStat stat; // node status
 			Evaluates::Value standPat; // stand pat
-			volatile bool mateThreat; // 詰めろ
+			Shogi::Move threat; // 詰めろの手
 			volatile bool pvNode;
 			Evaluates::Value value; // 暫定解 (workerが更新)
 			Shogi::Move best; // 暫定解 (workerが更新)
@@ -121,6 +121,10 @@ namespace Search {
 
 		const Pv& getPv() const {
 			return nodes[depth].getPv();
+		}
+
+		const Pv& getInnerPv() const {
+			return nodes[depth+1].getPv();
 		}
 
 		void generateMoves() {
@@ -397,7 +401,7 @@ namespace Search {
 				Evaluates::Value value,
 				NodeStat stat,
 				Evaluates::Value standPat,
-				bool mateThreat,
+				const Shogi::Move& threat,
 				bool pvNode,
 				int childCount) {
 			split.childCount = childCount;
@@ -406,7 +410,7 @@ namespace Search {
 			split.beta = beta;
 			split.stat = stat;
 			split.standPat = standPat;
-			split.mateThreat = mateThreat;
+			split.threat = threat;
 			split.pvNode = pvNode;
 			split.value = value;
 			split.best.setEmpty();

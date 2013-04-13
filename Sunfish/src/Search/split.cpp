@@ -15,7 +15,7 @@ namespace Search {
 	bool Searcher::split(Tree& tree, int depth,
 			Value alpha, Value beta, Value value,
 			NodeStat stat, Value standPat,
-			bool mateThreat, bool pvNode) {
+			const Move& threat, bool pvNode) {
 		Worker& worker = workers[tree.split.worker];
 		int myTree = Tree::SPLIT::TREE_NULL;
 		{
@@ -65,7 +65,7 @@ namespace Search {
 
 			// 親 tree に情報をセット
 			tree.setParentInfo(depth, alpha, beta, value,
-					stat, standPat, mateThreat, pvNode, childCount);
+					stat, standPat, threat, pvNode, childCount);
 			assert(childCount >= 2);
 		}
 
@@ -112,7 +112,6 @@ namespace Search {
 		Value beta = parent.split.beta;
 		NodeStat stat = parent.split.stat;
 		Value standPat = parent.split.standPat;
-		bool mate = parent.split.mateThreat;
 		bool pvNode = parent.split.pvNode;
 
 		while (true) {
@@ -137,7 +136,7 @@ namespace Search {
 				// node controller
 				pnode.reset(new NodeController(*this, parent, tree, rootDepth,
 						stat, depth - PLY1, newAlpha, standPat,
-						beta == alpha + 1, mate));
+						beta == alpha + 1, parent.split.threat));
 			}
 			NodeController& node = *pnode.get();
 			node.execute();

@@ -98,7 +98,8 @@ namespace Search {
 				Evaluates::Value value,
 				NodeStat stat,
 				Evaluates::Value standPat,
-				bool mateThreat, bool pvNode);
+				const Shogi::Move& threat,
+				bool pvNode);
 
 		void shutdownTree(Tree& tree);
 
@@ -345,7 +346,7 @@ namespace Search {
 			bool pruning;
 			const unsigned moveCount;
 			const bool _isNullWindow;
-			const bool _isMateThreat;
+			const Shogi::Move& threat;
 			const bool _isHash;
 			const bool _isCheckMove;
 			const bool _isTacticalMove;
@@ -362,7 +363,7 @@ namespace Search {
 			NodeController(Searcher& searcher, Tree& parent, Tree& tree,
 					int rootDepth, const NodeStat& stat, int depth,
 					Evaluates::Value alpha, Evaluates::Value standPat,
-					bool isNullWindow, bool isMateThreat) :
+					bool isNullWindow, const Shogi::Move& threat) :
 					searcher(searcher), tree(tree),
 					move(*parent.getCurrentMove()),
 					rootDepth(rootDepth), stat(stat), depth(depth),
@@ -370,7 +371,7 @@ namespace Search {
 					estimate(parent.negaEstimate()), reduction(0),
 					pruning(false), moveCount(parent.getMoveIndex()),
 					_isNullWindow(isNullWindow),
-					_isMateThreat(isMateThreat),
+					threat(threat),
 					_isHash(parent.isHashMove()),
 					_isCheckMove(parent.isCheckMove()),
 					_isTacticalMove(parent.isTacticalMove()),
@@ -428,12 +429,12 @@ namespace Search {
 				return _isRecapture;
 			}
 
-			bool isMateThreat() const {
-				return _isMateThreat;
-			}
-
 			bool isHash () const {
 				return _isHash;
+			}
+
+			bool isMateThreat() const {
+				return !threat.isEmpty();
 			}
 
 			unsigned getMoveCount() const {
@@ -459,6 +460,10 @@ namespace Search {
 			const Evaluates::Value& getEstimate() const {
 				return estimate;
 			}
+
+			static bool connectedThreat(Tree& tree,
+					const Shogi::Move& threat,
+					const Shogi::Move& move);
 		};
 	};
 }

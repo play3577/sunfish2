@@ -13,10 +13,13 @@ namespace Log {
 	Logger message;
 	Logger send("SEND");
 	Logger receive("RECEIVE");
-	Logger debug("DEBUG");
 #ifndef NDEBUG
+	Logger debug("DEBUG");
 	Logger test("TEST");
 #endif //NDEBUG
+#ifdef PRUN_EXPR
+	Logger expr;
+#endif //PRUN_EXPR
 
 	void Logger::putPrefix() {
 		if (name != NULL) {
