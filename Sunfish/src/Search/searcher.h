@@ -352,6 +352,11 @@ namespace Search {
 			const bool _isTacticalMove;
 			const bool _isCapture;
 			const bool _isRecapture;
+#ifdef PRUN_EXPR
+			bool _isFut;
+			bool _isExtFut;
+			bool _isCount;
+#endif
 			Evaluates::Value newStandPat;
 
 			template <bool isRoot>
@@ -376,7 +381,14 @@ namespace Search {
 					_isCheckMove(parent.isCheckMove()),
 					_isTacticalMove(parent.isTacticalMove()),
 					_isCapture(parent.isRecapture()),
-					_isRecapture(parent.isRecapture()) {
+					_isRecapture(parent.isRecapture())
+#ifdef PRUN_EXPR
+					,
+					_isFut(false),
+					_isExtFut(false),
+					_isCount(false)
+#endif
+					{
 			}
 
 			void execute(bool isRoot = false) {
@@ -464,6 +476,20 @@ namespace Search {
 			static bool connectedThreat(Tree& tree,
 					const Shogi::Move& threat,
 					const Shogi::Move& move);
+
+#ifdef PRUN_EXPR
+			bool isFut() const {
+				return _isFut;
+			}
+
+			bool isExtFut() const {
+				return _isExtFut;
+			}
+
+			bool isCount() const {
+				return _isCount;
+			}
+#endif
 		};
 	};
 }

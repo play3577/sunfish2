@@ -17,10 +17,12 @@ namespace Search {
 
 	PruningExpr::PruningExpr() {
 		memset(fut_suc, 0, sizeof(fut_suc));
+		memset(ext_fut_suc, 0, sizeof(ext_fut_suc));
 		memset(razor_suc, 0, sizeof(razor_suc));
 		memset(stat_suc, 0, sizeof(stat_suc));
 		memset(count_suc, 0, sizeof(count_suc));
 		memset(fut_err, 0, sizeof(fut_err));
+		memset(ext_fut_err, 0, sizeof(ext_fut_err));
 		memset(razor_err, 0, sizeof(razor_err));
 		memset(stat_err, 0, sizeof(stat_err));
 		memset(count_err, 0, sizeof(count_err));
@@ -37,30 +39,60 @@ namespace Search {
 				(val < MAX_VAL ? val : MAX_VAL);
 	}
 
-	void PruningExpr::success1(int dep, int fut, int count) {
-		ins.fut_suc[depth(dep)][value(fut)]++;
-		ins.count_suc[depth(dep)][value(count)]++;
+	void PruningExpr::success1(int dep, bool isFut, int fut,
+			bool isExtFut, int extFut, bool isCount, int count) {
+		if (isFut) {
+			ins.fut_suc[depth(dep)][value(fut)]++;
+		}
+		if (isExtFut) {
+			ins.ext_fut_suc[depth(dep)][value(extFut)]++;
+		}
+		if (isCount) {
+			ins.count_suc[depth(dep)][value(count)]++;
+		}
 	}
 
-	void PruningExpr::error1(int dep, int fut, int count) {
-		ins.fut_err[depth(dep)][value(fut)]++;
-		ins.count_err[depth(dep)][value(count)]++;
+	void PruningExpr::error1(int dep, bool isFut, int fut,
+			bool isExtFut, int extFut, bool isCount, int count) {
+		if (isFut) {
+			ins.fut_err[depth(dep)][value(fut)]++;
+		}
+		if (isExtFut) {
+			ins.ext_fut_err[depth(dep)][value(extFut)]++;
+		}
+		if (isCount) {
+			ins.count_err[depth(dep)][value(count)]++;
+		}
 	}
 
-	void PruningExpr::success2(int dep,
-			int razor, int stat) {
-		ins.razor_suc[depth(dep)][value(razor)]++;
-		ins.stat_suc[depth(dep)][value(stat)]++;
+	void PruningExpr::success2(int dep, bool isRazor, int razor) {
+		if (isRazor) {
+			ins.razor_suc[depth(dep)][value(razor)]++;
+		}
 	}
 
-	void PruningExpr::error2(int dep,
-			int razor, int stat) {
-		ins.razor_err[depth(dep)][value(razor)]++;
-		ins.stat_err[depth(dep)][value(stat)]++;
+	void PruningExpr::error2(int dep, bool isRazor, int razor) {
+		if (isRazor) {
+			ins.razor_err[depth(dep)][value(razor)]++;
+		}
+	}
+
+	void PruningExpr::success3(int dep, bool isStat, int stat) {
+		if (isStat) {
+			ins.stat_suc[depth(dep)][value(stat)]++;
+		}
+	}
+
+	void PruningExpr::error3(int dep, bool isStat, int stat) {
+		if (isStat) {
+			ins.stat_err[depth(dep)][value(stat)]++;
+		}
 	}
 
 	void PruningExpr::print(const char* name,
-			Util::uint64 result[][MAX_VAL-MIN_VAL+1]) {
+			Util::uint64 suc[][MAX_VAL-MIN_VAL+1],
+			Util::uint64 err[][MAX_VAL-MIN_VAL+1]
+			) {
 		Log::expr << name << '\n';
 		Log::expr << ',';
 		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
@@ -70,7 +102,10 @@ namespace Search {
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
 			Log::expr << dep << ',';
 			for (int val = MIN_VAL; val <= MAX_VAL; val++) {
-				Log::expr << result[dep][val-MIN_VAL] << ',';
+				int s = suc[dep][val-MIN_VAL];
+				int e = err[dep][val-MIN_VAL];
+				double rate = s / (double)(s + e);
+				Log::expr << rate << ',';
 			}
 			Log::expr << '\n';
 		}
@@ -78,14 +113,11 @@ namespace Search {
 	}
 
 	void PruningExpr::print() {
-		print("fut suc", ins.fut_suc);
-		print("fut err", ins.fut_err);
-		print("razor suc", ins.razor_suc);
-		print("razor err", ins.razor_err);
-		print("stat suc", ins.stat_suc);
-		print("stat err", ins.stat_err);
-		print("count suc", ins.count_suc);
-		print("count err", ins.count_err);
+		print("fut", ins.fut_suc, ins.fut_err);
+		print("extFut", ins.ext_fut_suc, ins.ext_fut_err);
+		print("razor", ins.razor_suc, ins.razor_err);
+		print("stat", ins.stat_suc, ins.stat_err);
+		print("count", ins.count_suc, ins.count_err);
 	}
 }
 

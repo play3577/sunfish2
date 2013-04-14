@@ -80,6 +80,10 @@ namespace Search {
 			return pv;
 		}
 
+		void generateMovesAtOnce() const {
+			pgen->generateAll();
+		}
+
 		void generateMoves() {
 			pgen->init();
 			pmove = NULL;

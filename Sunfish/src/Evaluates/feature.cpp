@@ -379,7 +379,7 @@ namespace Evaluates {
 			value0 -= pparam->getPieceExchange(cap);
 		}
 		if (move.getPiece().isKing()) {
-			error = 1280;
+			error = 1100;
 		} else {
 			Kings kings(pos);
 			if (!move.isHand()) {
@@ -389,7 +389,7 @@ namespace Evaluates {
 			Shogi::Piece piece = move.isPromotion() ?
 				move.getPiece().getPromoted() : move.getPiece();
 			value1 += pparam->getKKP(kings, piece, move.getTo());
-		error = 458;
+		error = 280;
 		}
 		return value0 + value1 / scale + error;
 	}

@@ -16,7 +16,7 @@
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
-#define RAZOR_MGN(d)				(312 + 240 / PLY1 * (d))
+#define RAZOR_MGN(d)				(520 + 60 / PLY1 * (d))
 
 namespace Search {
 	using namespace Shogi;
@@ -174,7 +174,7 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 158 * depth / PLY1 + 4 * count;
+		return 320 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -390,33 +390,40 @@ namespace Search {
 		Move threat;
 
 #ifdef PRUN_EXPR
+		bool isRazor = false;
 		int razorMgn = beta - quies(tree, 0, beta-800, beta);
+		bool isStat = false;
 		int statMgn = standPat - beta;
 #endif
 		if (!tree.isCheck()) {
 			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3 &&
 					beta < Value::MATE && alpha > -Value::MATE &&
 					!tree.isEvasion() && !tree.isRecapture()) {
-#if 1 && !defined(PRUN_EXPR)
 				// razoring
 				if (!hashOk) {
+#ifdef PRUN_EXPR
+					isRazor = true;
+#else
 					Value rbeta = beta - RAZOR_MGN(depth);
-					if (standPat + 480 < rbeta) {
+					if (standPat < rbeta) {
 						Value vtemp = quies(tree, 0, rbeta-1, rbeta);
 						if (vtemp < rbeta) {
 							return vtemp/* + RAZOR_MGN(depth)*/;
 						}
 					}
-				}
 #endif
+				}
 
-#if 1 && !defined(PRUN_EXPR)
 				// static null move pruning
-				if (stat.isNullMove() &&
-						standPat - getFutMgn(depth) >= beta) {
-					return standPat - getFutMgn(depth);
-				}
+				if (stat.isNullMove()) {
+#ifdef PRUN_EXPR
+					isStat = true;
+#else
+					if (standPat - getFutMgn(depth) >= beta) {
+						return standPat - getFutMgn(depth);
+					}
 #endif
+				}
 			}
 
 #if 1
@@ -502,6 +509,10 @@ namespace Search {
 			Value newValue;
 			makeMove(tree);
 
+#ifdef PRUN_EXPR
+			int extFutMgn = tree.negaEvaluate() + alpha;
+#endif
+
 			// new stand-pat
 			node.setNewStandPat(tree.negaEvaluate());
 			node.executeInterior();
@@ -583,9 +594,11 @@ namespace Search {
 
 #ifdef PRUN_EXPR
 			if (newValue <= value) {
-				PruningExpr::success1(depth, futMgn, countMgn);
+				PruningExpr::success1(depth, node.isFut(), futMgn,
+						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			} else {
-				PruningExpr::error1(depth, futMgn, countMgn);
+				PruningExpr::error1(depth, node.isFut(), futMgn,
+						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			}
 #endif
 
@@ -643,9 +656,14 @@ namespace Search {
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {
-			PruningExpr::success2(depth, razorMgn, statMgn);
+			PruningExpr::success2(depth, isRazor, razorMgn);
 		} else {
-			PruningExpr::error2(depth, razorMgn, statMgn);
+			PruningExpr::error2(depth, isRazor, razorMgn);
+		}
+		if (value >= beta) {
+			PruningExpr::success3(depth, isStat, statMgn);
+		} else {
+			PruningExpr::error3(depth, isStat, statMgn);
 		}
 #endif
 
@@ -698,7 +716,7 @@ namespace Search {
 		// ノード初期化
 		tree.initNode();
 		// 合法手生成
-		tree.generateMoves();
+		tree.generateMovesAtOnce();
 		// TODO: 指し手がない場合
 		// TODO: 確定手
 		// 反復進化探索

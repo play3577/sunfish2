@@ -20,10 +20,12 @@ namespace Search {
 		static const int MAX_VAL = 100;
 		static const int MAX_DEP = 16;
 		Util::uint64 fut_suc[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
+		Util::uint64 ext_fut_suc[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 razor_suc[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 stat_suc[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 count_suc[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 fut_err[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
+		Util::uint64 ext_fut_err[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 razor_err[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 stat_err[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
 		Util::uint64 count_err[MAX_DEP+1][MAX_VAL-MIN_VAL+1];
@@ -34,16 +36,23 @@ namespace Search {
 		static int value(int val);
 
 		static void print(const char* name,
-				Util::uint64 result[][MAX_VAL-MIN_VAL+1]);
+				Util::uint64 suc[][MAX_VAL-MIN_VAL+1],
+				Util::uint64 err[][MAX_VAL-MIN_VAL+1]);
 
 	public:
-		static void success1(int dep, int fut, int count);
+		static void success1(int dep, bool isFut, int fut,
+			bool isExtFut, int extFut, bool isCount, int count);
 
-		static void error1(int dep, int fut, int count);
+		static void error1(int dep, bool isFut, int fut,
+			bool isExtFut, int extFut, bool isCount, int count);
 
-		static void success2(int dep, int razor, int stat);
+		static void success2(int dep, bool isRazor, int razor);
 
-		static void error2(int dep, int razor, int stat);
+		static void error2(int dep, bool isRazor, int razor);
+
+		static void success3(int dep, bool isStat, int stat);
+
+		static void error3(int dep, bool isStat, int stat);
 
 		static void print();
 

@@ -27,42 +27,47 @@ namespace Search {
 
 		if (!isHash() && moveCount != 1 && !isMateThreat()
 				&& !tree.isCheck() && !isCheckMove()
-				&& !isTacticalMove()
-				&& depth >= (isRoot ? 2 * PLY1: PLY1)) {
+				&& !isTacticalMove()) {
 			// late move reduction
-			unsigned hist = tree.getHistory(move);
-			if (!isNullWindow()) {
-				if        (hist * 20U < History::SCALE) {
-					reduction = Searcher::PLY1 * 3 / 2;
-				} else if (hist *  6U < History::SCALE) {
-					reduction = Searcher::PLY1;
-				} else if (hist *  2U < History::SCALE) {
-					reduction = Searcher::PLY1 / 2;
-				}
-			} else {
-				if        (hist * 10U < History::SCALE) {
-					reduction = Searcher::PLY1 * 2;
-				} else if (hist *  6U < History::SCALE) {
-					reduction = Searcher::PLY1 * 3 / 2;
-				} else if (hist *  4U < History::SCALE) {
-					reduction = Searcher::PLY1;
-				} else if (hist *  1U < History::SCALE) {
-					reduction = Searcher::PLY1 / 2;
+			if (depth >= (isRoot ? 2 * PLY1: PLY1)) {
+				unsigned hist = tree.getHistory(move);
+				if (!isNullWindow()) {
+					if        (hist * 20U < History::SCALE) {
+						reduction = Searcher::PLY1 * 3 / 2;
+					} else if (hist *  6U < History::SCALE) {
+						reduction = Searcher::PLY1;
+					} else if (hist *  2U < History::SCALE) {
+						reduction = Searcher::PLY1 / 2;
+					}
+				} else {
+					if        (hist * 10U < History::SCALE) {
+						reduction = Searcher::PLY1 * 2;
+					} else if (hist *  6U < History::SCALE) {
+						reduction = Searcher::PLY1 * 3 / 2;
+					} else if (hist *  4U < History::SCALE) {
+						reduction = Searcher::PLY1;
+					} else if (hist *  1U < History::SCALE) {
+						reduction = Searcher::PLY1 / 2;
+					}
 				}
 			}
 
 			if (!isRoot) {
 				// futility pruning
 
-#if !defined(PRUN_EXPR)
+#ifdef PRUN_EXPR
+				_isCount = true;
+#else
 				// move count based pruning
-				if (moveCount > 16 + (depth*depth) / (PLY1*PLY1*4)
+				if (moveCount > 16 + depth / (PLY1*2)
 						&& connectedThreat(tree, threat, move)) {
 					return;
 				}
 #endif
 
-#if !defined(PRUN_EXPR)
+#ifdef PRUN_EXPR
+				_isFut = true;
+#else
 				// value based pruning
 				if (standPat + estimate
 						+ Searcher::getFutMgn(depth - reduction, moveCount)
@@ -81,9 +86,13 @@ namespace Search {
 		// extended futility pruning
 		if (!isHash() && !isMateThreat()
 				&& !isCheckMove() && !isTacticalMove()) {
+#ifdef PRUN_EXPR
+			_isExtFut = true;
+#else
 			if (newStandPat - Searcher::getFutMgn(getDepth(), getMoveCount()) >= -alpha) {
 				pruning = true;
 			}
+#endif
 		}
 	}
 

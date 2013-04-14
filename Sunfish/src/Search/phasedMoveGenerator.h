@@ -81,6 +81,8 @@ namespace Search {
 			init(PHASE_CHECK_ONLY);
 		}
 
+		void generateAll();
+
 		const Shogi::Move* next();
 
 		void setHashMove(const HashMove& hashMove) {

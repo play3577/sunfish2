@@ -127,6 +127,10 @@ namespace Search {
 			return nodes[depth+1].getPv();
 		}
 
+		void generateMovesAtOnce() {
+			nodes[depth].generateMovesAtOnce();
+		}
+
 		void generateMoves() {
 			nodes[depth].generateMoves();
 		}

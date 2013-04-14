@@ -102,6 +102,21 @@ namespace Search {
 		}
 	}
 
+	// 非コルーチン
+	void PhasedMoveGenerator::generateAll() {
+		// 初期化
+		Shogi::MoveGenerator::clear();
+		// 駒を取る手
+		generateCapture();
+		sortSee<false>(0, getNumber());
+		// 駒を取らない手
+		int prevNum = getNumber();
+		generateNocapture();
+		sortHistory(prevNum, getNumber()-prevNum);
+		// phase
+		phase = PHASE_END;
+	}
+
 	const Move* PhasedMoveGenerator::next() {
 		while (true) {
 			const Move* pmove = Super::next();
