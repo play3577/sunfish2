@@ -174,7 +174,7 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 120 + 230 * depth / PLY1 + 4 * count;
+		return 230 + 120 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -729,7 +729,7 @@ namespace Search {
 			// 段階的に広がる探索窓 (aspiration search)
 			AspWindow<-1> aspAlpha;
 			AspWindow<1> aspBeta;
-			// 初回ではない場合のみ前回の評価値を元にウィンドウを決定
+			// 初回ではない場合のみ前回の評価値を基にウィンドウを決定
 			if (depth != 0) {
 				tree.sort(values); // 前回深さの結果で並べ替え
 				aspAlpha.init(values[0]);
@@ -737,6 +737,7 @@ namespace Search {
 			}
 			// alpha値
 			Value alpha = (int)aspAlpha;
+revaluation_all:
 			// 合法手を順に調べる。
 			tree.setMoveIndex(0);
 			while (tree.next()) {
@@ -825,18 +826,6 @@ revaluation:
 					}
 					goto revaluation;
 				}
-				// fail-low
-				if (alpha == aspAlpha && vtemp <= aspAlpha && aspAlpha.next()) {
-					// ウィンドウを広げたら再探索 (aspiration search)
-					alpha = (int)aspAlpha;
-					if (config.pvHandler != NULL) {
-						totalCount(counter);
-						tree.updatePv();
-						config.pvHandler->failLow(tree.getPv(), vtemp,
-								counter.nodes, depth + 1, timer.get());
-					}
-					goto revaluation;
-				}
 
 				// 最初の手かalphaを越えた場合
 				if (moveCount == 1 || vtemp > alpha) {
@@ -861,6 +850,17 @@ revaluation:
 
 				// 時間制御
 				tm.value(vtemp);
+			}
+
+			// fail-low
+			if (alpha == aspAlpha && aspAlpha.next()) {
+				// ウィンドウを広げたら再探索 (aspiration search)
+				alpha = (int)aspAlpha;
+				if (config.pvHandler != NULL) {
+					totalCount(counter);
+					config.pvHandler->failLow(counter.nodes, depth + 1, timer.get());
+				}
+				goto revaluation_all;
 			}
 
 			if (config.pvHandler != NULL) {

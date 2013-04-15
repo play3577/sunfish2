@@ -240,9 +240,7 @@ namespace Network {
 			Log::message << "fail-high\n";
 		}
 
-		void failLow(const Search::Pv& pv, Evaluates::Value value,
-				Util::uint64 nodes, int depth, double seconds) {
-			printPv(pv, value, nodes, depth, seconds);
+		void failLow(Util::uint64 nodes, int depth, double seconds) {
 			Log::message << "fail-low\n";
 		}
 	};
