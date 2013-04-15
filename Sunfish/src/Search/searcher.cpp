@@ -174,7 +174,7 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 320 * depth / PLY1 + 4 * count;
+		return 120 + 230 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -276,7 +276,7 @@ namespace Search {
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
-#if 1
+#if 0
 		if (tree.is("+3524GI")) {
 			tree.shekDebug();
 		}
