@@ -27,6 +27,6 @@ namespace Search {
 		}
 
 		nodes[depth].arrive(_isCheck());
-		nodes[depth].setKiller(tree.nodes[depth]);
+		nodes[depth+1].setKiller(tree.nodes[depth+1]);
 	}
 }
