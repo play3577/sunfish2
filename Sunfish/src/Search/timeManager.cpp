@@ -7,6 +7,8 @@
 
 #include "timeManager.h"
 
+#define EASY_DEPTH					5
+
 namespace Search {
 	using namespace Evaluates;
 
@@ -20,19 +22,16 @@ namespace Search {
 			return 0;
 		}
 
-		int easyDepth = depth - 5;
-		if (easyDepth < 0) {
-			easyDepth = 0;
-		}
-		Value easy1st = stack[easyDepth].first;
-		Value easy2nd = stack[easyDepth].second;
-		Value easyDiff = easy1st - easy2nd;
 		Value prev1st = stack[depth-1].first;
 		Value first = stack[depth].first;
 		Value second = stack[depth].second;
 		Value diff = first - second;
 
-		if (diff >= 500) {
+		if (depth >= EASY_DEPTH && diff >= 500) {
+			int easyDepth = depth - EASY_DEPTH;
+			Value easy1st = stack[easyDepth].first;
+			Value easy2nd = stack[easyDepth].second;
+			Value easyDiff = easy1st - easy2nd;
 			if (easyDiff >= 800) {
 				if (first >= easy1st - 185 &&
 						first <= easy1st + 350 &&
