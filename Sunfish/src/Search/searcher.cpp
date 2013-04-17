@@ -174,7 +174,7 @@ namespace Search {
 		if (depth < Searcher::PLY1) {
 			return 0;
 		}
-		return 230 + 120 * depth / PLY1 + 4 * count;
+		return 120 + 120 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************

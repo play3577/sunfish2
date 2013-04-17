@@ -68,6 +68,10 @@ namespace Search {
 			pgen->getKiller() = node.pgen->getKiller();
 		}
 
+		Killer& getKiller() {
+			return pgen->getKiller();
+		}
+
 		int setPv(const Node& node) {
 			return pv.set(*pmove, node.pv);
 		}

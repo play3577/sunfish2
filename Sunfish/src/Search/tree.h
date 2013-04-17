@@ -372,6 +372,14 @@ namespace Search {
 			return true;
 		}
 
+		Killer& getKiller() {
+			return nodes[depth].getKiller();
+		}
+
+		Killer& getInnerKiller() {
+			return nodes[depth+1].getKiller();
+		}
+
 		void shekSet(const Records::HashStack& hashStack) {
 			shekTable.set(hashStack);
 		}
