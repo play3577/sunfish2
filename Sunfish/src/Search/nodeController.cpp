@@ -17,12 +17,12 @@ namespace Search {
 		if (isCheckMove()) {
 			depth += extension();
 		} else if (tree.isOneReply()) {
-			depth += extension();
-		} else if (stat.isRecapture() && isRecapture()) {
 			depth += extension() * 3 / 4;
+		} else if (stat.isRecapture() && isRecapture()) {
+			depth += extension() * 2 / 4;
 			newStat.unsetRecapture();
 		} else if (isMateThreat()) {
-			depth += extension() / 2;
+			depth += extension() * 2 / 4;
 		}
 
 		if (!isHash() && moveCount != 1 && !isMateThreat()
@@ -60,7 +60,7 @@ namespace Search {
 #else
 				// move count based pruning
 				Killer& killer = tree.getInnerKiller();
-				if (moveCount > 16 + depth / (PLY1*2)
+				if (moveCount > 16U + depth / (PLY1*2)
 						&& !connectedThreat(tree, killer.get1(), move)
 						&& !connectedThreat(tree, killer.get2(), move)) {
 					return;
@@ -115,6 +115,7 @@ namespace Search {
 		if (threat.isEmpty() || move.isEmpty()) {
 			return false;
 		}
+		assert(threat.getPiece().isBlack() != move.getPiece().isBlack());
 
 		if (threat.getTo() == move.getFrom()) {
 			return true;

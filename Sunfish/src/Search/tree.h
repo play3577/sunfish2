@@ -44,7 +44,7 @@ namespace Search {
 			Evaluates::Value beta; // beta値
 			NodeStat stat; // node status
 			Evaluates::Value standPat; // stand pat
-			Shogi::Move threat; // 詰めろの手
+			volatile bool mate; // 詰めろの手
 			volatile bool pvNode;
 			Evaluates::Value value; // 暫定解 (workerが更新)
 			Shogi::Move best; // 暫定解 (workerが更新)
@@ -413,7 +413,7 @@ namespace Search {
 				Evaluates::Value value,
 				NodeStat stat,
 				Evaluates::Value standPat,
-				const Shogi::Move& threat,
+				bool mate,
 				bool pvNode,
 				int childCount) {
 			split.childCount = childCount;
@@ -422,7 +422,7 @@ namespace Search {
 			split.beta = beta;
 			split.stat = stat;
 			split.standPat = standPat;
-			split.threat = threat;
+			split.mate = mate;
 			split.pvNode = pvNode;
 			split.value = value;
 			split.best.setEmpty();

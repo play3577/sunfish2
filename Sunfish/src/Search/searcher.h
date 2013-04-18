@@ -98,8 +98,7 @@ namespace Search {
 				Evaluates::Value value,
 				NodeStat stat,
 				Evaluates::Value standPat,
-				const Shogi::Move& threat,
-				bool pvNode);
+				bool mate, bool pvNode);
 
 		void shutdownTree(Tree& tree);
 
@@ -206,6 +205,24 @@ namespace Search {
 			}
 			delete [] (char*)trees;
 			delete [] workers;
+		}
+
+		Evaluates::Value toTTValue(Evaluates::Value value, int ply) {
+			if (value >= Evaluates::Value::MATE) {
+				return value + ply;
+			} else if (value <= -Evaluates::Value::MATE) {
+				return value - ply;
+			}
+			return value;
+		}
+
+		Evaluates::Value fromTTValue(Evaluates::Value value, int ply) {
+			if (value >= Evaluates::Value::MATE) {
+				return value - ply;
+			} else if (value <= -Evaluates::Value::MATE) {
+				return value + ply;
+			}
+			return value;
 		}
 
 	public:
@@ -346,7 +363,7 @@ namespace Search {
 			bool pruning;
 			const unsigned moveCount;
 			const bool _isNullWindow;
-			const Shogi::Move& threat;
+			const bool mate;
 			const bool _isHash;
 			const bool _isCheckMove;
 			const bool _isTacticalMove;
@@ -368,15 +385,14 @@ namespace Search {
 			NodeController(Searcher& searcher, Tree& parent, Tree& tree,
 					int rootDepth, const NodeStat& stat, int depth,
 					Evaluates::Value alpha, Evaluates::Value standPat,
-					bool isNullWindow, const Shogi::Move& threat) :
+					bool isNullWindow, bool mate) :
 					searcher(searcher), tree(tree),
 					move(*parent.getCurrentMove()),
 					rootDepth(rootDepth), stat(stat), depth(depth),
 					alpha(alpha), standPat(standPat),
 					estimate(parent.negaEstimate()), reduction(0),
 					pruning(false), moveCount(parent.getMoveIndex()),
-					_isNullWindow(isNullWindow),
-					threat(threat),
+					_isNullWindow(isNullWindow), mate(mate),
 					_isHash(parent.isHashMove()),
 					_isCheckMove(parent.isCheckMove()),
 					_isTacticalMove(parent.isTacticalMove()),
@@ -446,7 +462,7 @@ namespace Search {
 			}
 
 			bool isMateThreat() const {
-				return !threat.isEmpty();
+				return mate;
 			}
 
 			unsigned getMoveCount() const {
