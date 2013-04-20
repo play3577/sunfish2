@@ -202,11 +202,17 @@ namespace Network {
 			const Records::Record& record,
 			const Search::SearchConfig& searchConfig);
 
-		void printPv(const Search::Pv& pv, Evaluates::Value value,
+		void printSearchInfo(const Search::Pv& pv, Evaluates::Value value,
 				Util::uint64 nodes, int depth, double seconds) {
 			Log::message << std::setw(2) << depth << std::setw(10) << nodes
 					<< ' ' << pv.toString() << ':' << value
 					<< " (" << seconds << "sec)\n";
+		}
+
+		void printSearchInfo(Evaluates::Value value,
+				Util::uint64 nodes, int depth, double seconds) {
+			std::cout << std::setw(2) << depth << std::setw(10) << nodes
+					<< ':' << value << " (" << seconds << "sec)\n";
 		}
 
 	public:
@@ -231,16 +237,18 @@ namespace Network {
 
 		void pvHandler(const Search::Pv& pv, Evaluates::Value value,
 				Util::uint64 nodes, int depth, double seconds) {
-			printPv(pv, value, nodes, depth, seconds);
+			printSearchInfo(pv, value, nodes, depth, seconds);
 		}
 
 		void failHigh(const Search::Pv& pv, Evaluates::Value value,
 				Util::uint64 nodes, int depth, double seconds) {
-			printPv(pv, value, nodes, depth, seconds);
+			printSearchInfo(pv, value, nodes, depth, seconds);
 			Log::message << "fail-high\n";
 		}
 
-		void failLow(Util::uint64 nodes, int depth, double seconds) {
+		void failLow(Evaluates::Value value, Util::uint64 nodes,
+				int depth, double seconds) {
+			printSearchInfo(value, nodes, depth, seconds);
 			Log::message << "fail-low\n";
 		}
 	};

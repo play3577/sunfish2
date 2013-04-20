@@ -208,10 +208,19 @@ namespace Search {
 		}
 
 		Evaluates::Value toTTValue(Evaluates::Value value, int ply) {
-			if (value >= Evaluates::Value::MATE) {
-				return value + ply;
-			} else if (value <= -Evaluates::Value::MATE) {
-				return value - ply;
+			using namespace Evaluates;
+			if (value >= Value::MATE) {
+				if (value < Value::MAX - ply) {
+					return value + ply;
+				} else {
+					return Value::MAX;
+				}
+			} else if (value <= -Value::MATE) {
+				if (value > Value::MIN + ply) {
+					return value - ply;
+				} else {
+					return Value::MIN;
+				}
 			}
 			return value;
 		}

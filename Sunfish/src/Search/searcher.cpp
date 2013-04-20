@@ -12,7 +12,7 @@
 #include "../Util/tableString.h"
 #include <sstream>
 
-#define ROOT_NODE_DEBUG				1
+#define ROOT_NODE_DEBUG				0
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 
@@ -271,7 +271,7 @@ namespace Search {
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("+3524GI")) {
+		if (tree.is("-3243GI +6878OU")) {
 			Log::debug << " ***** {" << alpha << ',' << beta << '}';
 			debugNode = true;
 		}
@@ -306,14 +306,15 @@ namespace Search {
 #if NODE_DEBUG
 				if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
-				return Value::MAX;
+				return Value::MAX - tree.getDepth();
 			case Shek::INFERIOR:
 				counter.shekPruning++;
 #if NODE_DEBUG
 				if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
-				return Value::MIN;
+				return Value::MIN + tree.getDepth();
 			case Shek::EQUAL:
+				// TODO: 連続王手判定
 				counter.shekPruning++;
 #if NODE_DEBUG
 				if (debugNode) { Log::debug << __LINE__ << ' '; }
@@ -325,7 +326,7 @@ namespace Search {
 		// stack is full
 		if (tree.isMaxDepth()) {
 #if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
+			if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
 			return tree.negaEvaluate();
 		}
@@ -333,7 +334,7 @@ namespace Search {
 		// leaf node
 		if (depth < PLY1) {
 #if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
+			if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
@@ -359,6 +360,9 @@ namespace Search {
 #endif // NLEARN
 						) {
 					counter.hashPruning++;
+#if NODE_DEBUG
+					if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 					return fromTTValue(tte.getValue(), tree.getDepth());
 				}
 				if (tte.getDepth() >= depth - PLY1 * 3) {
@@ -375,6 +379,9 @@ namespace Search {
 #endif // NLEARN
 							) {
 						counter.hashPruning++;
+#if NODE_DEBUG
+						if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 						return fromTTValue(tte.getValue(), tree.getDepth());
 					}
 					if (tte.getDepth() >= depth - PLY1 * 3) {
@@ -392,6 +399,9 @@ namespace Search {
 #endif // NLEARN
 						) {
 					counter.hashPruning++;
+#if NODE_DEBUG
+					if (debugNode) { Log::debug << __LINE__ << '(' << tte.getValue() << ')' << ' '; }
+#endif // NODE_DEBUG
 					return fromTTValue(tte.getValue(), tree.getDepth());
 				}
 				break;
@@ -667,8 +677,12 @@ namespace Search {
 		}
 #endif // NODE_DEBUG
 		// TT entry
-		tt.entry(hash, alpha, beta, toTTValue(value, tree.getDepth()),
-				depth, stat, best);
+		// TODO: SHEK と GHI問題に対する暫定対処 => entry の条件なんとかする。
+		if (depth <= tree.getDepth() * PLY1 || 
+				depth <= tree.getPv().size() * PLY1 + PLY1 * 5 / 2) {
+			tt.entry(hash, alpha, beta, toTTValue(value, tree.getDepth()),
+					depth, stat, best);
+		}
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {
@@ -874,7 +888,7 @@ revaluation:
 				alpha = (int)aspAlpha;
 				if (config.pvHandler != NULL) {
 					totalCount(counter);
-					config.pvHandler->failLow(counter.nodes, depth + 1, timer.get());
+					config.pvHandler->failLow(maxValue, counter.nodes, depth + 1, timer.get());
 				}
 				goto revaluation_all;
 			}

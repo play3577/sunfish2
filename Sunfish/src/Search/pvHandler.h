@@ -25,8 +25,8 @@ namespace Search {
 				Util::uint64 nodes, int depth,
 				double seconds) = 0;
 
-		virtual void failLow(Util::uint64 nodes,
-				int depth, double seconds) = 0;
+		virtual void failLow(Evaluates::Value value,
+				Util::uint64 nodes, int depth, double seconds) = 0;
 	};
 }
 
