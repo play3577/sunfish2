@@ -152,6 +152,59 @@ namespace Search {
 		}
 	}
 
+	Searcher::REP_TYPE Searcher::repType(const Tree& tree) const {
+		Util::uint64 hash = tree.getPosition().getHash();
+		/* スタックを遡って王手の連続になっているかを調べる。
+		 * tree を調べても同じ hash 値の局面が現れなければ
+		 * hashStack を見に行く。
+		 * enTurn ... 相手の手番なら true
+		 * (enTurn == true && tree.isCheck(depth) => 自分が王手)
+		 * myCheck ... 自分が王手を連続中
+		 * enCheck ... 相手が王手を連続中
+		 */
+		bool enTurn = true;
+		bool myCheck = true;
+		bool enCheck = true;
+		for (int depth = tree.getDepth() - 1; depth >= 0; depth--) {
+			if (!tree.isCheck(depth)) {
+				if (enTurn) { myCheck = false; }
+				else        { enCheck = false; }
+				if (!myCheck && !enCheck) {
+					return REP_NORMAL;
+				}
+			}
+			enTurn = !enTurn;
+			if (tree.getHash(depth) == hash) {
+				goto lab_end;
+			}
+		}
+		if (hashStack.stack != NULL) {
+			for (int index = hashStack.size - 2; index >= 0; index--) {
+				if (!hashStack.stack[index].check) {
+					if (enTurn) { myCheck = false; }
+					else        { enCheck = false; }
+					if (!myCheck && !enCheck) {
+						return REP_NORMAL;
+					}
+				}
+				enTurn = !enTurn;
+				if (hashStack.stack[index].positionHash == hash) {
+					goto lab_end;
+				}
+			}
+		}
+#ifndef NDEBUG
+		Log::warning << __THIS__ << "rare case.. SHEK collision??";
+#endif
+lab_end:
+		if (myCheck) {
+			return REP_MY_CHECK;
+		} else {
+			assert(enCheck);
+			return REP_EN_CHECK;
+		}
+	}
+
 	/***************************************************************
 	 * mate 1 ply search                                           *
 	 * tree  : 探索木                                              *
@@ -314,12 +367,18 @@ namespace Search {
 #endif // NODE_DEBUG
 				return Value::MIN + tree.getDepth();
 			case Shek::EQUAL:
-				// TODO: 連続王手判定
+				REP_TYPE type = repType(tree);
 				counter.shekPruning++;
 #if NODE_DEBUG
 				if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
-				return Value(0);
+				if (type == REP_MY_CHECK) {
+					return Value::MIN; // 王手千日手により負け
+				} else if (type == REP_EN_CHECK) {
+					return Value::MAX; // 王手千日手により勝ち
+				} else {
+					return Value(0);
+				}
 			}
 		}
 

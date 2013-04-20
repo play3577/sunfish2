@@ -107,7 +107,7 @@ namespace Search {
 		}
 
 		void initNode() {
-			nodes[depth].arrive(_isCheck());
+			nodes[depth].arrive(pos.getHash(), _isCheck());
 			nodes[depth+1].initKiller();
 		}
 
@@ -222,11 +222,19 @@ namespace Search {
 			return pos.isMate();
 		}
 
+		Util::uint64 getHash(int depth) const {
+			return nodes[depth].getHash();
+		}
+
 		bool _isCheck() const {
 			return pos.isCheck();
 		}
 
 		bool isCheck() const {
+			return nodes[depth].isCheck();
+		}
+
+		bool isCheck(int depth) const {
 			return nodes[depth].isCheck();
 		}
 

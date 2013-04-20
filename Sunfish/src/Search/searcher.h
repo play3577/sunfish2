@@ -207,7 +207,7 @@ namespace Search {
 			delete [] workers;
 		}
 
-		Evaluates::Value toTTValue(Evaluates::Value value, int ply) {
+		static Evaluates::Value toTTValue(Evaluates::Value value, int ply) {
 			using namespace Evaluates;
 			if (value >= Value::MATE) {
 				if (value < Value::MAX - ply) {
@@ -225,14 +225,23 @@ namespace Search {
 			return value;
 		}
 
-		Evaluates::Value fromTTValue(Evaluates::Value value, int ply) {
-			if (value >= Evaluates::Value::MATE) {
+		static Evaluates::Value fromTTValue(Evaluates::Value value, int ply) {
+			using namespace Evaluates;
+			if (value >= Value::MATE) {
 				return value - ply;
-			} else if (value <= -Evaluates::Value::MATE) {
+			} else if (value <= -Value::MATE) {
 				return value + ply;
 			}
 			return value;
 		}
+
+		enum REP_TYPE {
+			REP_MY_CHECK,
+			REP_EN_CHECK,
+			REP_NORMAL,
+		};
+
+		REP_TYPE repType(const Tree& tree) const;
 
 	public:
 		static const int PLY1 = 4;

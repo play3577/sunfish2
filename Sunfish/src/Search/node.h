@@ -20,9 +20,10 @@ namespace Search {
 		Shogi::Change change;
 		Evaluates::Value baseValue;
 		Evaluates::Value posValue;
+		Pv pv;
+		Util::uint64 hash;
 		bool isNullMoveMaked;
 		bool check;
-		Pv pv;
 		bool shek;
 
 	public:
@@ -50,9 +51,10 @@ namespace Search {
 			isNullMoveMaked = false;
 		}
 
-		void arrive(bool check) {
+		void arrive(Util::uint64 hash, bool check) {
 			pv.init();
 			pgen->clear();
+			this->hash = hash;
 			this->check = check;
 		}
 
@@ -194,6 +196,10 @@ namespace Search {
 
 		bool isShek() const {
 			return shek;
+		}
+
+		Util::uint64 getHash() const {
+			return hash;
 		}
 
 		bool isCheck() const {

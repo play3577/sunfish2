@@ -19,6 +19,7 @@ namespace Records {
 		Util::uint64 turnHash;
 		Shek::HandSet handSet;
 		bool blackTurn;
+		bool check;
 	};
 
 	struct HashStack {

@@ -24,9 +24,11 @@ namespace Search {
 			} else {
 				nullMove(tree.nodes[i].isShek());
 			}
+			// なんかもう無理やり...
+			nodes[i].arrive(tree.nodes[i].getHash(), tree.nodes[i].isCheck());
 		}
 
-		nodes[depth].arrive(_isCheck());
+		nodes[depth].arrive(pos.getHash(), _isCheck());
 		nodes[depth+1].setKiller(tree.nodes[depth+1]);
 	}
 }

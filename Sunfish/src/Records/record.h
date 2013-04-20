@@ -43,6 +43,7 @@ namespace Records {
 			hashStack[index].handSet = Shek::HandSet(pos.isBlackTurn()
 					? pos.getBlackHand() : pos.getBlackHand());
 			hashStack[index].blackTurn = pos.isBlackTurn();
+			hashStack[index].check = pos.isCheck();
 		}
 
 		void initStack() {
