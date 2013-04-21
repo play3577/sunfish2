@@ -5,7 +5,12 @@
 
 # TODO: 相対パス除去
 
+KIFDIR=Kifu
 LOGFILE=network.log
+
+if [ ! -d ${KIFUDIR} ]; then
+	mkdir ${KIFUDIR}
+fi
 
 if [ -e ${LOGFILE} ]; then
 	mv ${LOGFILE} ${LOGFILE}.`date "+%Y%m%d-%H%M%S"`
