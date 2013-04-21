@@ -45,7 +45,7 @@ namespace Table {
 		bool update(Util::uint64 newHash,
 				Evaluates::Value newValue,
 				int newValueType,
-				int newDepth,
+				int newDepth, int ply,
 				const Search::NodeStat& newStat,
 				const Shogi::Move& move,
 				unsigned newAge);
@@ -71,7 +71,7 @@ namespace Table {
 				Evaluates::Value alpha,
 				Evaluates::Value beta,
 				Evaluates::Value newValue,
-				int newDepth,
+				int newDepth, int ply,
 				const Search::NodeStat& newStat,
 				const Shogi::Move& move,
 				unsigned newAge) {
@@ -84,7 +84,7 @@ namespace Table {
 				newValueType = EXACT;
 			}
 			return update(newHash, newValue, newValueType,
-					newDepth, newStat, move, newAge);
+					newDepth, ply, newStat, move, newAge);
 		}
 
 		bool isOk() const {
@@ -117,7 +117,13 @@ namespace Table {
 			return hash;
 		}
 
-		Evaluates::Value getValue() const {
+		Evaluates::Value getValue(int ply) const {
+			using namespace Evaluates;
+			if (value >= Value::MATE) {
+				if (e.valueType == LOWER) { return value - ply; }
+			} else if (value <= -Value::MATE) {
+				if (e.valueType == UPPER) { return value + ply; }
+			}
 			return value;
 		}
 

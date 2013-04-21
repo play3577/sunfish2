@@ -30,14 +30,14 @@ namespace Table {
 				Evaluates::Value alpha,
 				Evaluates::Value beta,
 				Evaluates::Value value,
-				int depth,
+				int depth, int ply,
 				const Search::NodeStat& stat,
 				const Shogi::Move& move) {
 			TTEntity entity;
 			TTEntities& entities = _getEntity(hash);
 			entities.get(hash, entity);
 			if (entity.update(hash, alpha, beta, value,
-					depth, stat, move, age)) {
+					depth, ply, stat, move, age)) {
 				entities.set(entity);
 				return true;
 			}

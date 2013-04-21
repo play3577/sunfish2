@@ -324,7 +324,7 @@ lab_end:
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("+0056KA -4527UM +5683UM -5162OU +7968GI -4344FU +4938KI -2745UM")) {
+		if (tree.is("-0035KA +2616OU -3517UM +1617OU -0016FU")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -413,6 +413,7 @@ lab_end:
 		Move hash2;
 		bool hashOk = false;
 		if (tt.get(hash, tte)) {
+			Value ttValue = tte.getValue(tree.getDepth());
 			switch (tte.getValueType()) {
 			case TTEntity::EXACT: // 確定
 				if (!pvNode && stat.isHashCut()
@@ -425,16 +426,15 @@ lab_end:
 #if NODE_DEBUG
 					if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
-					return fromTTValue(tte.getValue(), tree.getDepth());
+					return ttValue;
 				}
 				if (tte.getDepth() >= depth - PLY1 * 3) {
 					tree.setHashMove(tte.getHashMove());
 					hashOk = true;
 				}
 			case TTEntity::LOWER: // 下界値
-				if (tte.getValue() >= beta) {
+				if (ttValue >= beta) {
 					if (!pvNode && stat.isHashCut()
-							&& tte.getValue() >= beta
 							&& tte.isSuperior(depth)
 #ifndef NLEARN
 							&& !config.isLearning
@@ -442,9 +442,9 @@ lab_end:
 							) {
 						counter.hashPruning++;
 #if NODE_DEBUG
-						if (debugNode) { Log::debug << __LINE__ << '(' << tte.getValue() << ')' << ' '; }
+						if (debugNode) { Log::debug << __LINE__ << '(' << ttValue << ')' << ' '; }
 #endif // NODE_DEBUG
-						return fromTTValue(tte.getValue(), tree.getDepth());
+						return ttValue;
 					}
 					if (tte.getDepth() >= depth - PLY1 * 3) {
 						tree.setHashMove(tte.getHashMove());
@@ -454,7 +454,7 @@ lab_end:
 				break;
 			case TTEntity::UPPER: // 上界値
 				if (!pvNode && stat.isHashCut()
-						&& tte.getValue() <= alpha
+						&& ttValue <= alpha
 						&& tte.isSuperior(depth)
 #ifndef NLEARN
 						&& !config.isLearning
@@ -462,9 +462,9 @@ lab_end:
 						) {
 					counter.hashPruning++;
 #if NODE_DEBUG
-					if (debugNode) { Log::debug << __LINE__ << '(' << tte.getValue() << ')' << ' '; }
+					if (debugNode) { Log::debug << __LINE__ << '(' << ttValue << ')' << ' '; }
 #endif // NODE_DEBUG
-					return fromTTValue(tte.getValue(), tree.getDepth());
+					return ttValue;
 				}
 				break;
 			}
@@ -543,7 +543,8 @@ lab_end:
 					counter.nullMovePruning++;
 					// TT entry
 					if (nullDepth < PLY1) {
-						tt.entry(hash, alpha, beta, newValue, depth, stat, Move());
+						tt.entry(hash, alpha, beta, newValue,
+								depth, tree.getDepth(), stat, Move());
 					}
 #if NODE_DEBUG
 					if (debugNode) { Log::debug << __LINE__ << " d=" << depth << " nd=" << nullDepth << ' '; }
@@ -752,8 +753,8 @@ lab_end:
 
 		// TT entry
 		// TODO: GHI対策
-		tt.entry(hash, alpha, beta, toTTValue(value, tree.getDepth()),
-				depth, stat, best);
+		tt.entry(hash, alpha, beta, value, depth,
+				tree.getDepth(), stat, best);
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {

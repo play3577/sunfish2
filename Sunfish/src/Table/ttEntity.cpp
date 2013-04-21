@@ -8,10 +8,12 @@
 #include "ttEntity.h"
 
 namespace Table {
+	using namespace Evaluates;
+
 	bool TTEntity::update(Util::uint64 newHash,
 			Evaluates::Value newValue,
 			int newValueType,
-			int newDepth,
+			int newDepth, int ply,
 			const Search::NodeStat& newStat,
 			const Shogi::Move& move,
 			unsigned newAge) {
@@ -31,6 +33,24 @@ namespace Table {
 		} else {
 			hash = newHash;
 			hashMove.init();
+		}
+
+		if (value >= Value::MATE) {
+			if (newValueType == LOWER) {
+				if (value < Value::MAX - ply) {
+					value += ply;
+				} else {
+					value = Value::MAX;
+				}
+			}
+		} else if (value <= -Value::MATE) {
+			if (newValueType == UPPER) {
+				if (value > Value::MIN + ply) {
+					value -= ply;
+				} else {
+					value = Value::MIN;
+				}
+			}
 		}
 
 		value = newValue;
