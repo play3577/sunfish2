@@ -18,11 +18,11 @@ namespace Search {
 			depth += extension();
 		} else if (tree.isOneReply()) {
 			depth += extension() * 3 / 4;
-		} else if (stat.isRecapture() && isRecapture()) {
-			depth += extension() * 2 / 4;
-			newStat.unsetRecapture();
 		} else if (isMateThreat()) {
 			depth += extension() * 2 / 4;
+		} else if (stat.isRecapture() && isRecapture()) {
+			depth += extension() * 1 / 4;
+			newStat.unsetRecapture();
 		}
 
 		if (!isHash() && moveCount != 1 && !isMateThreat()
@@ -99,14 +99,14 @@ namespace Search {
 	}
 
 	int Searcher::NodeController::extension() const {
-		if (tree.getDepth() < rootDepth) {
-			return Searcher::PLY1 * 3 / 2;
-		} else if (tree.getDepth() < rootDepth * 2) {
+		if (tree.getDepth() < 10) {
 			return Searcher::PLY1;
-		} else if (tree.getDepth() < rootDepth * 3) {
+		} else if (tree.getDepth() < 16) {
 			return Searcher::PLY1 * 3 / 4;
+		} else if (tree.getDepth() < 24) {
+			return Searcher::PLY1 * 2 / 4;
 		} else {
-			return Searcher::PLY1 / 2;
+			return Searcher::PLY1 * 1 / 4;
 		}
 	}
 

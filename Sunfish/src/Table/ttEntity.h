@@ -107,7 +107,7 @@ namespace Table {
 			if (value >= Value::MATE && e.valueType == LOWER) {
 				return true;
 			}
-			if (value <= Value::MATE && e.valueType == UPPER) {
+			if (value <= -Value::MATE && e.valueType == UPPER) {
 				return true;
 			}
 			return false;

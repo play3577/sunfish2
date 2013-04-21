@@ -62,10 +62,10 @@ namespace Search {
 		static const int NON_TREE_SIZE = 0;
 		Tree* trees;
 		int treeSize;
-		int idleTree;
+		volatile int idleTree;
 		Worker* workers;
 		int workerSize;
-		int idleWorker;
+		volatile int idleWorker;
 
 		Table::TT tt;
 		History history;
@@ -370,7 +370,6 @@ namespace Search {
 			Searcher& searcher;
 			Tree& tree;
 			const Shogi::Move move;
-			const int rootDepth;
 			const NodeStat stat;
 			NodeStat newStat;
 			int depth;
@@ -400,13 +399,13 @@ namespace Search {
 			int extension() const;
 
 		public:
-			NodeController(Searcher& searcher, Tree& parent, Tree& tree,
-					int rootDepth, const NodeStat& stat, int depth,
+			NodeController(Searcher& searcher, Tree& parent,
+					Tree& tree, const NodeStat& stat, int depth,
 					Evaluates::Value alpha, Evaluates::Value standPat,
 					bool isNullWindow, bool mate) :
 					searcher(searcher), tree(tree),
 					move(*parent.getCurrentMove()),
-					rootDepth(rootDepth), stat(stat), depth(depth),
+					stat(stat), depth(depth),
 					alpha(alpha), standPat(standPat),
 					estimate(parent.negaEstimate()), reduction(0),
 					pruning(false), moveCount(parent.getMoveIndex()),

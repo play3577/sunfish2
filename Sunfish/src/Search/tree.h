@@ -343,6 +343,14 @@ namespace Search {
 			return nodes[depth].getNumberOfMoves();
 		}
 
+		int getPrevNumberOfMoves() const {
+			return nodes[depth-1].getNumberOfMoves();
+		}
+
+		int getNumberOfMoves(int depth) const {
+			return nodes[depth].getNumberOfMoves();
+		}
+
 		void addHistory(int depth) const {
 			nodes[this->depth].addHistory(history, depth);
 		}

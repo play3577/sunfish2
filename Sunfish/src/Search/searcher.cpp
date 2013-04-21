@@ -324,8 +324,8 @@ lab_end:
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-3243GI +6878OU")) {
-			Log::debug << " ***** {" << alpha << ',' << beta << '}';
+		if (tree.is("+0056KA -4527UM +5683UM -5162OU +7968GI -4344FU +4938KI -2745UM")) {
+			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
@@ -344,6 +344,9 @@ lab_end:
 		// distance pruning
 		Value maxValue = Value::MAX - tree.getDepth();
 		if (alpha >= maxValue) {
+#if NODE_DEBUG
+			if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 			return maxValue;
 		}
 
@@ -439,7 +442,7 @@ lab_end:
 							) {
 						counter.hashPruning++;
 #if NODE_DEBUG
-						if (debugNode) { Log::debug << __LINE__ << ' '; }
+						if (debugNode) { Log::debug << __LINE__ << '(' << tte.getValue() << ')' << ' '; }
 #endif // NODE_DEBUG
 						return fromTTValue(tte.getValue(), tree.getDepth());
 					}
@@ -492,6 +495,9 @@ lab_end:
 					if (standPat < rbeta) {
 						Value vtemp = quies(tree, 0, rbeta-1, rbeta);
 						if (vtemp < rbeta) {
+#if NODE_DEBUG
+							if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 							return vtemp/* + RAZOR_MGN(depth)*/;
 						}
 					}
@@ -504,20 +510,24 @@ lab_end:
 					isStat = true;
 #else
 					if (standPat - getFutMgn(depth) >= beta) {
+#if NODE_DEBUG
+						if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 						return standPat - getFutMgn(depth);
 					}
 #endif
 				}
 			}
 
-#if 1
 			// mate
 			if (stat.isMate()) {
 				if (isMate1Ply(tree)) {
+#if NODE_DEBUG
+					if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 					return Value::MAX - (tree.getDepth()+1);
 				}
 			}
-#endif
 
 			// null move pruning
 			if (!pvNode && stat.isNullMove() && depth >= PLY1 * 2 &&
@@ -535,6 +545,9 @@ lab_end:
 					if (nullDepth < PLY1) {
 						tt.entry(hash, alpha, beta, newValue, depth, stat, Move());
 					}
+#if NODE_DEBUG
+					if (debugNode) { Log::debug << __LINE__ << " d=" << depth << " nd=" << nullDepth << ' '; }
+#endif // NODE_DEBUG
 					return beta;
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
@@ -547,11 +560,13 @@ lab_end:
 			}
 		}
 
+		// recursive iterative-deepening
 		if (!hashOk && depth >= PLY1 * 3/* && pvNode*/) {
 			int newDepth = depth >= PLY1*9/2 ? depth - PLY1*3 : PLY1*3/2;
 			negaMax<pvNode>(tree, newDepth, alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
 			if (isInterrupted(tree)) { return Value(0); }
+			// TODO: 直接取得する。
 			TTEntity tte;
 			if (tt.get(hash, tte)) {
 				tree.setHashMove(tte.getHashMove());
@@ -578,12 +593,15 @@ lab_end:
 
 			Value newAlpha = Value::max(alpha, value);
 
-			NodeController node(*this, tree, tree, rootDepth, stat,
+			NodeController node(*this, tree, tree, stat,
 					depth - PLY1, newAlpha, standPat,
 					beta == alpha + 1, mate);
 			node.execute();
 
 			if (node.isPruning()) {
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__; }
+#endif
 				value = newAlpha; // fail soft
 				counter.futilityPruning++;
 				continue;
@@ -605,6 +623,9 @@ lab_end:
 				unmakeMove(tree);
 				value = newAlpha; // fail soft
 				counter.exFutilityPruning++;
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__; }
+#endif
 				continue;
 			}
 
@@ -665,7 +686,7 @@ lab_end:
 				double afterSec = timer.get();
 				double sec = afterSec - beforeSec;
 				Log::debug << "(" << newValue << ")[" << nodes << "]";
-				Log::warning << (int)(sec*1000);
+				Log::warning << (int)(sec*1000) << ' ';
 			}
 #endif // NODE_DEBUG
 
@@ -708,10 +729,9 @@ lab_end:
 				}
 			}
 
-			if (workerSize >= 2 &&
-					(depth >= 6 || (!node.isNullWindow() && (depth >= PLY1 * 4 ||
-							(depth >= PLY1 * 3 && rootDepth <= 10)))) &&
-					(!tree.isCheck() || tree.getNumberOfMoves() >= 4)) {
+			if (workerSize >= 2 && idleWorker >= 1 && (!tree.isCheck() ||
+					tree.getNumberOfMoves() - tree.getPrevNumberOfMoves() >= 4) &&
+					(depth >= PLY1 * 4 || (depth >= PLY1 * 3 && rootDepth <= 11))) {
 				if (split(tree, depth, alpha, beta, value, stat, standPat, mate, pvNode)) {
 					if (isInterrupted(tree)) {
 						return Value(0);
@@ -730,18 +750,10 @@ lab_end:
 			return Value::MIN + tree.getDepth();
 		}
 
-#if NODE_DEBUG
-		if (debugNode) {
-			Log::warning << ' ' << best.toString();
-		}
-#endif // NODE_DEBUG
 		// TT entry
-		// TODO: SHEK と GHI問題に対する暫定対処 => entry の条件なんとかする。
-		if (depth <= tree.getDepth() * PLY1 || 
-				depth <= tree.getPv().size() * PLY1 + PLY1 * 5 / 2) {
-			tt.entry(hash, alpha, beta, toTTValue(value, tree.getDepth()),
-					depth, stat, best);
-		}
+		// TODO: GHI対策
+		tt.entry(hash, alpha, beta, toTTValue(value, tree.getDepth()),
+				depth, stat, best);
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {
@@ -756,6 +768,11 @@ lab_end:
 		}
 #endif
 
+#if NODE_DEBUG
+		if (debugNode) {
+			Log::warning << tree.getPv().toString();
+		}
+#endif // NODE_DEBUG
 		return value;
 	}
 	template Value Searcher::negaMax<true>(Tree& tree, int depth,
@@ -856,7 +873,7 @@ revaluation_all:
 				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
-				NodeController node(*this, tree, tree, rootDepth,
+				NodeController node(*this, tree, tree,
 						NodeStat(), depth * PLY1, alpha,
 						standPat, false, Move());
 				node.execute(true);

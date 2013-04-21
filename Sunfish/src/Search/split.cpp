@@ -134,7 +134,7 @@ namespace Search {
 				// 現在の tree に次の指し手をセット
 				tree.setMove(move);
 				// node controller
-				pnode.reset(new NodeController(*this, parent, tree, rootDepth,
+				pnode.reset(new NodeController(*this, parent, tree,
 						stat, depth - PLY1, newAlpha, standPat,
 						beta == alpha + 1, parent.split.mate));
 			}
