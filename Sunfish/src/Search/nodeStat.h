@@ -11,6 +11,7 @@
 namespace Search {
 	class NodeStat {
 	private:
+		// 項目の数が変わった場合 => Table::TTEntity::e
 		enum {
 			NULL_MOVE = 1 << 0,
 			RECAPTURE = 1 << 1,

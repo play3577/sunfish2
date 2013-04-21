@@ -16,8 +16,8 @@ namespace Shek {
 	class ShekEntity {
 	private:
 		Util::uint64 hash;
-		int count;
 		HandSet handSet;
+		unsigned char count;
 #ifndef NDEBUG
 		int num;
 #endif // NDEBUG

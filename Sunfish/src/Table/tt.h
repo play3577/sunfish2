@@ -23,7 +23,7 @@ namespace Table {
 		}
 
 		void evolve() {
-			age = (age + 1);
+			age = (age + 1) % TTEntity::AGE_MAX;
 		}
 
 		bool entry(Util::uint64 hash,

@@ -15,12 +15,17 @@ namespace Table {
 			const Search::NodeStat& newStat,
 			const Shogi::Move& move,
 			unsigned newAge) {
+		assert(newAge < AGE_MAX);
+		assert(newDepth < (1<<20));
+		assert(newValueType < (1<<2));
+		assert((unsigned)newStat < (1<<4));
+
 		if (newDepth < 0) { newDepth = 0; }
 
 		if (isOk()) {
 			assert(hash == newHash);
 			// 深さが劣るものは登録させない。
-			if (newDepth < depth && age == newAge) {
+			if (newDepth < (int)e.depth && e.age == newAge) {
 				return false;
 			}
 		} else {
@@ -29,11 +34,11 @@ namespace Table {
 		}
 
 		value = newValue;
-		valueType = newValueType;
-		depth = newDepth;
-		stat = newStat;
+		e.valueType = newValueType;
+		e.depth = (unsigned)newDepth;
+		e.stat = (unsigned)newStat;
 		if (!move.isEmpty()) { hashMove.update(move); }
-		age = newAge;
+		e.age = newAge;
 		checkSum = generateCheckSum();
 
 		return true;

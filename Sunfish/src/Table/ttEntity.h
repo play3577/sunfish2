@@ -17,22 +17,29 @@
 namespace Table {
 	class TTEntity {
 	private:
+		unsigned checkSum;
+		struct {
+			// little elements
+			unsigned age : 8;
+			unsigned depth : 18;
+			unsigned valueType : 2;
+			unsigned stat : 4;
+		} e;
 		Util::uint64 hash;
 		Evaluates::Value value;
-		int valueType;
-		int depth;
 		Search::HashMove hashMove;
-		Search::NodeStat stat;
-		unsigned age;
-		Util::uint64 checkSum;
 
-		Util::uint64 generateCheckSum() const {
-			return hash ^ (Util::uint64)(int)value
-					^ ((Util::uint64)valueType << 16)
-					^ ((Util::uint64)depth << 32)
-					^ (Util::uint64)hashMove
-					^ (Util::uint64)age
-					^ ((Util::uint64)(unsigned)stat << 48);
+		unsigned generateCheckSum() const {
+			return (unsigned)hash
+					^ (unsigned)(hash >> 32)
+					^ (unsigned)(int)value
+					^ (unsigned)hashMove.getHash1()
+					^ (unsigned)hashMove.getHash2()
+					^ (unsigned)e.age
+					^ ((unsigned)e.depth << 8)
+					^ ((unsigned)e.valueType << 28)
+					^ ((unsigned)e.stat << 30)
+					;
 		}
 
 		bool update(Util::uint64 newHash,
@@ -44,10 +51,12 @@ namespace Table {
 				unsigned newAge);
 
 	public:
+		static const unsigned AGE_MAX = 1U << 8;
+
 		enum {
 			EXACT = 0,
-			UPPER,
-			LOWER,
+			UPPER, // 1
+			LOWER, // 2
 		};
 
 		TTEntity() {
@@ -55,7 +64,7 @@ namespace Table {
 		}
 
 		void init() {
-			checkSum = generateCheckSum() + U64(1);
+			checkSum = generateCheckSum() + 1;
 		}
 
 		bool update(Util::uint64 newHash,
@@ -92,13 +101,13 @@ namespace Table {
 
 		bool isSuperior(int curDepth) const {
 			using namespace Evaluates;
-			if (depth >= curDepth) {
+			if ((int)e.depth >= curDepth) {
 				return true;
 			}
-			if (value >= Value::MATE && valueType == LOWER) {
+			if (value >= Value::MATE && e.valueType == LOWER) {
 				return true;
 			}
-			if (value <= Value::MATE && valueType == UPPER) {
+			if (value <= Value::MATE && e.valueType == UPPER) {
 				return true;
 			}
 			return false;
@@ -112,16 +121,16 @@ namespace Table {
 			return value;
 		}
 
-		int getValueType() const {
-			return valueType;
+		unsigned getValueType() const {
+			return e.valueType;
 		}
 
 		int getDepth() const {
-			return depth;
+			return (int)e.depth;
 		}
 
-		const Search::NodeStat& getStat() const {
-			return stat;
+		const Search::NodeStat getStat() const {
+			return Search::NodeStat(e.stat);
 		}
 
 		const Search::HashMove getHashMove() const {
@@ -129,7 +138,7 @@ namespace Table {
 		}
 
 		unsigned getAge() const {
-			return age;
+			return e.age;
 		}
 	};
 
