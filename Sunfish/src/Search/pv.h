@@ -52,6 +52,12 @@ namespace Search {
 			return num;
 		}
 
+		int set(const Shogi::Move& move) {
+			moves[0] = move;
+			num = 1;
+			return num;
+		}
+
 		const Shogi::Move* getTop() const {
 			if (num > 0) {
 				return &moves[0];

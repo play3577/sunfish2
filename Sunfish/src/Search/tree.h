@@ -119,6 +119,10 @@ namespace Search {
 			return nodes[depth].setPv(move, child.nodes[depth+1]);
 		}
 
+		int setPv(const Shogi::Move& move) {
+			return nodes[depth].setPv(move);
+		}
+
 		const Pv& getPv() const {
 			return nodes[depth].getPv();
 		}
@@ -185,6 +189,10 @@ namespace Search {
 
 		const Shogi::Move* getCurrentMove() const {
 			return nodes[depth].getMove();
+		}
+
+		const Shogi::Move& getMove(int index) const {
+			return nodes[depth].getMove(index);
 		}
 
 		void setMove(const Shogi::Move& move) {

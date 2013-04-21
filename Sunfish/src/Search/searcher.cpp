@@ -804,14 +804,30 @@ lab_end:
 
 		// ノード初期化
 		tree.initNode();
+
+		unsigned depth = 0;
+		TimeManager tm(config.limitEnable, config.limitSeconds);
+
 		// 合法手生成
 		tree.generateMovesAtOnce();
-		// TODO: 指し手がない場合
-		// TODO: 確定手
+		// 指し手がない場合
+		if (tree.getNumberOfMoves() == 0) {
+#ifndef NDEBUG
+			Log::debug << __THIS__ << '\n';
+#endif
+			goto lab_search_end;
+		}
+		// 確定手
+		if (tree.getNumberOfMoves() == 1) {
+			tree.setPv(tree.getMove(0));
+			maxValue = 0;
+#ifndef NDEBUG
+			Log::debug << __THIS__ << '\n';
+#endif
+			goto lab_search_end;
+		}
 		// 反復進化探索
-		TimeManager tm(config.limitEnable, config.limitSeconds);
-		unsigned depth;
-		for (depth = 0; depth < config.depth; depth++) {
+		for (; depth < config.depth; depth++) {
 			Value minValue = Value::MIN;
 			// 基本深さ
 			rootDepth = depth + 1;

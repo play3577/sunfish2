@@ -120,6 +120,7 @@ namespace Network {
 								pmove = &result.move;
 								sendingMove.set(result);
 							}
+							Log::message << result.toString();
 						}
 						if (pmove != NULL && record.move(*pmove)) {
 							std::string recvStr;

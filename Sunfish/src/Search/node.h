@@ -82,6 +82,10 @@ namespace Search {
 			return pv.set(move, node.pv);
 		}
 
+		int setPv(const Shogi::Move& move) {
+			return pv.set(move);
+		}
+
 		const Pv& getPv() const {
 			return pv;
 		}
@@ -155,6 +159,10 @@ namespace Search {
 			eval.setBaseValue(baseValue);
 			eval.setPositionalValue(posValue);
 			pos.back(change);
+		}
+
+		const Shogi::Move& getMove(int index) const {
+			return pgen->get(index);
 		}
 
 		const Shogi::Move* getMove() const {
