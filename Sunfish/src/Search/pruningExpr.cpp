@@ -77,15 +77,21 @@ namespace Search {
 		}
 	}
 
-	void PruningExpr::success3(int dep, bool isStat, int stat) {
+	void PruningExpr::success3(int dep, bool isStat, int stat, bool isNull) {
 		if (isStat) {
 			ins.stat_suc[depth(dep)][value(stat)]++;
 		}
+		if (isNull) {
+			ins.null_suc[depth(dep)]++;
+		}
 	}
 
-	void PruningExpr::error3(int dep, bool isStat, int stat) {
+	void PruningExpr::error3(int dep, bool isStat, int stat, bool isNull) {
 		if (isStat) {
 			ins.stat_err[depth(dep)][value(stat)]++;
+		}
+		if (isNull) {
+			ins.null_err[depth(dep)]++;
 		}
 	}
 
@@ -112,12 +118,26 @@ namespace Search {
 		Log::expr << '\n';
 	}
 
+	void PruningExpr::print(const char* name,
+			Util::uint64 suc[], Util::uint64 err[]) {
+		Log::expr << name << '\n';
+		for (int dep = 0; dep <= MAX_DEP; dep++) {
+			Log::expr << dep << ',';
+			int s = suc[dep];
+			int e = err[dep];
+			double rate = s / (double)(s + e);
+			Log::expr << rate << '\n';
+		}
+		Log::expr << '\n';
+	}
+
 	void PruningExpr::print() {
 		print("fut", ins.fut_suc, ins.fut_err);
 		print("extFut", ins.ext_fut_suc, ins.ext_fut_err);
 		print("razor", ins.razor_suc, ins.razor_err);
 		print("stat", ins.stat_suc, ins.stat_err);
 		print("count", ins.count_suc, ins.count_err);
+		print("null", ins.null_suc, ins.null_err);
 	}
 }
 

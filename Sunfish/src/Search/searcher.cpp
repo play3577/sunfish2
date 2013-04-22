@@ -324,7 +324,7 @@ lab_end:
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-0035KA +2616OU -3517UM +1617OU -0016FU")) {
+		if (tree.is("-1537UM +2937KE")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -481,6 +481,7 @@ lab_end:
 		int razorMgn = beta - quies(tree, 0, beta-800, beta);
 		bool isStat = false;
 		int statMgn = standPat - beta;
+		bool isNull = false;
 #endif
 		if (!tree.isCheck()) {
 			if (!pvNode && beta == alpha + 1 && depth <= PLY1 * 3 &&
@@ -534,7 +535,8 @@ lab_end:
 					beta <= standPat && nullMove(tree, false)) {
 				int nullDepth = 
 						(depth >= PLY1*15/2 ? depth - PLY1*4 :
-						(depth >= PLY1*9/2 ? depth - PLY1*3 : depth - PLY1*2));
+						(depth >= PLY1*9/2 ? depth - PLY1*3 :
+						(depth >= PLY1*5/2 ? depth - PLY1*2 : depth - PLY1)));
 				Value newValue = -negaMax<false>(tree, nullDepth,
 						-beta, -beta+1, NodeStat().unsetNullMove());
 				unmakeMove(tree);
@@ -546,10 +548,14 @@ lab_end:
 						tt.entry(hash, alpha, beta, newValue,
 								depth, tree.getDepth(), stat, Move());
 					}
+#ifdef PRUN_EXPR
+					isNull = true;
+#else
 #if NODE_DEBUG
 					if (debugNode) { Log::debug << __LINE__ << " d=" << depth << " nd=" << nullDepth << ' '; }
 #endif // NODE_DEBUG
 					return beta;
+#endif
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
 					//const Move* pmove = tree.getInnerPv().getTop();
@@ -562,12 +568,11 @@ lab_end:
 		}
 
 		// recursive iterative-deepening
-		if (!hashOk && depth >= PLY1 * 3/* && pvNode*/) {
-			int newDepth = depth >= PLY1*9/2 ? depth - PLY1*3 : PLY1*3/2;
+		if (!hashOk && ((depth >= PLY1 * 3 && pvNode) || depth >= PLY1 * 4)) {
+			int newDepth = depth >= PLY1*9/2 ? depth - PLY1*6/2 : PLY1*3/2;
 			negaMax<pvNode>(tree, newDepth, alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
 			if (isInterrupted(tree)) { return Value(0); }
-			// TODO: 直接取得する。
 			TTEntity tte;
 			if (tt.get(hash, tte)) {
 				tree.setHashMove(tte.getHashMove());
@@ -753,8 +758,7 @@ lab_end:
 
 		// TT entry
 		// TODO: GHI対策
-		tt.entry(hash, alpha, beta, value, depth,
-				tree.getDepth(), stat, best);
+		tt.entry(hash, alpha, beta, value, depth, tree.getDepth(), stat, best);
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {
@@ -763,9 +767,9 @@ lab_end:
 			PruningExpr::error2(depth, isRazor, razorMgn);
 		}
 		if (value >= beta) {
-			PruningExpr::success3(depth, isStat, statMgn);
+			PruningExpr::success3(depth, isStat, statMgn, isNull);
 		} else {
-			PruningExpr::error3(depth, isStat, statMgn);
+			PruningExpr::error3(depth, isStat, statMgn, isNull);
 		}
 #endif
 
