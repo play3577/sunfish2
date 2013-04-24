@@ -207,6 +207,11 @@ namespace Cui {
 		printStatus(record);
 
 		while (true) {
+#ifdef PRUN_EXPR
+			if (record.getCurrent() >= 200) {
+				break;
+			}
+#endif
 			bool print = false;
 			Move move;
 

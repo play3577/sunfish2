@@ -16,9 +16,10 @@ namespace Evaluates {
 
 	class EvaluateTable : public BaseTable<EvEntity> {
 	public:
-		// TODO: サイズの指定を設定ファイルから読み込めるように
-		EvaluateTable(unsigned bits = 21) :
-				BaseTable<EvEntity>(bits) {
+		static const int BITS = 21;
+
+		EvaluateTable() :
+				BaseTable<EvEntity>(BITS) {
 		}
 
 		bool get(Util::uint64 hash, Value& value) const {

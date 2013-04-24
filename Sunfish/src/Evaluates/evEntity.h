@@ -13,8 +13,10 @@
 namespace Evaluates {
 	class EvEntity {
 	private:
-		Util::uint64 hash;
-		Value value;
+		static const int VALUE_INFL = 1U << (21 - 1); // TODO: magic number
+		static const Util::uint64 VALUE_MASK = (Util::uint64)((1U << 21) - 1U); // TODO: magic number
+		static const Util::uint64 HASH_MASK = ~VALUE_MASK;
+		Util::uint64 data;
 
 	public:
 		EvEntity() {
@@ -22,7 +24,7 @@ namespace Evaluates {
 		}
 
 		void init() {
-			hash = U64(0);
+			data = U64(0);
 		}
 
 		void init(unsigned) {
@@ -30,16 +32,17 @@ namespace Evaluates {
 		}
 
 		bool get(Util::uint64 hash, Value& value) const {
-			if (this->hash == hash) {
-				value = this->value;
+			Util::uint64 temp = data;
+			if ((temp & HASH_MASK) == (hash & HASH_MASK)) {
+				value = (int)(temp & VALUE_MASK) - VALUE_INFL;
 				return true;
 			}
 			return false;
 		}
 
 		void set(Util::uint64 hash, const Value& value) {
-			this->hash = hash;
-			this->value = value;
+			Util::uint64 temp = (hash & HASH_MASK) | ((value + VALUE_INFL) & VALUE_MASK);
+			data = temp;
 		}
 	};
 }

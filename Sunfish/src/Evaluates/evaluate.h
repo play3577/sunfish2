@@ -18,7 +18,6 @@ namespace Evaluates {
 		Value baseValue;
 		EvaluateTable table;
 
-		// TODO: 差分計算実装中
 		Value posValue;
 
 	public:

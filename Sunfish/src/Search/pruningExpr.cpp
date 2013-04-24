@@ -9,6 +9,7 @@
 #include "../Log/logger.h"
 #include <cstring>
 #include <sstream>
+#include <cmath>
 
 #ifdef PRUN_EXPR
 
@@ -39,94 +40,135 @@ namespace Search {
 				(val < MAX_VAL ? val : MAX_VAL);
 	}
 
-	void PruningExpr::success1(int dep, bool isFut, int fut,
+	int PruningExpr::record(int rec) {
+		return rec <= MAX_REC ? rec : MAX_REC;
+	}
+
+	void PruningExpr::summarize(Util::uint64 suc[], Util::uint64 err[], int size,
+			double& average, double& deviation, double& max, double& min) {
+		average = 0.0;
+		deviation = 0.0;
+		max = 0.0;
+		min = 1.0;
+		int count = 0;
+		for (int i = 0; i < size; i++) {
+			Util::uint64 all = suc[i] + err[i];
+			if (all >= 10000) {
+				double rate = (double)suc[i] / all;
+				if (rate > max) {
+					max = rate;
+				}
+				if (rate < min) {
+					min = rate;
+				}
+				average += rate;
+				deviation += rate * rate;
+				count++;
+			}
+		}
+		if (count >= 2) {
+			average /= count;
+			deviation /= count;
+			deviation = sqrt(deviation - average * average) * count / (count-1);
+		}
+	}
+
+	void PruningExpr::success1(int dep, int rec, bool isFut, int fut,
 			bool isExtFut, int extFut, bool isCount, int count) {
 		if (isFut) {
-			ins.fut_suc[depth(dep)][value(fut)]++;
+			ins.fut_suc[depth(dep)][value(fut)][record(rec)]++;
 		}
 		if (isExtFut) {
-			ins.ext_fut_suc[depth(dep)][value(extFut)]++;
+			ins.ext_fut_suc[depth(dep)][value(extFut)][record(rec)]++;
 		}
 		if (isCount) {
-			ins.count_suc[depth(dep)][value(count)]++;
+			ins.count_suc[depth(dep)][value(count)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::error1(int dep, bool isFut, int fut,
+	void PruningExpr::error1(int dep, int rec, bool isFut, int fut,
 			bool isExtFut, int extFut, bool isCount, int count) {
 		if (isFut) {
-			ins.fut_err[depth(dep)][value(fut)]++;
+			ins.fut_err[depth(dep)][value(fut)][record(rec)]++;
 		}
 		if (isExtFut) {
-			ins.ext_fut_err[depth(dep)][value(extFut)]++;
+			ins.ext_fut_err[depth(dep)][value(extFut)][record(rec)]++;
 		}
 		if (isCount) {
-			ins.count_err[depth(dep)][value(count)]++;
+			ins.count_err[depth(dep)][value(count)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::success2(int dep, bool isRazor, int razor) {
+	void PruningExpr::success2(int dep, int rec, bool isRazor, int razor) {
 		if (isRazor) {
-			ins.razor_suc[depth(dep)][value(razor)]++;
+			ins.razor_suc[depth(dep)][value(razor)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::error2(int dep, bool isRazor, int razor) {
+	void PruningExpr::error2(int dep, int rec, bool isRazor, int razor) {
 		if (isRazor) {
-			ins.razor_err[depth(dep)][value(razor)]++;
+			ins.razor_err[depth(dep)][value(razor)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::success3(int dep, bool isStat, int stat, bool isNull) {
+	void PruningExpr::success3(int dep, int rec, bool isStat, int stat, bool isNull) {
 		if (isStat) {
-			ins.stat_suc[depth(dep)][value(stat)]++;
+			ins.stat_suc[depth(dep)][value(stat)][record(rec)]++;
 		}
 		if (isNull) {
-			ins.null_suc[depth(dep)]++;
+			ins.null_suc[depth(dep)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::error3(int dep, bool isStat, int stat, bool isNull) {
+	void PruningExpr::error3(int dep, int rec, bool isStat, int stat, bool isNull) {
 		if (isStat) {
-			ins.stat_err[depth(dep)][value(stat)]++;
+			ins.stat_err[depth(dep)][value(stat)][record(rec)]++;
 		}
 		if (isNull) {
-			ins.null_err[depth(dep)]++;
+			ins.null_err[depth(dep)][record(rec)]++;
 		}
 	}
 
 	void PruningExpr::print(const char* name,
-			Util::uint64 suc[][MAX_VAL-MIN_VAL+1],
-			Util::uint64 err[][MAX_VAL-MIN_VAL+1]
+			Util::uint64 suc[][MAX_VAL-MIN_VAL+1][MAX_REC+1],
+			Util::uint64 err[][MAX_VAL-MIN_VAL+1][MAX_REC+1]
 			) {
 		Log::expr << name << '\n';
-		Log::expr << ',';
 		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
-			Log::expr << (val*10) << ',';
+			Log::expr << ',' << (val*10) << ',';
+		}
+		Log::expr << '\n';
+		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
+			Log::expr << ",ave,dev";
+		}
+		Log::expr << '\n';
+		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
+			Log::expr << ",min,max";
 		}
 		Log::expr << '\n';
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
-			Log::expr << dep << ',';
+			double average, deviation, max, min;
+			std::ostringstream line1, line2;
 			for (int val = MIN_VAL; val <= MAX_VAL; val++) {
-				int s = suc[dep][val-MIN_VAL];
-				int e = err[dep][val-MIN_VAL];
-				double rate = s / (double)(s + e);
-				Log::expr << rate << ',';
+				summarize(suc[dep][val], err[dep][val], MAX_REC+1, average, deviation, max, min);
+				line1 << ',' << average << ',' << deviation;
+				line2 << ',' << min << ',' << max;
 			}
-			Log::expr << '\n';
+			Log::expr << dep;
+			Log::expr << line1.str() << '\n';
+			Log::expr << line2.str() << '\n';
 		}
 		Log::expr << '\n';
 	}
 
 	void PruningExpr::print(const char* name,
-			Util::uint64 suc[], Util::uint64 err[]) {
-		Log::expr << name << '\n';
+			Util::uint64 suc[][MAX_REC+1],
+			Util::uint64 err[][MAX_REC+1]) {
+		Log::expr << name << ",ave,dev,min,max\n";
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
-			Log::expr << dep << ',';
-			int s = suc[dep];
-			int e = err[dep];
-			double rate = s / (double)(s + e);
-			Log::expr << rate << '\n';
+			double average, deviation, max, min;
+			summarize(suc[dep], err[dep], MAX_REC+1, average, deviation, max, min);
+			Log::expr << dep << ',' << average << ',' << deviation << ',' << max << ',' << min << '\n';
 		}
 		Log::expr << '\n';
 	}

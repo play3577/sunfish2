@@ -178,10 +178,10 @@ namespace Evaluates {
 	template<class T, int vmax>
 	const T TempValue<T, vmax>::MATE = (T)vmax / 2;
 
-	typedef TempValue<int, INT_MAX> Value;
-	typedef TempValue<short, SHRT_MAX> ValueS;
-	typedef TempValue<float, INT_MAX> ValueF;
-	typedef TempValue<double, INT_MAX> ValueD;
+	typedef TempValue<int, 30000> Value;
+	typedef TempValue<short, 30000> ValueS;
+	typedef TempValue<float, 30000> ValueF;
+	typedef TempValue<double, 30000*32> ValueD; // TODO: magic number
 
 }
 

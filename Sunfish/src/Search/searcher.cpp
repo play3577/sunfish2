@@ -18,6 +18,10 @@
 
 #define RAZOR_MGN(d)				(520 + 60 / PLY1 * (d))
 
+#ifdef PRUN_EXPR
+static int rec; // thread unsafe
+#endif
+
 namespace Search {
 	using namespace Shogi;
 	using namespace Evaluates;
@@ -101,6 +105,10 @@ namespace Search {
 		}
 		// 時間計測開始
 		timer.set();
+#ifdef PRUN_EXPR
+		assert(hashStack.stack != NULL);
+		rec = hashStack.size;
+#endif
 	}
 
 	bool Searcher::after(SearchResult& result, Evaluates::Value value) {
@@ -705,10 +713,10 @@ lab_end:
 
 #ifdef PRUN_EXPR
 			if (newValue <= value) {
-				PruningExpr::success1(depth, node.isFut(), futMgn,
+				PruningExpr::success1(depth, rec, node.isFut(), futMgn,
 						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			} else {
-				PruningExpr::error1(depth, node.isFut(), futMgn,
+				PruningExpr::error1(depth, rec, node.isFut(), futMgn,
 						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			}
 #endif
@@ -762,14 +770,14 @@ lab_end:
 
 #ifdef PRUN_EXPR
 		if (value <= alpha) {
-			PruningExpr::success2(depth, isRazor, razorMgn);
+			PruningExpr::success2(depth, rec, isRazor, razorMgn);
 		} else {
-			PruningExpr::error2(depth, isRazor, razorMgn);
+			PruningExpr::error2(depth, rec, isRazor, razorMgn);
 		}
 		if (value >= beta) {
-			PruningExpr::success3(depth, isStat, statMgn, isNull);
+			PruningExpr::success3(depth, rec, isStat, statMgn, isNull);
 		} else {
-			PruningExpr::error3(depth, isStat, statMgn, isNull);
+			PruningExpr::error3(depth, rec, isStat, statMgn, isNull);
 		}
 #endif
 
@@ -834,18 +842,12 @@ lab_end:
 		tree.generateMovesAtOnce();
 		// 指し手がない場合
 		if (tree.getNumberOfMoves() == 0) {
-#ifndef NDEBUG
-			Log::debug << __THIS__ << '\n';
-#endif
 			goto lab_search_end;
 		}
 		// 確定手
 		if (tree.getNumberOfMoves() == 1) {
 			tree.setPv(tree.getMove(0));
 			maxValue = 0;
-#ifndef NDEBUG
-			Log::debug << __THIS__ << '\n';
-#endif
 			goto lab_search_end;
 		}
 		// 反復進化探索
@@ -939,9 +941,11 @@ revaluation:
 				}
 				// fail-high
 				if (vtemp < Value::MATE && vtemp >= aspBeta && aspBeta.next()) {
+					while (vtemp >= aspBeta && aspBeta.next())
+						;
 					// ウィンドウを広げたら再探索 (aspiration search)
 					// 最善手の評価値とalpha値を更新
-					maxValue = alpha = vtemp - 1;
+					alpha = vtemp - 1; // TODO: 再探索で失敗した場合
 					// PVを更新
 					tree.updatePv();
 					doNullWind = false;
@@ -980,7 +984,9 @@ revaluation:
 			}
 
 			// fail-low
-			if (alpha == aspAlpha && aspAlpha.next()) {
+			if (maxValue > -Value::MATE && maxValue <= aspAlpha && aspAlpha.next()) {
+				while (maxValue <= aspAlpha && aspAlpha.next())
+					;
 				// ウィンドウを広げたら再探索 (aspiration search)
 				alpha = (int)aspAlpha;
 				if (config.pvHandler != NULL) {

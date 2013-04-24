@@ -84,6 +84,9 @@ int main(int argc, char* argv[]) {
 			("parallel,p", value<int>(), "number of worker threads")
 			("file,f", value<std::string>(), "CSA file name to read")
 			("auto-quit,q", "automatical quit when a computer resign.")
+#ifdef PRUN_EXPR
+			("repeat,r", value<int>(), "(contains -b -w -q)")
+#endif
 			;
 	variables_map argmap;
 	try {
@@ -160,10 +163,22 @@ int main(int argc, char* argv[]) {
 	if (argmap.count("auto-quit")) {
 		controller.setAutoQuit(true);
 	}
+#ifdef PRUN_EXPR
+int repeat = 1;
+if (argmap.count("repeat")) {
+	controller.setAutoBlack(true);
+	controller.setAutoWhite(true);
+	controller.setAutoQuit(true);
+	repeat = argmap["repeat"].as<int>();
+}
+for (int i = 0; i < repeat; i++) {
+#endif
+
 	controller.play();
 
 #ifdef PRUN_EXPR
 	Search::PruningExpr::print();
+}
 #endif
 
 	return 0;

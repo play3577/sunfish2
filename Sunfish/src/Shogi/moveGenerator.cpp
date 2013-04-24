@@ -518,11 +518,11 @@ namespace Shogi {
 			}
 		} else {
 			if (pos.isBlackTurn()) {
-				generateCheckOnBoard<true>();
 				generateCheckDrop<true>();
+				generateCheckOnBoard<true>();
 			} else {
-				generateCheckOnBoard<false>();
 				generateCheckDrop<false>();
+				generateCheckOnBoard<false>();
 			}
 		}
 		return num;
