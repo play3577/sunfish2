@@ -53,7 +53,7 @@ namespace Search {
 		int count = 0;
 		for (int i = 0; i < size; i++) {
 			Util::uint64 all = suc[i] + err[i];
-			if (all >= 10000) {
+			if (all >= 1000) {
 				double rate = (double)suc[i] / all;
 				if (rate > max) {
 					max = rate;
@@ -70,6 +70,8 @@ namespace Search {
 			average /= count;
 			deviation /= count;
 			deviation = sqrt(deviation - average * average) * count / (count-1);
+		} else if (count == 1) {
+			deviation = 0.0;
 		}
 	}
 
@@ -168,7 +170,7 @@ namespace Search {
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
 			double average, deviation, max, min;
 			summarize(suc[dep], err[dep], MAX_REC+1, average, deviation, max, min);
-			Log::expr << dep << ',' << average << ',' << deviation << ',' << max << ',' << min << '\n';
+			Log::expr << dep << ',' << average << ',' << deviation << ',' << min << ',' << max << '\n';
 		}
 		Log::expr << '\n';
 	}
