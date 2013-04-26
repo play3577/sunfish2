@@ -257,11 +257,16 @@ lab_end:
 		tree.initNode();
 
 		// stand-pat
-		const Value standPat = tree.negaEvaluate();
+		Value standPat;
+		if (!tree.isCheck()) {
+			standPat = tree.negaEvaluate();
 
-		// 静的評価値がbeta値を越えた場合
-		if (standPat >= beta) {
-			return standPat;
+			// 静的評価値がbeta値を越えた場合
+			if (standPat >= beta) {
+				return standPat;
+			}
+		} else {
+			standPat = Value::MIN + tree.getDepth();
 		}
 
 #if 1
