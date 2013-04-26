@@ -188,10 +188,10 @@ namespace Search {
 		void addHistory(History& history, int depth, int index) const {
 			assert((unsigned)index-1 <= pgen->getCurrent());
 			assert((unsigned)index-1 < pgen->getNumber());
-			history.addGood(pgen->get(index-1), depth);
-			for (int i = 0; i < index; i++) {
-				history.addAppear(pgen->get(i), depth);
+			for (int i = 0; i < index-1; i++) {
+				history.add(pgen->get(i), depth, 0);
 			}
+			history.add(pgen->get(index-1), depth, depth);
 		}
 
 		void sort(Evaluates::Value values[]) {
