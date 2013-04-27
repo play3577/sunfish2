@@ -256,19 +256,6 @@ lab_end:
 
 		tree.initNode();
 
-		// stand-pat
-		Value standPat;
-		if (!tree.isCheck()) {
-			standPat = tree.negaEvaluate();
-
-			// 静的評価値がbeta値を越えた場合
-			if (standPat >= beta) {
-				return standPat;
-			}
-		} else {
-			standPat = Value::MIN + tree.getDepth();
-		}
-
 #if 1
 		// mate
 		if (!tree.isCheck()) {
@@ -278,16 +265,31 @@ lab_end:
 		}
 #endif
 
-		alpha = Value::max(alpha, standPat);
+		// stand-pat
+		Value standPat;
+		if (!tree.isCheck()) {
+			standPat = tree.negaEvaluate();
 
-		// 合法手の列挙
-		if (ply < 7) {
-			// 取る手と成る手を生成
-			tree.generateTacticalMoves();
+			// 静的評価値がbeta値を越えた場合
+			if (standPat >= beta) {
+				return standPat;
+			}
+
+			if (ply < 7) {
+				// 取る手と成る手を生成
+				tree.generateTacticalMoves();
+			} else {
+				// 取る手のみを生成
+				tree.generateCaptures();
+			}
 		} else {
-			// 取る手のみを生成
-			tree.generateCaptures();
+			// 王手の場合
+			standPat = Value::MIN + tree.getDepth();
+			// 全ての王手回避を生成
+			tree.generateMoves();
 		}
+
+		alpha = Value::max(alpha, standPat);
 
 		while (tree.next()) {
 			Value estimate = tree.negaEstimate();
