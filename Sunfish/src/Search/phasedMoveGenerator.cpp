@@ -135,30 +135,30 @@ namespace Search {
 						add(hashMove.getHash2());
 						hashNum++;
 					}
-					phase = PHASE_CAPTURE;
-				} else {
-					generate();
-					sortSee<false>(prevNum, getNumber()-prevNum);
-					phase = PHASE_END;
 				}
+				phase = PHASE_CAPTURE;
 				break;
 			case PHASE_CAPTURE:
 				generateCapture();
-				removeKillerMove(prevNum, getNumber()-prevNum);
-				if (getPosition().isLegalMove(killer.get1(), true)) {
-					add(killer.get1());
+				if (!getPosition().isCheck()) {
+					removeKillerMove(prevNum, getNumber()-prevNum);
+					if (getPosition().isLegalMove(killer.get1(), true)) {
+						add(killer.get1());
+					}
+					if (getPosition().isLegalMove(killer.get2(), true)) {
+						add(killer.get2());
+					}
+					removeHashMove(prevNum, getNumber()-prevNum);
 				}
-				if (getPosition().isLegalMove(killer.get2(), true)) {
-					add(killer.get2());
-				}
-				removeHashMove(prevNum, getNumber()-prevNum);
 				sortSee<false>(prevNum, getNumber()-prevNum);
 				phase = PHASE_NOCAPTURE;
 				break;
 			case PHASE_NOCAPTURE:
 				generateNocapture();
-				removeKillerMove(prevNum, getNumber()-prevNum);
-				removeHashMove(prevNum, getNumber()-prevNum);
+				if (!getPosition().isCheck()) {
+					removeKillerMove(prevNum, getNumber()-prevNum);
+					removeHashMove(prevNum, getNumber()-prevNum);
+				}
 				sortHistory(prevNum, getNumber()-prevNum);
 				phase = PHASE_END;
 				break;

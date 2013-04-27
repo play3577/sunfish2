@@ -13,8 +13,9 @@
 #include <sstream>
 
 #define ROOT_NODE_DEBUG				0
-#define NODE_DEBUG					0
+#define NODE_DEBUG					1
 #define VARIATION_DEBUG				0
+#define VARIATION					"+0063KE -6263KI +0072HI -7172OU"
 
 #define RAZOR_MGN(d)				(520 + 60 / PLY1 * (d))
 
@@ -250,8 +251,10 @@ lab_end:
 
 		counter.nodes++;
 
-#if VARIATION_DEBUG
-		tree.debugPrint();
+#if 0 && VARIATION_DEBUG
+		if (tree.startWith(VARIATION)) {
+			tree.debugPrint();
+		}
 #endif
 
 		tree.initNode();
@@ -339,7 +342,7 @@ lab_end:
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("-1537UM +2937KE")) {
+		if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -351,7 +354,9 @@ lab_end:
 #endif
 
 #if VARIATION_DEBUG
-		tree.debugPrint();
+		if (tree.startWith(VARIATION)) {
+			tree.debugPrint();
+		}
 #endif
 
 		tree.initNode();

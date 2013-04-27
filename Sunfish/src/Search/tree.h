@@ -396,6 +396,27 @@ namespace Search {
 			return true;
 		}
 
+		bool startWith(const char* route) const {
+			std::vector<std::string> tokens;
+			boost::algorithm::split(tokens, route, boost::is_any_of(" "));
+			if (tokens.size() > (unsigned)depth) {
+				return false;
+			}
+			for (unsigned i = 0; i < tokens.size(); i++) {
+				if (nodes[i].isNullMove()) {
+					if (tokens[i] != "null") {
+						return false;
+					}
+				} else {
+					const Shogi::Move* pmove = nodes[i].getMove();
+					if (pmove == NULL || tokens[i] != pmove->toStringCsa()){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
 		Killer& getKiller() {
 			return nodes[depth].getKiller();
 		}
