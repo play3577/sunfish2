@@ -5,7 +5,7 @@
 
 # TODO: 相対パス除去
 
-KIFDIR=Kifu
+KIFUDIR=Kifu
 LOGFILE=network.log
 
 if [ ! -d ${KIFUDIR} ]; then
