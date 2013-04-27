@@ -13,7 +13,7 @@
 #include <sstream>
 
 #define ROOT_NODE_DEBUG				0
-#define NODE_DEBUG					1
+#define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 #define VARIATION					"+0063KE -6263KI +0072HI -7172OU"
 
