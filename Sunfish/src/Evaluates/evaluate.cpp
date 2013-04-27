@@ -19,7 +19,7 @@ namespace Evaluates {
 		for (Piece piece = Piece::PAWN; piece <= Piece::ROOK; piece.toNext()) {
 			int bnum = pos.getBlackHand(piece);
 			baseValue += param.getPiece(piece) * bnum;
-			int wnum = pos.getBlackHand(piece);
+			int wnum = pos.getWhiteHand(piece);
 			baseValue -= param.getPiece(piece) * wnum;
 		}
 

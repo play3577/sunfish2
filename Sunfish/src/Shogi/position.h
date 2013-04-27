@@ -425,6 +425,11 @@ namespace Shogi {
 			moveUnsafe<true, false>(move, &change, NULL);
 		}
 
+		void moveUnsafe(const Move& move,
+				Evaluates::Evaluate& eval) {
+			moveUnsafe<false, true>(move, NULL, &eval);
+		}
+
 		void moveUnsafe(const Move& move, Change& change,
 				Evaluates::Evaluate& eval) {
 			moveUnsafe<true, true>(move, &change, &eval);

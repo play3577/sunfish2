@@ -10,18 +10,13 @@
 #include <boost/random.hpp>
 #include <boost/thread.hpp>
 #include <ctime>
+#include "shogiTest.h"
 #include "../Csa/csaReader.h"
 #include "../Shogi/moveGenerator.h"
-#include "../Evaluates/initializer.h"
-#include "../Evaluates/evaluate.h"
-#include "../Search/attackers.h"
 #include "../Tools/debug.h"
-#include "shogiTest.h"
 
 namespace Tests {
 	using namespace Shogi;
-	using namespace Evaluates;
-	using namespace Search;
 	using namespace Tools;
 
 	Test::TestResult ShogiTest::generatorRandomTest(const char* filename) {
@@ -29,10 +24,8 @@ namespace Tests {
 		if (filename) {
 			Csa::CsaReader::read(filename, pos);
 		}
-		//std::cout << pos.toStringCsa();
 		boost::mt19937 rgen(static_cast<unsigned>(time(NULL)));
 		for (int i = 0; i < 10000; i++) {
-			//std::cout << '[' << i << ']' << '\n';
 			MoveGenerator gen(pos);
 			gen.generate();
 			MoveGenerator gen2(pos);
@@ -65,11 +58,6 @@ namespace Tests {
 			boost::variate_generator<boost::mt19937&, boost::uniform_smallint<> > r(rgen, dst);
 			const Move& move = gen.get(r());
 			pos.moveUnsafe(move);
-			//std::cout << move.toString() << '\n';
-			//std::cout << pos.toStringCsa();
-			//std::cout << pos.toStringEffect(true);
-			//std::cout << Util::Int::toString64(pos.getHash()) << '\n';
-			//std::cout.flush();
 
 			if (!Debug::positionOk(pos)) {
 				Log::test << pos.toStringCsa();

@@ -20,6 +20,7 @@
 
 #ifndef NDEBUG
 #include "Test/shogiTest.h"
+#include "Test/evalTest.h"
 #endif
 
 using boost::program_options::options_description;
@@ -202,7 +203,7 @@ bool test() {
 #endif
 	}
 	// テストの実行
-	return ShogiTest().test();
+	return ShogiTest().test() && EvalTest().test();
 }
 #endif //NDEBUG
 

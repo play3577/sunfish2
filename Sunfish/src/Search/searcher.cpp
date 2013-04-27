@@ -249,6 +249,13 @@ lab_end:
 		Worker& worker = workers[tree.split.worker];
 		SearchCounter& counter = worker.getCounter();
 
+#if NODE_DEBUG
+		bool debugNode = false;
+		if (tree.is("")) {
+			debugNode = true;
+		}
+#endif // NODE_DEBUG
+
 		counter.nodes++;
 
 #if 0 && VARIATION_DEBUG
@@ -263,6 +270,9 @@ lab_end:
 		// mate
 		if (!tree.isCheck()) {
 			if (isMate1Ply(tree)) {
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 				return Value::MAX - (tree.getDepth()+1);
 			}
 		}
@@ -272,9 +282,15 @@ lab_end:
 		Value standPat;
 		if (!tree.isCheck()) {
 			standPat = tree.negaEvaluate();
+#if NODE_DEBUG
+			if (debugNode) { Log::debug << __LINE__ << '(' << standPat << ") "; }
+#endif // NODE_DEBUG
 
 			// 静的評価値がbeta値を越えた場合
 			if (standPat >= beta) {
+#if NODE_DEBUG
+				if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 				return standPat;
 			}
 
@@ -286,6 +302,9 @@ lab_end:
 				tree.generateCaptures();
 			}
 		} else {
+#if NODE_DEBUG
+			if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 			// 王手の場合
 			standPat = Value::MIN + tree.getDepth();
 			// 全ての王手回避を生成
@@ -324,6 +343,9 @@ lab_end:
 			}
 		}
 
+#if NODE_DEBUG
+		if (debugNode) { Log::debug << __LINE__ << ' '; }
+#endif // NODE_DEBUG
 		return alpha;
 	}
 
@@ -342,7 +364,8 @@ lab_end:
 #if NODE_DEBUG
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
-		if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
+		//if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
+		if (tree.is("+5655FU")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -416,10 +439,16 @@ lab_end:
 		// leaf node
 		if (depth < PLY1) {
 #if NODE_DEBUG
-			if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
+			Value ret = quies(tree, 0, alpha, beta);
+			if (debugNode) {
+				Log::debug << __LINE__ << '(' << ret << ')';
+				Log::warning << tree.getPv().toString();
+			}
+			return ret;
+#else
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
+#endif // NODE_DEBUG
 		}
 
 		counter.nodes++;
@@ -492,6 +521,9 @@ lab_end:
 
 		// stand-pat
 		Value standPat = tree.negaEvaluate();
+#if NODE_DEBUG
+		if (debugNode) { Log::debug << "sp=" << standPat << ' '; }
+#endif // NODE_DEBUG
 
 		// 詰めろ
 		bool mate = false;

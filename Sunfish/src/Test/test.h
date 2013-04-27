@@ -10,6 +10,7 @@
 
 #include <sstream>
 #include <string>
+#include "../Log/logger.h"
 
 #define TEST_RESULT(ok)			TestResult(__FILE__, __LINE__, (ok))
 
@@ -65,7 +66,7 @@ namespace Tests {
 			execute();
 			Log::test << "success:" << success << ' ';
 			Log::test << "fail:" << fail << '\n';
-			if (success == 0) {
+			if (success + fail == 0) {
 				Log::test << "no tests are executed!\n";
 			} else if (fail == 0) {
 				Log::test << "all tests succeeded.\n";
