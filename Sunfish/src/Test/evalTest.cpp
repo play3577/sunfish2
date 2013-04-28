@@ -1,7 +1,7 @@
 /*
- * shogiTest.cpp
+ * evalTest.cpp
  *
- *  Created on: 2013/02/02
+ *  Created on: 2013/04/27
  *      Author: ryosuke
  */
 

@@ -21,6 +21,7 @@
 #ifndef NDEBUG
 #include "Test/shogiTest.h"
 #include "Test/evalTest.h"
+#include "Test/timeTest.h"
 #endif
 
 using boost::program_options::options_description;
@@ -31,6 +32,7 @@ using boost::program_options::parse_command_line;
 
 #ifndef NDEBUG
 bool test();
+bool timeTest();
 #endif //NDEBUG
 bool learn();
 bool analyze();
@@ -67,13 +69,6 @@ int main(int argc, char* argv[]) {
 	options_description opt("Option");
 	opt.add_options()
 			("help,h", "show help")
-#ifndef NDEBUG
-			("test", "unit test")
-#endif //NDEBUG
-#ifndef NLEARN
-			("learn", "learning")
-			("analyze", "analyzing for 'evdata'")
-#endif //NLEARN
 			("book", value<std::string>(), "import records into opening-book.")
 			("book-one", value<std::string>(), "import one record into opening-book.")
 			("book-limit", value<int>(), "limit of opening-book.(default:60)")
@@ -88,6 +83,14 @@ int main(int argc, char* argv[]) {
 #ifdef PRUN_EXPR
 			("repeat,r", value<int>(), "(contains -b -w -q)")
 #endif
+#ifndef NDEBUG
+			("test", "unit test")
+			("test-time", "test for Util::Timer")
+#endif //NDEBUG
+#ifndef NLEARN
+			("learn", "learning")
+			("analyze", "analyzing for 'evdata'")
+#endif //NLEARN
 			;
 	variables_map argmap;
 	try {
@@ -106,6 +109,9 @@ int main(int argc, char* argv[]) {
 	} else if (argmap.count("test")) {
 		// ** ユニットテスト
 		return test() ? 0 : 1;
+	} else if (argmap.count("test-time")) {
+		// ** 時間計測機能のテスト
+		return timeTest() ? 0 : 1;
 #endif //NDEBUG
 #ifndef NLEARN
 	} else if (argmap.count("learn")) {
@@ -136,11 +142,6 @@ int main(int argc, char* argv[]) {
 		return network() ? 0 : 1;
 	}
 
-#ifdef PRUN_EXPR
-	std::ofstream exprOut("expr.csv", std::ios::out | std::ios::app);
-	Log::expr.addStream(exprOut);
-#endif // PRUN_EXPR
-
 	// ** CLI の起動
 	Cui::Controller controller;
 	if (argmap.count("auto-black")) {
@@ -165,6 +166,8 @@ int main(int argc, char* argv[]) {
 		controller.setAutoQuit(true);
 	}
 #ifdef PRUN_EXPR
+std::ofstream exprOut("expr.csv", std::ios::out | std::ios::app);
+Log::expr.addStream(exprOut);
 int repeat = 1;
 if (argmap.count("repeat")) {
 	controller.setAutoBlack(true);
@@ -180,6 +183,7 @@ for (int i = 0; i < repeat; i++) {
 #ifdef PRUN_EXPR
 	Search::PruningExpr::print();
 }
+exprOut.close();
 #endif
 
 	return 0;
@@ -203,7 +207,16 @@ bool test() {
 #endif
 	}
 	// テストの実行
-	return ShogiTest().test() && EvalTest().test();
+	bool result = true;
+	result &= ShogiTest().test();
+	result &= EvalTest().test();
+	fout.close();
+	return result;
+}
+
+bool timeTest() {
+	using namespace Tests;
+	return TimeTest().test();
 }
 #endif //NDEBUG
 
@@ -221,6 +234,7 @@ bool learn() {
 	// 機械学習の実行
 	Learn learn;
 	learn.execute();
+	fout.close();
 	return true;
 }
 #endif

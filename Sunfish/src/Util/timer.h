@@ -47,7 +47,7 @@ namespace Util {
 			clock_gettime(CLOCK_MONOTONIC, &time_n);
 #	endif
 			return (time_n.tv_sec - time_b.tv_sec)
-				+ (time_n.tv_nsec - time_b.tv_nsec + 1) * 1.0e-9;
+				+ (time_n.tv_nsec - time_b.tv_nsec) * 1.0e-9;
 #endif
 		}
 	};
