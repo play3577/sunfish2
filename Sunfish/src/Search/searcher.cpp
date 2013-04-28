@@ -286,7 +286,7 @@ lab_end:
 
 		// stand-pat
 		Value standPat;
-		if (!tree.isCheck() || ply < 7) {
+		if (!tree.isCheck() || ply >= 2) {
 			standPat = tree.negaEvaluate();
 #if NODE_DEBUG
 			if (debugNode) { Log::debug << __LINE__ << '(' << standPat << ") "; }
