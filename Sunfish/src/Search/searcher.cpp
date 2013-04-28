@@ -88,7 +88,8 @@ namespace Search {
 		memset(&result, 0, sizeof(SearchResult));
 		memset(&gain, 0, sizeof(gain));
 		history.clear();
-		tt.init();
+		// 置換テーブルの世代更新
+		tt.evolve();
 		// 並列探索用
 		idleTree = treeSize - 1;
 		idleWorker = workerSize - 1;
@@ -117,8 +118,6 @@ namespace Search {
 		for (int i = 1; i < workerSize; i++) {
 			workers[i].stop();
 		}
-		// 置換テーブルの世代更新
-		tt.evolve();
 		// SHEKテーブルのアンセット
 		if (hashStack.stack != NULL) {
 			for (int i = 0; i < treeSize; i++) {
@@ -374,7 +373,7 @@ lab_end:
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
 		//if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
-		if (tree.is("-0063HI") && rootDepth == 4) {
+		if (tree.is("+0063KE")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
