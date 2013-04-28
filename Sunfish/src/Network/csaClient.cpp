@@ -115,7 +115,9 @@ namespace Network {
 							buildSearchConfig(searchConfig, searchConfigBase);
 							searcher.setSearchConfig(searchConfig);
 							searcher.init(record);
+							Log::message << "begin search: limit(sec)=" << searchConfig.limitSeconds << '\n';
 							searcher.idSearch(result);
+							Log::message << "end search" << '\n';
 							if (!result.resign) {
 								pmove = &result.move;
 								sendingMove.set(result);
@@ -204,7 +206,8 @@ lab_end:
 		if (searchConfigBase.limitEnable) {
 			int usableTime = gameSummary.black
 					? blackTime.usable() : whiteTime.usable();
-			usableTime = usableTime / 20 + 1;
+			usableTime = usableTime / 20;
+			if (usableTime <= 0) { usableTime = 1; }
 			searchConfig.limitSeconds =
 					searchConfigBase.limitSeconds <= usableTime
 					? searchConfigBase.limitSeconds : usableTime;

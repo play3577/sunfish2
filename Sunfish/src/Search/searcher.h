@@ -136,7 +136,7 @@ namespace Search {
 			} else if (tree.split.parent != Tree::SPLIT::TREE_NULL
 					&& tree.split.shutdown) {
 				return true;
-			} else if (trees[0].getPv().getTop() != NULL) {
+			} else if (trees[0].getRootPv().getTop() != NULL) {
 				if (signalInterrupt) {
 					return true;
 				} else if (config.limitEnable &&

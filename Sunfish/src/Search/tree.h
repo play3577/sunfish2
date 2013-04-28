@@ -123,12 +123,20 @@ namespace Search {
 			return nodes[depth].setPv(move);
 		}
 
+		const Pv& getRootPv() const {
+			return getPv(0);
+		}
+
 		const Pv& getPv() const {
-			return nodes[depth].getPv();
+			return getPv(depth);
 		}
 
 		const Pv& getInnerPv() const {
-			return nodes[depth+1].getPv();
+			return getPv(depth+1);
+		}
+
+		const Pv& getPv(int depth) const {
+			return nodes[depth].getPv();
 		}
 
 		void generateMovesAtOnce() {

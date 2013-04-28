@@ -251,7 +251,8 @@ lab_end:
 
 #if NODE_DEBUG
 		bool debugNode = false;
-		if (tree.is("")) {
+		if (tree.is("-0063HI") && rootDepth == 4) {
+			Log::debug << __LINE__ << ' ';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
@@ -265,6 +266,11 @@ lab_end:
 #endif
 
 		tree.initNode();
+
+		// stack is full
+		if (tree.isMaxDepth()) {
+			return tree.negaEvaluate();
+		}
 
 #if 1
 		// mate
@@ -280,7 +286,7 @@ lab_end:
 
 		// stand-pat
 		Value standPat;
-		if (!tree.isCheck()) {
+		if (!tree.isCheck() || ply < 7) {
 			standPat = tree.negaEvaluate();
 #if NODE_DEBUG
 			if (debugNode) { Log::debug << __LINE__ << '(' << standPat << ") "; }
@@ -325,6 +331,9 @@ lab_end:
 			}
 #endif
 
+#if NODE_DEBUG
+			if (debugNode) { Log::debug << move.toString() << ' '; }
+#endif // NODE_DEBUG
 			// 子ノードを展開
 			makeMove(tree, false);
 			updateGain(move, standPat + estimate, tree.negaEvaluate());
@@ -365,7 +374,7 @@ lab_end:
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
 		//if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
-		if (tree.is("+5655FU")) {
+		if (tree.is("-0063HI") && rootDepth == 4) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -926,7 +935,7 @@ revaluation_all:
 
 				NodeController node(*this, tree, tree,
 						NodeStat(), depth * PLY1, alpha,
-						standPat, false, Move());
+						standPat, false, false);
 				node.execute(true);
 
 revaluation:
