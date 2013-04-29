@@ -782,8 +782,10 @@ lab_end:
 
 			if (newValue > value) {
 				value = newValue;
-				tree.updatePv();
-				best = node.getMove();
+				if (newValue > alpha) {
+					tree.updatePv();
+					best = node.getMove();
+				}
 
 				// beta cut
 				if (value >= beta) {
@@ -1021,10 +1023,10 @@ revaluation:
 				if (moveCount == 1 || vtemp > alpha) {
 					// 最善手の評価値とalpha値を更新
 					maxValue = alpha = vtemp;
-					// PVを更新
-					tree.updatePv();
 					// 評価値を記憶する。
 					values[moveCount-1] = vtemp;
+					// PVを更新
+					tree.updatePv();
 				} else {
 					if (minValue > vtemp) {
 						minValue = vtemp;
