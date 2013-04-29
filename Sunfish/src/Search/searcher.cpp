@@ -257,10 +257,12 @@ lab_end:
 
 #if NODE_DEBUG
 		bool debugNode = false;
+		/*
 		if (tree.is("-0063HI") && rootDepth == 4) {
 			Log::debug << __LINE__ << ' ';
 			debugNode = true;
 		}
+		*/
 #endif // NODE_DEBUG
 
 		counter.nodes++;
@@ -380,7 +382,7 @@ lab_end:
 		bool debugNode = false;
 		//if (tree.is("+2726FU -2255KA")) {
 		//if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
-		if (tree.is("+0063KE")) {
+		if (tree.is("-0038KA")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
@@ -601,9 +603,8 @@ lab_end:
 			if (!pvNode && stat.isNullMove() && depth >= PLY1 * 2 &&
 					beta <= standPat && nullMove(tree, false)) {
 				int nullDepth = 
-						(depth >= PLY1*15/2 ? depth - PLY1*4 :
-						(depth >= PLY1*9/2 ? depth - PLY1*3 :
-						(depth >= PLY1*5/2 ? depth - PLY1*2 : depth - PLY1)));
+						(depth >= PLY1*15/2 ? depth - PLY1*8/2 :
+						(depth >= PLY1*17/2 ? depth - PLY1*7/2 : depth - PLY1*6/2));
 				Value newValue = -negaMax<false>(tree, nullDepth,
 						-beta, -beta+1, NodeStat().unsetNullMove());
 				unmakeMove(tree);
@@ -773,9 +774,11 @@ lab_end:
 #ifdef PRUN_EXPR
 			if (newValue <= value) {
 				PruningExpr::success1(depth, rec, node.isFut(), futMgn,
+						tree.getCurrentMove()->getPiece().isKing(),
 						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			} else {
 				PruningExpr::error1(depth, rec, node.isFut(), futMgn,
+						tree.getCurrentMove()->getPiece().isKing(),
 						node.isExtFut(), extFutMgn, node.isCount(), countMgn);
 			}
 #endif

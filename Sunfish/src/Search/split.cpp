@@ -209,8 +209,10 @@ namespace Search {
 				}
 				if (newValue > parent.split.value) {
 					parent.split.value = newValue;
-					parent.updatePv(move, tree);
-					parent.split.best = move;
+					if (newValue > alpha) {
+						parent.updatePv(move, tree);
+						parent.split.best = move;
+					}
 
 					// beta cut
 					if (newValue >= beta) {

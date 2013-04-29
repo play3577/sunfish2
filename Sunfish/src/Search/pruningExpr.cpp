@@ -18,11 +18,13 @@ namespace Search {
 
 	PruningExpr::PruningExpr() {
 		memset(fut_suc, 0, sizeof(fut_suc));
+		memset(fut_suc_k, 0, sizeof(fut_suc_k));
 		memset(ext_fut_suc, 0, sizeof(ext_fut_suc));
 		memset(razor_suc, 0, sizeof(razor_suc));
 		memset(stat_suc, 0, sizeof(stat_suc));
 		memset(count_suc, 0, sizeof(count_suc));
 		memset(fut_err, 0, sizeof(fut_err));
+		memset(fut_err_k, 0, sizeof(fut_err_k));
 		memset(ext_fut_err, 0, sizeof(ext_fut_err));
 		memset(razor_err, 0, sizeof(razor_err));
 		memset(stat_err, 0, sizeof(stat_err));
@@ -30,7 +32,7 @@ namespace Search {
 	}
 
 	int PruningExpr::depth(int dep) {
-		dep /= 4;
+		//dep /= 4;
 		return dep < MAX_DEP ? dep : MAX_DEP;
 	}
 
@@ -38,6 +40,11 @@ namespace Search {
 		val /= 10;
 		return val <= MIN_VAL ? MIN_VAL :
 				(val < MAX_VAL ? val : MAX_VAL);
+	}
+
+	int PruningExpr::count(int cnt) {
+		return cnt <= MIN_VAL ? MIN_VAL :
+				(cnt < MAX_VAL ? cnt : MAX_VAL);
 	}
 
 	int PruningExpr::record(int rec) {
@@ -50,7 +57,7 @@ namespace Search {
 		deviation = 0.0;
 		max = 0.0;
 		min = 1.0;
-		int count = 0;
+		int num = 0;
 		for (int i = 0; i < size; i++) {
 			Util::uint64 all = suc[i] + err[i];
 			if (all >= 1000) {
@@ -63,41 +70,49 @@ namespace Search {
 				}
 				average += rate;
 				deviation += rate * rate;
-				count++;
+				num++;
 			}
 		}
-		if (count >= 2) {
-			average /= count;
-			deviation /= count;
-			deviation = sqrt(deviation - average * average) * count / (count-1);
-		} else if (count == 1) {
+		if (num >= 2) {
+			average /= num;
+			deviation /= num;
+			deviation = sqrt(deviation - average * average) * num / (num-1);
+		} else if (num == 1) {
 			deviation = 0.0;
 		}
 	}
 
-	void PruningExpr::success1(int dep, int rec, bool isFut, int fut,
-			bool isExtFut, int extFut, bool isCount, int count) {
+	void PruningExpr::success1(int dep, int rec, bool isFut, int fut, bool isKing,
+			bool isExtFut, int extFut, bool isCount, int cnt) {
 		if (isFut) {
-			ins.fut_suc[depth(dep)][value(fut)][record(rec)]++;
+			if (!isKing) {
+				ins.fut_suc[depth(dep)][value(fut)][record(rec)]++;
+			} else {
+				ins.fut_suc_k[depth(dep)][value(fut)][record(rec)]++;
+			}
 		}
 		if (isExtFut) {
 			ins.ext_fut_suc[depth(dep)][value(extFut)][record(rec)]++;
 		}
 		if (isCount) {
-			ins.count_suc[depth(dep)][value(count)][record(rec)]++;
+			ins.count_suc[depth(dep)][count(cnt)][record(rec)]++;
 		}
 	}
 
-	void PruningExpr::error1(int dep, int rec, bool isFut, int fut,
-			bool isExtFut, int extFut, bool isCount, int count) {
+	void PruningExpr::error1(int dep, int rec, bool isFut, int fut, bool isKing,
+			bool isExtFut, int extFut, bool isCount, int cnt) {
 		if (isFut) {
-			ins.fut_err[depth(dep)][value(fut)][record(rec)]++;
+			if (!isKing) {
+				ins.fut_err[depth(dep)][value(fut)][record(rec)]++;
+			} else {
+				ins.fut_err_k[depth(dep)][value(fut)][record(rec)]++;
+			}
 		}
 		if (isExtFut) {
 			ins.ext_fut_err[depth(dep)][value(extFut)][record(rec)]++;
 		}
 		if (isCount) {
-			ins.count_err[depth(dep)][value(count)][record(rec)]++;
+			ins.count_err[depth(dep)][count(cnt)][record(rec)]++;
 		}
 	}
 
@@ -145,20 +160,26 @@ namespace Search {
 		}
 		Log::expr << '\n';
 		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
+			Log::expr << ",ave-dev,";
+		}
+		Log::expr << '\n';
+		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
 			Log::expr << ",min,max";
 		}
 		Log::expr << '\n';
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
 			double average, deviation, max, min;
-			std::ostringstream line1, line2;
+			std::ostringstream line1, line2, line3;
 			for (int val = MIN_VAL; val <= MAX_VAL; val++) {
 				summarize(suc[dep][val], err[dep][val], MAX_REC+1, average, deviation, max, min);
 				line1 << ',' << average << ',' << deviation;
-				line2 << ',' << min << ',' << max;
+				line2 << ',' << (average-deviation) << ',';
+				line3 << ',' << min << ',' << max;
 			}
 			Log::expr << dep;
 			Log::expr << line1.str() << '\n';
 			Log::expr << line2.str() << '\n';
+			Log::expr << line3.str() << '\n';
 		}
 		Log::expr << '\n';
 	}
@@ -177,6 +198,7 @@ namespace Search {
 
 	void PruningExpr::print() {
 		print("fut", ins.fut_suc, ins.fut_err);
+		print("fut(king)", ins.fut_suc_k, ins.fut_err_k);
 		print("extFut", ins.ext_fut_suc, ins.ext_fut_err);
 		print("razor", ins.razor_suc, ins.razor_err);
 		print("stat", ins.stat_suc, ins.stat_err);
