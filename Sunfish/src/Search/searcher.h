@@ -335,7 +335,20 @@ namespace Search {
 		}
 
 	private:
-		static Evaluates::Value getFutMgn(int depth, int count = 0);
+		class FutMgn {
+		public:
+			static const int MAX_DEPTH = 64;
+			static const int MAX_COUNT = 128;
+			int futMgn[MAX_DEPTH][MAX_COUNT];
+			FutMgn();
+		};
+		static const FutMgn futMgn;
+
+		static Evaluates::Value getFutMgn(int depth, int count = 0) {
+			count = depth < 0 ? 0 : (depth < FutMgn::MAX_DEPTH ? depth : FutMgn::MAX_DEPTH-1);
+			count = count < 0 ? 0 : (count < FutMgn::MAX_COUNT ? count : FutMgn::MAX_COUNT-1);
+			return futMgn.futMgn[depth][count];
+		}
 
 		class NodeController {
 		private:

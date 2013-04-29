@@ -5,6 +5,8 @@
  *      Author: ryosuke
  */
 
+#ifndef NDEBUG
+
 #include "timeTest.h"
 #include "../Util/timer.h"
 #include "../Log/logger.h"
@@ -30,3 +32,5 @@ namespace Tests {
 		return TEST_RESULT(true);
 	}
 }
+
+#endif

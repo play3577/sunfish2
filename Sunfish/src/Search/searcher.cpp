@@ -11,13 +11,14 @@
 #include "searcher.h"
 #include "../Util/tableString.h"
 #include <sstream>
+#include <cmath>
 
 #define ROOT_NODE_DEBUG				0
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
 #define VARIATION					"+0063KE -6263KI +0072HI -7172OU"
 
-#define RAZOR_MGN(d)				(520 + 60 / PLY1 * (d))
+#define RAZOR_MGN(d)				580/*(560 + 60 / PLY1 * (d))*/
 
 #ifdef PRUN_EXPR
 static int rec; // thread unsafe
@@ -49,6 +50,21 @@ namespace Search {
 		}
 		return table.get();
 	}
+
+	Searcher::FutMgn::FutMgn() {
+		for (int depth = 0; depth < MAX_DEPTH; depth++) {
+			for (int count = 0; count < MAX_DEPTH; count++) {
+				double mgn = log((depth+1) * 5.0 / PLY1) / log(2.0) * 128.0 + 268.0 + 4.0 * count;
+				// 偶数深さの補正
+				double dst = (double)abs((depth-PLY1/2) % (PLY1 * 2) - PLY1) / PLY1;
+				futMgn[depth][count] = mgn - 280.0 * dst;
+				//futMgn[depth][count] = 120 + 120 * depth / PLY1 + 4 * count;
+				if (count < 5) { std::cout << futMgn[depth][count] << '\t';}
+			}
+			std::cout << '\n';
+		}
+	}
+	const Searcher::FutMgn Searcher::futMgn;
 
 	bool Searcher::interrupt() {
 		boost::mutex::scoped_lock lock(flagMutex);
@@ -229,13 +245,6 @@ lab_end:
 			unmakeMove(tree);
 		}
 		return false; // 不詰め
-	}
-
-	Value Searcher::getFutMgn(int depth, int count) {
-		if (depth < Searcher::PLY1) {
-			return 0;
-		}
-		return 120 + 120 * depth / PLY1 + 4 * count;
 	}
 
 	/***************************************************************
@@ -570,7 +579,7 @@ lab_end:
 #ifdef PRUN_EXPR
 					isStat = true;
 #else
-					if (standPat - getFutMgn(depth) >= beta) {
+					if (standPat - getFutMgn(depth-PLY1) >= beta) {
 #if NODE_DEBUG
 						if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
