@@ -45,7 +45,7 @@ namespace Search {
 		static int record(int rec);
 
 		static void summarize(Util::uint64 suc[], Util::uint64 err[], int size,
-				double& average, double& deviation, double& max, double& min);
+				double& average, double& deviation, double& rateAll, double& max, double& min);
 
 		static void print(const char* name,
 				Util::uint64 suc[][MAX_VAL-MIN_VAL+1][MAX_REC+1],

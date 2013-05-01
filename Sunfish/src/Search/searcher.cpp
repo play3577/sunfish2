@@ -18,7 +18,7 @@
 #define VARIATION_DEBUG				0
 #define VARIATION					"+0063KE -6263KI +0072HI -7172OU"
 
-#define RAZOR_MGN(d)				580/*(560 + 60 / PLY1 * (d))*/
+#define RAZOR_MGN(d)				(520 + 60 / PLY1 * (d))
 
 #ifdef PRUN_EXPR
 static int rec; // thread unsafe
@@ -54,11 +54,11 @@ namespace Search {
 	Searcher::FutMgn::FutMgn() {
 		for (int depth = 0; depth < MAX_DEPTH; depth++) {
 			for (int count = 0; count < MAX_DEPTH; count++) {
-				double mgn = log((depth+1) * 5.0 / PLY1) / log(2.0) * 128.0 + 268.0 + 4.0 * count;
+				//double mgn = log((depth+1) * 5.0 / PLY1) / log(2.0) * 128.0 + 268.0 + 4.0 * count;
 				// 偶数深さの補正
-				double dst = (double)abs((depth-PLY1/2) % (PLY1 * 2) - PLY1) / PLY1;
-				futMgn[depth][count] = mgn - 280.0 * dst;
-				//futMgn[depth][count] = 120 + 120 * depth / PLY1 + 4 * count;
+				//double dst = (double)abs((depth-PLY1/2) % (PLY1 * 2) - PLY1) / PLY1;
+				//futMgn[depth][count] = mgn - 280.0 * dst;
+				futMgn[depth][count] = 120 + 120 * depth / PLY1 + 4 * count;
 			}
 		}
 	}
@@ -579,7 +579,7 @@ lab_end:
 #ifdef PRUN_EXPR
 					isStat = true;
 #else
-					if (standPat - getFutMgn(depth-PLY1) >= beta) {
+					if (standPat - getFutMgn(depth) >= beta) {
 #if NODE_DEBUG
 						if (debugNode) { Log::debug << __LINE__ << ' '; }
 #endif // NODE_DEBUG
