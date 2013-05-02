@@ -215,6 +215,8 @@ namespace Search {
 
 		REP_TYPE repType(const Tree& tree) const;
 
+		static int recursiveDepth(int depth);
+
 	public:
 		static const int PLY1 = 4;
 

@@ -366,6 +366,10 @@ lab_end:
 		return alpha;
 	}
 
+	inline int Searcher::recursiveDepth(int depth) {
+		return depth >= PLY1*9/2 ? depth - PLY1*6/2 : PLY1*3/2;
+	}
+
 	/***************************************************************
 	 * nega-max search                                             *
 	 * depth : 残り深さ(PLY1倍)                                    *
@@ -494,7 +498,7 @@ lab_end:
 #endif // NODE_DEBUG
 					return ttValue;
 				}
-				if (tte.getDepth() >= depth - PLY1 * 3) {
+				if (tte.getDepth() >= recursiveDepth(depth)) {
 					tree.setHashMove(tte.getHashMove());
 					hashOk = true;
 				}
@@ -512,7 +516,7 @@ lab_end:
 #endif // NODE_DEBUG
 						return ttValue;
 					}
-					if (tte.getDepth() >= depth - PLY1 * 3) {
+					if (tte.getDepth() >= recursiveDepth(depth)) {
 						tree.setHashMove(tte.getHashMove());
 						hashOk = true;
 					}
@@ -637,8 +641,7 @@ lab_end:
 
 		// recursive iterative-deepening
 		if (!hashOk && ((depth >= PLY1 * 3 && pvNode) || depth >= PLY1 * 4)) {
-			int newDepth = depth >= PLY1*9/2 ? depth - PLY1*6/2 : PLY1*3/2;
-			negaMax<pvNode>(tree, newDepth, alpha, beta,
+			negaMax<pvNode>(tree, recursiveDepth(depth), alpha, beta,
 					NodeStat(stat).unsetNullMove().unsetMate().unsetHashCut());
 			if (isInterrupted(tree)) { return Value(0); }
 			TTEntity tte;
