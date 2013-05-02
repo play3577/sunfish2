@@ -43,6 +43,14 @@ namespace Search {
 			memset((void*)hist, 0, sizeof(Util::uint64) * FROM * TO);
 		}
 
+		void reduce() {
+			for (int from = 0; from < FROM; from++) {
+				for (int to = 0; to < FROM; to++) {
+					hist[from][to] = (hist[from][to] >> 3) & ~U64(0xe0000000);
+				}
+			}
+		}
+
 		void add(const Shogi::Move& move, int appear, int good) {
 			unsigned index = from(move);
 			Util::uint64 h = hist[index][move.getTo()];

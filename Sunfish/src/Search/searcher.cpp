@@ -101,7 +101,7 @@ namespace Search {
 		// 初期化
 		memset(&result, 0, sizeof(SearchResult));
 		memset(&gain, 0, sizeof(gain));
-		history.clear();
+		history.reduce();
 		// 置換テーブルの世代更新
 		tt.evolve();
 		// 並列探索用
