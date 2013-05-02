@@ -139,10 +139,15 @@ namespace Search {
 		}
 
 		void makeMove(Shogi::Position& pos,
-				Evaluates::Evaluate& eval) {
+				Evaluates::Evaluate& eval,
+				bool doEval = true) {
 			baseValue = eval.getBaseValue();
 			posValue = eval.getPositionalValue();
-			pos.moveUnsafe(*pmove, change, eval);
+			if (doEval) {
+				pos.moveUnsafe(*pmove, change, eval);
+			} else {
+				pos.moveUnsafe(*pmove, change);
+			}
 		}
 
 		bool nullMove(Shogi::Position& pos,

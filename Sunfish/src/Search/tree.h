@@ -163,11 +163,11 @@ namespace Search {
 			return nodes[depth].next();
 		}
 
-		bool makeMove(bool shek) {
+		bool makeMove(bool shek, bool doEval = true) {
 			if (depth < maxDepth) {
 				nodes[depth].setShek(shek);
 				if (shek) { shekSet(); }
-				nodes[depth++].makeMove(pos, eval);
+				nodes[depth++].makeMove(pos, eval, doEval);
 				return true;
 			}
 			return false;

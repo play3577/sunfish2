@@ -161,8 +161,9 @@ namespace Search {
 			return tree.nullMove(shek);
 		}
 
-		void makeMove(Tree& tree, bool shek = true) {
-			tree.makeMove(shek);
+		void makeMove(Tree& tree, bool shek = true,
+				bool doEval = true) {
+			tree.makeMove(shek, doEval);
 			// FIXME: スタックがいっぱいで失敗するケース
 		}
 

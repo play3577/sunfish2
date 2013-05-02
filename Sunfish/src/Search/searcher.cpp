@@ -235,7 +235,7 @@ lab_end:
 		tree.generateCheck();
 
 		while (tree.next()) {
-			makeMove(tree, false);
+			makeMove(tree, false, false);
 			if (tree.isMate()) {
 				unmakeMove(tree);
 				return true;
