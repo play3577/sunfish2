@@ -44,8 +44,8 @@ namespace Search {
 		}
 
 		void reduce() {
-			for (int from = 0; from < FROM; from++) {
-				for (int to = 0; to < FROM; to++) {
+			for (unsigned from = 0; from < FROM; from++) {
+				for (unsigned to = 0; to < TO; to++) {
 					hist[from][to] = (hist[from][to] >> 3) & ~U64(0xe0000000);
 				}
 			}
