@@ -381,8 +381,6 @@ namespace Search {
 			template <bool isRoot>
 			void execute();
 
-			int extension() const;
-
 		public:
 			NodeController(Searcher& searcher, Tree& parent,
 					Tree& tree, const NodeStat& stat, int depth,
