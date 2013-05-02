@@ -130,8 +130,20 @@ namespace Evaluates {
 
 		Value estimate(const Shogi::Position& pos,
 				const Shogi::Move move) const {
-			return Feature::estimate(pos, &param, move,
-					Param::SCALE);
+			Value value = Feature::estimate(pos, &param, move) / Param::SCALE;
+			Shogi::Piece cap = pos.getBoard(move.getTo());
+			if (!cap.isEmpty()) {
+				value -= param.getPieceExchange(cap);
+			}
+			if (move.isPromotion()) {
+				value += param.getPiecePromote(move.getPiece());
+			}
+			if (move.getPiece().isKing()) {
+				value += 1100;
+			} else {
+				value += 280;
+			}
+			return value;
 		}
 	};
 }

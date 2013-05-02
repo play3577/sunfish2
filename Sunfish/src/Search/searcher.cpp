@@ -58,7 +58,7 @@ namespace Search {
 				// 偶数深さの補正
 				//double dst = (double)abs((depth-PLY1/2) % (PLY1 * 2) - PLY1) / PLY1;
 				//futMgn[depth][count] = mgn - 280.0 * dst;
-				futMgn[depth][count] = 120 + 120 * depth / PLY1 + 4 * count;
+				futMgn[depth][count] = 120 + 160 * depth / PLY1 + 4 * count;
 			}
 		}
 	}

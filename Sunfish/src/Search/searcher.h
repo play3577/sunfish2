@@ -337,7 +337,7 @@ namespace Search {
 	private:
 		class FutMgn {
 		public:
-			static const int MAX_DEPTH = 64;
+			static const int MAX_DEPTH = 128;
 			static const int MAX_COUNT = 128;
 			int futMgn[MAX_DEPTH][MAX_COUNT];
 			FutMgn();

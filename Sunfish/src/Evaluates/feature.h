@@ -91,9 +91,8 @@ namespace Evaluates {
 				Shogi::Square to, Shogi::Piece fromBefore,
 				Shogi::Piece toBefore, Shogi::Piece toAfter);
 
-		static Value estimate(
-				const Shogi::Position& pos, const Param* pparam,
-				const Shogi::Move& move, int scale);
+		static Value estimate(const Shogi::Position& pos,
+				const Param* pparam, const Shogi::Move& move);
 	};
 }
 

@@ -60,7 +60,7 @@ namespace Search {
 #else
 				// move count based pruning
 				Killer& killer = tree.getInnerKiller();
-				if (moveCount > 16U + depth / (PLY1*2)
+				if (moveCount > 12U + depth / PLY1
 						&& !connectedThreat(tree, killer.get1(), move)
 						&& !connectedThreat(tree, killer.get2(), move)) {
 					return;

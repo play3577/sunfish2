@@ -55,6 +55,7 @@ namespace Search {
 			double& average, double& deviation, double& rateAll, double& max, double& min) {
 		average = 0.0;
 		deviation = 0.0;
+		rateAll = 0.0;
 		max = 0.0;
 		min = 1.0;
 		int num = 0;
@@ -86,7 +87,7 @@ namespace Search {
 		}
 		Util::uint64 all = sucAll + errAll;
 		if (all >= 1) {
-			rateAll = (double)sucAll / errAll;
+			rateAll = (double)sucAll / all;
 		}
 	}
 
@@ -163,31 +164,31 @@ namespace Search {
 			Log::expr << ',' << (val*10) << ',';
 		}
 		Log::expr << '\n';
-		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
-			Log::expr << ",ave,dev";
-		}
-		Log::expr << '\n';
+//		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
+//			Log::expr << ",ave,dev";
+//		}
+//		Log::expr << '\n';
 		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
 			Log::expr << ",ave-dev,all";
 		}
 		Log::expr << '\n';
-		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
-			Log::expr << ",min,max";
-		}
-		Log::expr << '\n';
+//		for (int val = MIN_VAL; val <= MAX_VAL; val++) {
+//			Log::expr << ",min,max";
+//		}
+//		Log::expr << '\n';
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
 			double average, deviation, rateAll, max, min;
 			std::ostringstream line1, line2, line3;
 			for (int val = MIN_VAL; val <= MAX_VAL; val++) {
 				summarize(suc[dep][val], err[dep][val], MAX_REC+1, average, deviation, rateAll, max, min);
-				line1 << ',' << average << ',' << deviation;
+//				line1 << ',' << average << ',' << deviation;
 				line2 << ',' << (average-deviation) << ',' << rateAll;
-				line3 << ',' << min << ',' << max;
+//				line3 << ',' << min << ',' << max;
 			}
 			Log::expr << dep;
-			Log::expr << line1.str() << '\n';
+//			Log::expr << line1.str() << '\n';
 			Log::expr << line2.str() << '\n';
-			Log::expr << line3.str() << '\n';
+//			Log::expr << line3.str() << '\n';
 		}
 		Log::expr << '\n';
 	}
@@ -195,11 +196,11 @@ namespace Search {
 	void PruningExpr::print(const char* name,
 			Util::uint64 suc[][MAX_REC+1],
 			Util::uint64 err[][MAX_REC+1]) {
-		Log::expr << name << ",ave,dev,min,max\n";
+		Log::expr << name << ",ave,dev,all,min,max\n";
 		for (int dep = 0; dep <= MAX_DEP; dep++) {
-			double average, deviation, rateAll, max, min;
-			summarize(suc[dep], err[dep], MAX_REC+1, average, deviation, rateAll, max, min);
-			Log::expr << dep << ',' << average << ',' << deviation << ',' << min << ',' << max << '\n';
+			double average, deviation, all, max, min;
+			summarize(suc[dep], err[dep], MAX_REC+1, average, deviation, all, max, min);
+			Log::expr << dep << ',' << average << ',' << deviation << ',' << all << ',' << min << ',' << max << '\n';
 		}
 		Log::expr << '\n';
 	}
