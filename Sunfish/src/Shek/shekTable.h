@@ -17,7 +17,7 @@ namespace Shek {
 	class ShekTable : public Table::BaseTable<ShekEntities> {
 	public:
 		// TODO: サイズの指定を設定ファイルから読み込めるように
-		ShekTable(unsigned bits = 21) : 
+		ShekTable(unsigned bits = 18) : 
 				Table::BaseTable<ShekEntities>(bits) {
 		}
 

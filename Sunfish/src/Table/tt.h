@@ -19,7 +19,7 @@ namespace Table {
 
 	public:
 		// TODO: サイズの指定を設定ファイルから読み込めるように
-		TT(unsigned bits = 21) : BaseTable<TTEntities>(bits), age(0) {
+		TT(unsigned bits = 22) : BaseTable<TTEntities>(bits), age(0) {
 		}
 
 		void evolve() {
