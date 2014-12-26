@@ -13,6 +13,7 @@
 #include <sstream>
 #include <cmath>
 
+// debug
 #define ROOT_NODE_DEBUG				0
 #define NODE_DEBUG					0
 #define VARIATION_DEBUG				0
@@ -257,12 +258,10 @@ lab_end:
 
 #if NODE_DEBUG
 		bool debugNode = false;
-		/*
 		if (tree.is("-0063HI") && rootDepth == 4) {
 			Log::debug << __LINE__ << ' ';
 			debugNode = true;
 		}
-		*/
 #endif // NODE_DEBUG
 
 		counter.nodes++;
@@ -284,9 +283,6 @@ lab_end:
 		// mate
 		if (!tree.isCheck()) {
 			if (isMate1Ply(tree)) {
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 				return Value::MAX - (tree.getDepth()+1);
 			}
 		}
@@ -296,15 +292,9 @@ lab_end:
 		Value standPat;
 		if (!tree.isCheck() || ply >= 2) {
 			standPat = tree.negaEvaluate();
-#if NODE_DEBUG
-			if (debugNode) { Log::debug << __LINE__ << '(' << standPat << ") "; }
-#endif // NODE_DEBUG
 
 			// 静的評価値がbeta値を越えた場合
 			if (standPat >= beta) {
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 				return standPat;
 			}
 
@@ -316,9 +306,6 @@ lab_end:
 				tree.generateCaptures();
 			}
 		} else {
-#if NODE_DEBUG
-			if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 			// 王手の場合
 			standPat = Value::MIN + tree.getDepth();
 			// 全ての王手回避を生成
@@ -339,9 +326,6 @@ lab_end:
 			}
 #endif
 
-#if NODE_DEBUG
-			if (debugNode) { Log::debug << move.toString() << ' '; }
-#endif // NODE_DEBUG
 			// 子ノードを展開
 			makeMove(tree, false);
 			updateGain(move, standPat + estimate, tree.negaEvaluate());
@@ -360,9 +344,6 @@ lab_end:
 			}
 		}
 
-#if NODE_DEBUG
-		if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 		return alpha;
 	}
 
@@ -384,18 +365,11 @@ lab_end:
 
 #if NODE_DEBUG
 		bool debugNode = false;
-		//if (tree.is("+2726FU -2255KA")) {
-		//if (tree.is("+0063KE -6263KI +0072HI -7172OU"/* +5463NG"*/)) {
 		if (tree.is("-0038KA")) {
 			Log::debug << " *ARRIVE{" << alpha << ',' << beta << '}' << "d=" << depth << ' ';
 			debugNode = true;
 		}
 #endif // NODE_DEBUG
-#if 0
-		if (tree.is("+3524GI")) {
-			tree.shekDebug();
-		}
-#endif
 
 #if VARIATION_DEBUG
 		if (tree.startWith(VARIATION)) {
@@ -408,9 +382,6 @@ lab_end:
 		// distance pruning
 		Value maxValue = Value::MAX - tree.getDepth();
 		if (alpha >= maxValue) {
-#if NODE_DEBUG
-			if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 			return maxValue;
 		}
 
@@ -423,22 +394,13 @@ lab_end:
 				break;
 			case Shek::SUPERIOR:
 				counter.shekPruning++;
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 				return Value::MAX - tree.getDepth();
 			case Shek::INFERIOR:
 				counter.shekPruning++;
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 				return Value::MIN + tree.getDepth();
 			case Shek::EQUAL:
 				REP_TYPE type = repType(tree);
 				counter.shekPruning++;
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 				if (type == REP_MY_CHECK) {
 					return Value::MIN; // 王手千日手により負け
 				} else if (type == REP_EN_CHECK) {
@@ -451,25 +413,13 @@ lab_end:
 
 		// stack is full
 		if (tree.isMaxDepth()) {
-#if NODE_DEBUG
-			if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 			return tree.negaEvaluate();
 		}
 
 		// leaf node
 		if (depth < PLY1) {
-#if NODE_DEBUG
-			Value ret = quies(tree, 0, alpha, beta);
-			if (debugNode) {
-				Log::debug << __LINE__ << '(' << ret << ')';
-				Log::warning << tree.getPv().toString();
-			}
-			return ret;
-#else
 			// quiesence search
 			return quies(tree, 0, alpha, beta);
-#endif // NODE_DEBUG
 		}
 
 		counter.nodes++;
@@ -493,15 +443,13 @@ lab_end:
 #endif // NLEARN
 						) {
 					counter.hashPruning++;
-#if NODE_DEBUG
-					if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 					return ttValue;
 				}
 				if (tte.getDepth() >= recursiveDepth(depth)) {
 					tree.setHashMove(tte.getHashMove());
 					hashOk = true;
 				}
+				break;
 			case TTEntity::LOWER: // 下界値
 				if (ttValue >= beta) {
 					if (!pvNode && stat.isHashCut()
@@ -511,9 +459,6 @@ lab_end:
 #endif // NLEARN
 							) {
 						counter.hashPruning++;
-#if NODE_DEBUG
-						if (debugNode) { Log::debug << __LINE__ << '(' << ttValue << ')' << ' '; }
-#endif // NODE_DEBUG
 						return ttValue;
 					}
 					if (tte.getDepth() >= recursiveDepth(depth)) {
@@ -531,9 +476,6 @@ lab_end:
 #endif // NLEARN
 						) {
 					counter.hashPruning++;
-#if NODE_DEBUG
-					if (debugNode) { Log::debug << __LINE__ << '(' << ttValue << ')' << ' '; }
-#endif // NODE_DEBUG
 					return ttValue;
 				}
 				break;
@@ -542,9 +484,6 @@ lab_end:
 
 		// stand-pat
 		Value standPat = tree.negaEvaluate();
-#if NODE_DEBUG
-		if (debugNode) { Log::debug << "sp=" << standPat << ' '; }
-#endif // NODE_DEBUG
 
 		// 詰めろ
 		bool mate = false;
@@ -569,9 +508,6 @@ lab_end:
 					if (standPat < rbeta) {
 						Value vtemp = quies(tree, 0, rbeta-1, rbeta);
 						if (vtemp < rbeta) {
-#if NODE_DEBUG
-							if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 							return vtemp/* + RAZOR_MGN(depth)*/;
 						}
 					}
@@ -584,9 +520,6 @@ lab_end:
 					isStat = true;
 #else
 					if (standPat - getFutMgn(depth) >= beta) {
-#if NODE_DEBUG
-						if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 						return standPat - getFutMgn(depth);
 					}
 #endif
@@ -596,9 +529,6 @@ lab_end:
 			// mate
 			if (stat.isMate()) {
 				if (isMate1Ply(tree)) {
-#if NODE_DEBUG
-					if (debugNode) { Log::debug << __LINE__ << ' '; }
-#endif // NODE_DEBUG
 					return Value::MAX - (tree.getDepth()+1);
 				}
 			}
@@ -623,17 +553,10 @@ lab_end:
 #ifdef PRUN_EXPR
 					isNull = true;
 #else
-#if NODE_DEBUG
-					if (debugNode) { Log::debug << __LINE__ << " d=" << depth << " nd=" << nullDepth << ' '; }
-#endif // NODE_DEBUG
 					return beta;
 #endif
 				} else if (newValue <= -Value::MATE) {
 					// パスして詰まされたら自玉は詰めろ
-					//const Move* pmove = tree.getInnerPv().getTop();
-					//if (pmove != NULL) {
-						//threat = *pmove;
-					//}
 					mate = true;
 				}
 			}
@@ -657,11 +580,6 @@ lab_end:
 		Move best;
 		while (tree.next()) {
 			assert(tree.getCurrentMove() != NULL);
-#if NODE_DEBUG
-			if (debugNode) {
-				Log::debug << ' ' << tree.getCurrentMove()->toString();
-			}
-#endif // NODE_DEBUG
 
 #ifdef PRUN_EXPR
 			int countMgn = tree.getMoveIndex();
@@ -676,9 +594,6 @@ lab_end:
 			node.execute();
 
 			if (node.isPruning()) {
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__; }
-#endif
 				value = newAlpha; // fail soft
 				counter.futilityPruning++;
 				continue;
@@ -700,72 +615,32 @@ lab_end:
 				unmakeMove(tree);
 				value = newAlpha; // fail soft
 				counter.exFutilityPruning++;
-#if NODE_DEBUG
-				if (debugNode) { Log::debug << __LINE__; }
-#endif
 				continue;
 			}
 
 			updateGain(node.getMove(), standPat + node.getEstimate(),
 					node.getNewStandPat());
 
-#if NODE_DEBUG
-			Util::uint64 beforeNodes = counter.nodes;
-			double beforeSec = timer.get();
-#endif // NODE_DEBUG
-#if 1
 			// recurcive search
-			if (/*pvNode &&*/ node.getMoveCount() == 1 && newAlpha <= -Value::MATE) {
+			if (node.getMoveCount() == 1 && newAlpha <= -Value::MATE) {
 				newValue = -negaMax<pvNode>(tree, node.getDepth(false), -beta, -newAlpha, node.getStat());
-#if NODE_DEBUG
-				if (debugNode) {
-					Log::debug << ',' << __LINE__;
-				}
-#endif // NODE_DEBUG
-			} else 
-#endif
-			{
+			} else {
 				// nega-scout
 				newValue = -negaMax<false>(tree, node.getDepth(), -newAlpha-1, -newAlpha, node.getStat());
-#if NODE_DEBUG
-				if (debugNode) {
-					Log::debug << ',' << __LINE__;
-				}
-#endif // NODE_DEBUG
 				if (!isInterrupted(tree) && newValue > newAlpha
 						&& node.isReduced() != 0) {
 					// reductionをなくして再探索
 					newValue = -negaMax<false>(tree,
 							node.getDepth(false),
 							-newAlpha-1, -newAlpha, node.getStat());
-#if NODE_DEBUG
-					if (debugNode) {
-						Log::debug << ',' << __LINE__;
-					}
-#endif // NODE_DEBUG
 				}
 				if (!isInterrupted(tree) && newValue > newAlpha && !node.isNullWindow()) {
 					// windowを広げて再探索
 					newValue = -negaMax<pvNode>(tree,
 							node.getDepth(false),
 							-beta, -newAlpha, node.getStat());
-#if NODE_DEBUG
-					if (debugNode) {
-						Log::debug << ',' << __LINE__;
-					}
-#endif // NODE_DEBUG
 				}
 			}
-#if NODE_DEBUG
-			if (debugNode) {
-				Util::uint64 afterNodes= counter.nodes;
-				Util::uint64 nodes = afterNodes - beforeNodes;
-				double afterSec = timer.get();
-				double sec = afterSec - beforeSec;
-				Log::debug << "(" << newValue << ")[" << nodes << "]";
-				Log::warning << (int)(sec*1000) << ' ';
-			}
-#endif // NODE_DEBUG
 
 			// unmake move
 			unmakeMove(tree);
@@ -801,11 +676,6 @@ lab_end:
 					} else if (!node.isHash()) {
 						tree.addKiller(newValue - standPat);
 					}
-#if NODE_DEBUG
-					if (debugNode) {
-						Log::debug << ";bc";
-					}
-#endif // NODE_DEBUG
 					break;
 				}
 			}
@@ -848,11 +718,6 @@ lab_end:
 		}
 #endif
 
-#if NODE_DEBUG
-		if (debugNode) {
-			Log::warning << tree.getPv().toString();
-		}
-#endif // NODE_DEBUG
 		return value;
 	}
 	template Value Searcher::negaMax<true>(Tree& tree, int depth,
@@ -944,7 +809,6 @@ revaluation_all:
 				totalCount(counter);
 				Util::uint64 beforeNodes= counter.nodes;
 				double beforeSec = timer.get();
-				//Log::debug << '<' << tree.getNumberOfMoves() << ',' << moveCount << '>';
 #endif // ROOT_NODE_DEBUG
 
 				NodeController node(*this, tree, tree,

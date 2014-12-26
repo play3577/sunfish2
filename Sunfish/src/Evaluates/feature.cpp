@@ -33,6 +33,17 @@ namespace Evaluates {
 		KPP_DAI_GHI,
 	};
 
+	const int Feature::kkpHand[8] = {
+		0,
+		KKP_DAI_FU,
+		KKP_DAI_KY,
+		KKP_DAI_KE,
+		KKP_DAI_GI,
+		KKP_DAI_KI,
+		KKP_DAI_KA,
+		KKP_DAI_HI,
+	};
+
 	// TODO: 使わない引数が残るのが嫌
 	template<bool get, bool cum>
 	Value Feature::extract(const Position& pos,
@@ -44,6 +55,39 @@ namespace Evaluates {
 		int list2[64];
 
 		Kings kings(pos);
+
+		if (get) {
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::PAWN), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::LANCE), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::KNIGHT), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::SILVER), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::GOLD), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::BISHOP), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getBlackHand(Piece::ROOK), true);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::PAWN), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::LANCE), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::KNIGHT), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::SILVER), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::GOLD), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::BISHOP), false);
+			ret += getKKP_H(*pp, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::ROOK), false);
+		}
+		if (cum) {
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::PAWN), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::LANCE), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::KNIGHT), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::SILVER), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::GOLD), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::BISHOP), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getBlackHand(Piece::ROOK), true, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::PAWN), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::LANCE), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::KNIGHT), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::SILVER), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::GOLD), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::BISHOP), false, inc);
+			addKKP_H(*pg, kings, KKP_DAI_FU, pos.getWhiteHand(Piece::ROOK), false, inc);
+		}
 
 		for (Square square = Square::TOP; square.valid(); square.next()) {
 			Piece piece = pos.getBoard(square);
@@ -139,9 +183,11 @@ namespace Evaluates {
 				if (piece.isBlack()) {
 					int handNum = pos.getBlackHand(piece);
 					assert(handNum >= 1);
+					ret -= getKKP_H(p, kings, kkpHand[piece], handNum - 1, true);
 					before0[beforeNum] = kppBlackHand[piece] + handNum - 1;
 					before1[beforeNum] = kppWhiteHand[piece] + handNum - 1;
 					beforeNum++;
+					ret += getKKP_H(p, kings, kkpHand[piece], handNum, true);
 					after0[afterNum] = kppBlackHand[piece] + handNum;
 					after1[afterNum] = kppWhiteHand[piece] + handNum;
 					afterNum++;
@@ -149,9 +195,11 @@ namespace Evaluates {
 					piece.turn();
 					int handNum = pos.getWhiteHand(piece);
 					assert(handNum >= 1);
+					ret -= getKKP_H(p, kings, kkpHand[piece], handNum - 1, false);
 					before0[beforeNum] = kppWhiteHand[piece] + handNum - 1;
 					before1[beforeNum] = kppBlackHand[piece] + handNum - 1;
 					beforeNum++;
+					ret += getKKP_H(p, kings, kkpHand[piece], handNum, false);
 					after0[afterNum] = kppWhiteHand[piece] + handNum;
 					after1[afterNum] = kppBlackHand[piece] + handNum;
 					afterNum++;
@@ -164,18 +212,22 @@ namespace Evaluates {
 			handChange = piece;
 			if (piece.isBlack()) {
 				int handNum = pos.getBlackHand(piece);
+				ret -= getKKP_H(p, kings, kkpHand[piece], handNum + 1, true);
 				before0[beforeNum] = kppBlackHand[piece] + handNum + 1;
 				before1[beforeNum] = kppWhiteHand[piece] + handNum + 1;
 				beforeNum++;
+				ret += getKKP_H(p, kings, kkpHand[piece], handNum, true);
 				after0[afterNum] = kppBlackHand[piece] + handNum;
 				after1[afterNum] = kppWhiteHand[piece] + handNum;
 				afterNum++;
 			} else {
 				piece.turn();
 				int handNum = pos.getWhiteHand(piece);
+				ret -= getKKP_H(p, kings, kkpHand[piece], handNum + 1, false);
 				before0[beforeNum] = kppWhiteHand[piece] + handNum + 1;
 				before1[beforeNum] = kppBlackHand[piece] + handNum + 1;
 				beforeNum++;
+				ret += getKKP_H(p, kings, kkpHand[piece], handNum, false);
 				after0[afterNum] = kppWhiteHand[piece] + handNum;
 				after1[afterNum] = kppBlackHand[piece] + handNum;
 				afterNum++;

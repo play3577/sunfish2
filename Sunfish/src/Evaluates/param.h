@@ -353,6 +353,14 @@ namespace Evaluates {
 			}
 		}
 
+		void addKKP_H(const Kings& kings, int pieceIndex, int count, bool black, const U& value) {
+			if (black) {
+				kkp[kings.getBlack()][kings.getWhite()][pieceIndex+count] += value;
+			} else {
+				-kkp[kings.getBlackR()][kings.getWhiteR()][pieceIndex+count] += value;
+			}
+		}
+
 		U getKKP(int kingIndex1, int kingIndex2, int pieceIndex) const {
 			return kkp[kingIndex1][kingIndex2][pieceIndex];
 		}
@@ -378,6 +386,11 @@ namespace Evaluates {
 				return -getKKP(kings, whitePiece[piece.getInteger()],
 					80-sq.getShortIndex(), false);
 			}
+		}
+
+		U getKKP_H(const Kings& kings, int pieceIndex, int count, bool black) const {
+			return black ? kkp[kings.getBlack()][kings.getWhite()][pieceIndex+count] :
+				-kkp[kings.getBlackR()][kings.getWhiteR()][pieceIndex+count];
 		}
 
 		U sum() const {

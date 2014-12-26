@@ -17,6 +17,7 @@ namespace Evaluates {
 	private:
 		static const int kppBlackHand[8];
 		static const int kppWhiteHand[8];
+		static const int kkpHand[8];
 
 		static Value getKKP(const Param& p, const Kings& kings,
 				const Shogi::Square& square,
@@ -28,6 +29,10 @@ namespace Evaluates {
 				p.getKKP(kings, whitePiece[pieceIndex], 80 - squareIndex, false));
 		}
 
+		static Value getKKP_H(const Param& p, const Kings& kings, int baseIndex, int count, bool black) {
+			return Value(black ? p.getKKP_H(kings, baseIndex, count, true) : p.getKKP_H(kings, baseIndex, count, false));
+		}
+
 		static void addKKP(Gradient& g, const Kings& kings,
 				const Shogi::Square& square,
 				const Shogi::Piece& piece, double inc) {
@@ -37,6 +42,14 @@ namespace Evaluates {
 				g.addKKP(kings, blackPiece[pieceIndex], squareIndex, true, ValueF(inc));
 			} else {
 				g.addKKP(kings, whitePiece[pieceIndex], 80 - squareIndex, false, ValueF(inc));
+			}
+		}
+
+		static void addKKP_H(Gradient& g, const Kings& kings, int baseIndex, int count, bool black, double inc) {
+			if (black) {
+				g.addKKP_H(kings, baseIndex, count, true, ValueF(inc));
+			} else {
+				g.addKKP_H(kings, baseIndex, count, false, ValueF(inc));
 			}
 		}
 
