@@ -220,7 +220,7 @@ namespace Search {
 							parent.addHistory(depth, moveCount);
 							parent.addKiller(newValue - standPat);
 						} else if (!node.isHash()) {
-							tree.addKiller(newValue - standPat);
+							parent.addKiller(newValue - standPat);
 						}
 						// 兄弟ノードの終了
 						shutdownTree(parent);

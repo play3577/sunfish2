@@ -200,7 +200,7 @@ namespace Evaluates {
 		}
 
 		void symAdd(){
-			symmetry<true>();
+			symmetry<false>();
 		}
 
 		void setPiece(const Shogi::Piece& p, T value) {
